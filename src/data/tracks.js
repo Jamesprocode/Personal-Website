@@ -4,7 +4,7 @@ const tracks = [
     title: '555',
     album: 'Original',
     year: 2024,
-    file: '/audio/555.wav',
+    file: '/audio/555.mp3',
     color: '#c4a265',
   },
   // Placeholder entries — replace with real tracks when available
