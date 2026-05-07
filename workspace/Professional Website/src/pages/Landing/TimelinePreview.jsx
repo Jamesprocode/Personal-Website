@@ -3,38 +3,58 @@ import { Link } from 'react-router-dom';
 
 function TimelinePreview() {
   return (
-    <section className="h-screen flex items-center justify-center px-6 bg-tl-bg relative overflow-hidden">
+    <section className="min-h-screen flex items-center justify-center px-6 py-20 bg-tl-bg relative overflow-hidden">
       {/* Animated timeline line */}
       <motion.div
         initial={{ scaleY: 0 }}
         whileInView={{ scaleY: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1.5 }}
-        className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-tl-blue via-tl-green to-tl-purple opacity-20 origin-top"
+        className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-tl-blue/20 to-transparent origin-top"
       />
 
-      <div className="relative z-10 max-w-6xl w-full mx-auto text-center">
+      {/* Floating dots */}
+      {[
+        { top: '20%', left: '30%', color: 'bg-tl-blue', delay: 0 },
+        { top: '40%', left: '70%', color: 'bg-tl-green', delay: 1 },
+        { top: '60%', left: '25%', color: 'bg-tl-purple', delay: 2 },
+        { top: '75%', left: '65%', color: 'bg-tl-orange', delay: 3 },
+      ].map((dot, i) => (
         <motion.div
-          initial={{ opacity: 0, y: 100 }}
+          key={i}
+          animate={{ opacity: [0.1, 0.3, 0.1], scale: [1, 1.5, 1] }}
+          transition={{ duration: 4, repeat: Infinity, delay: dot.delay }}
+          className={`absolute w-2 h-2 rounded-full ${dot.color}`}
+          style={{ top: dot.top, left: dot.left }}
+        />
+      ))}
+
+      <div className="relative z-10 max-w-4xl w-full mx-auto text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8 }}
+          className="flex flex-col items-center"
         >
           <motion.div
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
+            initial={{ scale: 0, rotate: -180 }}
+            whileInView={{ scale: 1, rotate: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 100 }}
-            className="text-8xl mb-8"
+            transition={{ delay: 0.2, type: 'spring', stiffness: 80 }}
+            className="w-24 h-24 rounded-full bg-gradient-to-br from-tl-blue/10 to-tl-purple/10
+              flex items-center justify-center mb-8 border border-white/10 backdrop-blur-sm"
           >
-            ⏱️
+            <span className="text-5xl">⏱️</span>
           </motion.div>
 
-          <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight">
             Timeline
           </h2>
 
-          <p className="text-xl md:text-2xl text-gray-400 mb-8 max-w-3xl mx-auto">
+          <div className="w-16 h-0.5 bg-gradient-to-r from-tl-blue via-tl-purple to-tl-orange mb-6" />
+
+          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
             Journey through 30+ milestones spanning education, research, music, and industry.
             Filter by category and explore achievements from 2020 to present.
           </p>
@@ -43,34 +63,34 @@ function TimelinePreview() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
-            className="flex flex-wrap justify-center gap-4 mb-12"
+            transition={{ delay: 0.5 }}
+            className="flex flex-wrap justify-center gap-3 mb-12"
           >
-            <div className="px-4 py-2 bg-tl-blue/20 rounded-lg border border-tl-blue">
-              <span className="text-white text-sm">📚 Education</span>
-            </div>
-            <div className="px-4 py-2 bg-tl-green/20 rounded-lg border border-tl-green">
-              <span className="text-white text-sm">🔬 Research</span>
-            </div>
-            <div className="px-4 py-2 bg-tl-purple/20 rounded-lg border border-tl-purple">
-              <span className="text-white text-sm">💻 Music Software</span>
-            </div>
-            <div className="px-4 py-2 bg-tl-orange/20 rounded-lg border border-tl-orange">
-              <span className="text-white text-sm">🎵 Music</span>
-            </div>
-            <div className="px-4 py-2 bg-tl-gray/20 rounded-lg border border-tl-gray">
-              <span className="text-white text-sm">🏢 Industry</span>
-            </div>
+            {[
+              { name: 'Education', color: 'border-tl-blue text-tl-blue bg-tl-blue/10' },
+              { name: 'Research', color: 'border-tl-green text-tl-green bg-tl-green/10' },
+              { name: 'Music Software', color: 'border-tl-purple text-tl-purple bg-tl-purple/10' },
+              { name: 'Music', color: 'border-tl-orange text-tl-orange bg-tl-orange/10' },
+              { name: 'Industry', color: 'border-tl-gray text-tl-gray bg-tl-gray/10' },
+            ].map((cat) => (
+              <div key={cat.name} className={`px-4 py-2 rounded-full border ${cat.color} text-sm`}>
+                {cat.name}
+              </div>
+            ))}
           </motion.div>
 
           <Link to="/timeline">
             <motion.button
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-12 py-5 bg-gradient-to-r from-tl-blue via-tl-purple to-tl-orange
-                text-white font-bold text-xl rounded-xl hover:shadow-2xl transition-all"
+              whileHover={{ scale: 1.03, y: -3 }}
+              whileTap={{ scale: 0.97 }}
+              className="px-10 py-4 bg-gradient-to-r from-tl-blue via-tl-purple to-tl-orange
+                text-white font-semibold text-lg rounded-full hover:shadow-xl hover:shadow-tl-purple/20
+                transition-all duration-300 flex items-center gap-2"
             >
-              Explore Timeline →
+              Explore Timeline
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </motion.button>
           </Link>
         </motion.div>

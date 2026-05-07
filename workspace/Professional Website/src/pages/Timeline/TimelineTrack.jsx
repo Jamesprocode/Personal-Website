@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import TimelineCard from './TimelineCard';
 
 function TimelineTrack({ entries }) {
-  // Group entries by year
   const groupedByYear = entries.reduce((acc, entry) => {
     if (!acc[entry.year]) {
       acc[entry.year] = [];
@@ -16,10 +15,10 @@ function TimelineTrack({ entries }) {
   return (
     <div className="relative">
       {/* Vertical line */}
-      <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-700 -translate-x-1/2" />
+      <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-gray-800 via-gray-700 to-gray-800 -translate-x-1/2" />
 
-      {years.map((year, yearIndex) => (
-        <div key={year} className="mb-16">
+      {years.map((year) => (
+        <div key={year} className="mb-14">
           {/* Year marker */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -27,12 +26,12 @@ function TimelineTrack({ entries }) {
             viewport={{ once: true }}
             className="relative flex justify-center mb-8"
           >
-            <div className="bg-tl-bg px-6 py-2 border-2 border-gray-700 rounded-full z-10">
-              <span className="text-2xl font-bold text-white">{year}</span>
+            <div className="bg-tl-bg px-5 py-1.5 border border-gray-700/50 rounded-full z-10
+              shadow-lg shadow-black/20">
+              <span className="text-xl font-bold text-white tracking-wide">{year}</span>
             </div>
           </motion.div>
 
-          {/* Timeline cards for this year */}
           {groupedByYear[year].map((entry, index) => (
             <TimelineCard
               key={entry.id}

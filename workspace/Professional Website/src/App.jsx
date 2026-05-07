@@ -6,8 +6,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Landing from './pages/Landing/Landing';
 import Music from './pages/Music/Music';
-import Coding from './pages/Coding/Coding';
 import Timeline from './pages/Timeline/Timeline';
+import ProjectDetail from './pages/Project/ProjectDetail';
 import './App.css';
 
 function App() {
@@ -15,7 +15,6 @@ function App() {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    // Check if user has already seen the loading screen in this session
     const hasSeenLoading = sessionStorage.getItem('hasSeenLoading');
     if (hasSeenLoading) {
       setIsLoading(false);
@@ -41,8 +40,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/music" element={<Music />} />
-                <Route path="/code" element={<Coding />} />
                 <Route path="/timeline" element={<Timeline />} />
+                <Route path="/projects/:id" element={<ProjectDetail />} />
               </Routes>
             </AnimatePresence>
             <Footer />

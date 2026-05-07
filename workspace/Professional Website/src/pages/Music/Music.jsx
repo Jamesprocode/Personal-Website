@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import PageTransition from '../../components/PageTransition';
 import Turntable from './Turntable';
 import RecordCrate from './RecordCrate';
@@ -26,10 +27,8 @@ function Music() {
     }
   };
 
-  // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (e) => {
-      // Only trigger if not typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.code === 'Space') {
@@ -44,16 +43,29 @@ function Music() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-music-bg pt-20 px-6 pb-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-music-cream mb-4">
+      <div className="min-h-screen bg-music-bg pt-24 px-6 pb-24 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-music-gold/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-music-gold/3 rounded-full blur-3xl" />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-14"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-music-cream mb-3 tracking-tight">
               Vinyl Listening Room
             </h1>
-            <p className="text-music-gold text-lg">
-              Click a record to play • Press <kbd className="px-2 py-1 bg-black/30 rounded border border-music-gold/30 text-sm font-mono">Space</kbd> to pause/play
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-music-gold to-transparent mx-auto mb-4" />
+            <p className="text-music-gold/60 text-base">
+              Click a record to play &middot; Press{' '}
+              <kbd className="px-2 py-0.5 bg-black/30 rounded-md border border-music-gold/20 text-xs font-mono text-music-gold/80">
+                Space
+              </kbd>{' '}
+              to pause/play
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2">

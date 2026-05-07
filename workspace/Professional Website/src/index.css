@@ -43,17 +43,24 @@ body {
   color: #ffffff;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(196, 162, 101, 0.3);
+  color: inherit;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #333;
-  border-radius: 3px;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555;

@@ -3,12 +3,14 @@ import VinylRecord from './VinylRecord';
 
 function RecordCrate({ tracks, onSelectTrack, selectedTrack }) {
   return (
-    <div className="bg-music-wood rounded-2xl p-6 shadow-xl border-2 border-music-gold/20">
-      <h3 className="text-2xl font-bold text-music-cream mb-6 text-center">
+    <div className="bg-gradient-to-br from-music-wood to-music-wood/80 rounded-3xl p-6 shadow-2xl
+      border border-music-gold/15">
+      <h3 className="text-xl font-bold text-music-cream mb-2 text-center tracking-tight">
         Record Collection
       </h3>
+      <div className="w-10 h-0.5 bg-gradient-to-r from-transparent via-music-gold/50 to-transparent mx-auto mb-6" />
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {tracks.map((track, index) => (
           <motion.div
             key={track.id}
@@ -25,9 +27,9 @@ function RecordCrate({ tracks, onSelectTrack, selectedTrack }) {
         ))}
       </div>
 
-      <div className="mt-8 p-4 bg-black/20 rounded-lg">
-        <p className="text-xs text-music-cream/60 text-center">
-          Click a record to start playing • Use controls below to adjust volume
+      <div className="mt-6 p-3 bg-black/20 rounded-xl">
+        <p className="text-xs text-music-cream/40 text-center font-light">
+          Click a record to start playing
         </p>
       </div>
     </div>

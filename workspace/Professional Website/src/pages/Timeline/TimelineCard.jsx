@@ -5,50 +5,58 @@ function TimelineCard({ entry, index, side }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const colorMap = {
-    blue: 'border-tl-blue bg-tl-blue/10',
-    green: 'border-tl-green bg-tl-green/10',
-    purple: 'border-tl-purple bg-tl-purple/10',
-    orange: 'border-tl-orange bg-tl-orange/10',
-    gray: 'border-tl-gray bg-tl-gray/10',
+    blue: 'border-tl-blue/30 bg-tl-blue/5 hover:border-tl-blue/50',
+    green: 'border-tl-green/30 bg-tl-green/5 hover:border-tl-green/50',
+    purple: 'border-tl-purple/30 bg-tl-purple/5 hover:border-tl-purple/50',
+    orange: 'border-tl-orange/30 bg-tl-orange/5 hover:border-tl-orange/50',
+    gray: 'border-tl-gray/30 bg-tl-gray/5 hover:border-tl-gray/50',
   };
 
   const dotColorMap = {
-    blue: 'bg-tl-blue',
-    green: 'bg-tl-green',
-    purple: 'bg-tl-purple',
-    orange: 'bg-tl-orange',
-    gray: 'bg-tl-gray',
+    blue: 'bg-tl-blue shadow-tl-blue/30',
+    green: 'bg-tl-green shadow-tl-green/30',
+    purple: 'bg-tl-purple shadow-tl-purple/30',
+    orange: 'bg-tl-orange shadow-tl-orange/30',
+    gray: 'bg-tl-gray shadow-tl-gray/30',
+  };
+
+  const categoryColorMap = {
+    blue: 'text-tl-blue',
+    green: 'text-tl-green',
+    purple: 'text-tl-purple',
+    orange: 'text-tl-orange',
+    gray: 'text-tl-gray',
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: side === 'left' ? -50 : 50 }}
+      initial={{ opacity: 0, x: side === 'left' ? -30 : 30 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ delay: index * 0.08 }}
       className={`relative flex ${
         side === 'left' ? 'justify-end pr-[52%]' : 'justify-start pl-[52%]'
-      } mb-8`}
+      } mb-6`}
     >
       {/* Connector dot */}
       <motion.div
-        whileHover={{ scale: 1.3 }}
-        className={`absolute top-6 left-1/2 w-4 h-4 rounded-full ${
+        whileHover={{ scale: 1.5 }}
+        className={`absolute top-6 left-1/2 w-3 h-3 rounded-full ${
           dotColorMap[entry.color]
-        } border-2 border-tl-bg -translate-x-1/2 z-20`}
+        } border-2 border-tl-bg -translate-x-1/2 z-20 shadow-lg`}
       />
 
       {/* Card */}
       <motion.div
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ scale: 1.01 }}
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`cursor-pointer border-2 ${
+        className={`cursor-pointer border ${
           colorMap[entry.color]
-        } rounded-lg p-6 w-full transition-all duration-300`}
+        } rounded-xl p-5 w-full transition-all duration-300 backdrop-blur-sm`}
       >
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-xl font-bold text-white">{entry.title}</h3>
-          <span className="text-xs text-gray-400 ml-2 shrink-0">
+        <div className="flex items-start justify-between mb-1">
+          <h3 className="text-base font-semibold text-white leading-tight pr-2">{entry.title}</h3>
+          <span className={`text-xs ${categoryColorMap[entry.color]} ml-2 shrink-0 font-medium`}>
             {entry.category}
           </span>
         </div>
@@ -58,12 +66,12 @@ function TimelineCard({ entry, index, side }) {
           animate={{ height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }}
           className="overflow-hidden"
         >
-          <p className="text-gray-300 text-sm mt-3 leading-relaxed">
+          <p className="text-gray-400 text-sm mt-3 leading-relaxed font-light">
             {entry.description}
           </p>
         </motion.div>
 
-        <div className="text-xs text-gray-500 mt-3">
+        <div className="text-xs text-gray-600 mt-2">
           {isExpanded ? 'Click to collapse' : 'Click to expand'}
         </div>
       </motion.div>
