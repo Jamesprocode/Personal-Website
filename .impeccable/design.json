@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-07T00:00:00Z",
+  "title": "Design System: James Wang Portfolio",
+  "extensions": {
+    "colorMeta": {
+      "cream-base": {
+        "role": "secondary",
+        "displayName": "Cream Parlor",
+        "canonical": "oklch(93.5% 0.034 88)",
+        "tonalRamp": [
+          "oklch(20% 0.012 88)",
+          "oklch(32% 0.018 88)",
+          "oklch(45% 0.024 88)",
+          "oklch(58% 0.028 88)",
+          "oklch(70% 0.032 88)",
+          "oklch(82% 0.034 88)",
+          "oklch(93.5% 0.034 88)",
+          "oklch(98% 0.018 88)"
+        ]
+      },
+      "cream-deep": {
+        "role": "neutral",
+        "displayName": "Cream Deep",
+        "canonical": "oklch(91% 0.034 86)",
+        "tonalRamp": [
+          "oklch(20% 0.012 86)",
+          "oklch(32% 0.018 86)",
+          "oklch(45% 0.024 86)",
+          "oklch(58% 0.028 86)",
+          "oklch(70% 0.032 86)",
+          "oklch(80% 0.034 86)",
+          "oklch(91% 0.034 86)",
+          "oklch(97% 0.018 86)"
+        ]
+      },
+      "cream-shadow": {
+        "role": "neutral",
+        "displayName": "Cream Shadow",
+        "canonical": "oklch(88.5% 0.028 84)",
+        "tonalRamp": [
+          "oklch(20% 0.010 84)",
+          "oklch(32% 0.016 84)",
+          "oklch(45% 0.020 84)",
+          "oklch(58% 0.024 84)",
+          "oklch(70% 0.028 84)",
+          "oklch(80% 0.028 84)",
+          "oklch(88.5% 0.028 84)",
+          "oklch(96% 0.016 84)"
+        ]
+      },
+      "cream-light": {
+        "role": "neutral",
+        "displayName": "Cream Light",
+        "canonical": "oklch(96.5% 0.028 88)",
+        "tonalRamp": [
+          "oklch(22% 0.010 88)",
+          "oklch(34% 0.016 88)",
+          "oklch(46% 0.020 88)",
+          "oklch(60% 0.024 88)",
+          "oklch(72% 0.028 88)",
+          "oklch(84% 0.028 88)",
+          "oklch(96.5% 0.028 88)",
+          "oklch(99% 0.014 88)"
+        ]
+      },
+      "linen-band": {
+        "role": "neutral",
+        "displayName": "Linen Band",
+        "canonical": "oklch(76% 0.025 84)",
+        "tonalRamp": [
+          "oklch(20% 0.010 84)",
+          "oklch(32% 0.014 84)",
+          "oklch(44% 0.020 84)",
+          "oklch(56% 0.024 84)",
+          "oklch(68% 0.025 84)",
+          "oklch(76% 0.025 84)",
+          "oklch(86% 0.020 84)",
+          "oklch(95% 0.010 84)"
+        ]
+      },
+      "brass-gold": {
+        "role": "primary",
+        "displayName": "Brass Gold",
+        "canonical": "oklch(72.5% 0.084 75)",
+        "tonalRamp": [
+          "oklch(22% 0.040 75)",
+          "oklch(34% 0.056 75)",
+          "oklch(46% 0.072 75)",
+          "oklch(58% 0.082 75)",
+          "oklch(72.5% 0.084 75)",
+          "oklch(82% 0.066 75)",
+          "oklch(90% 0.040 75)",
+          "oklch(96% 0.018 75)"
+        ]
+      },
+      "ink-deep": {
+        "role": "neutral",
+        "displayName": "Ink Deep",
+        "canonical": "oklch(28% 0.005 80)",
+        "tonalRamp": [
+          "oklch(14% 0.005 80)",
+          "oklch(20% 0.005 80)",
+          "oklch(28% 0.005 80)",
+          "oklch(40% 0.005 80)",
+          "oklch(54% 0.006 80)",
+          "oklch(70% 0.006 80)",
+          "oklch(85% 0.006 80)",
+          "oklch(95% 0.005 80)"
+        ]
+      },
+      "walnut": {
+        "role": "neutral",
+        "displayName": "Walnut",
+        "canonical": "oklch(36% 0.020 60)",
+        "tonalRamp": [
+          "oklch(16% 0.010 60)",
+          "oklch(24% 0.014 60)",
+          "oklch(36% 0.020 60)",
+          "oklch(48% 0.024 60)",
+          "oklch(62% 0.028 60)",
+          "oklch(76% 0.024 60)",
+          "oklch(88% 0.018 60)",
+          "oklch(96% 0.010 60)"
+        ]
+      },
+      "aged-bronze": {
+        "role": "neutral",
+        "displayName": "Aged Bronze",
+        "canonical": "oklch(46% 0.045 70)",
+        "tonalRamp": [
+          "oklch(18% 0.020 70)",
+          "oklch(28% 0.030 70)",
+          "oklch(38% 0.040 70)",
+          "oklch(46% 0.045 70)",
+          "oklch(60% 0.048 70)",
+          "oklch(74% 0.040 70)",
+          "oklch(86% 0.028 70)",
+          "oklch(95% 0.014 70)"
+        ]
+      },
+      "espresso": {
+        "role": "secondary",
+        "displayName": "Espresso Lounge",
+        "canonical": "oklch(15.5% 0.014 50)",
+        "tonalRamp": [
+          "oklch(10% 0.008 50)",
+          "oklch(15.5% 0.014 50)",
+          "oklch(24% 0.018 50)",
+          "oklch(36% 0.022 50)",
+          "oklch(50% 0.024 50)",
+          "oklch(64% 0.022 50)",
+          "oklch(80% 0.016 50)",
+          "oklch(94% 0.008 50)"
+        ]
+      },
+      "walnut-wood": {
+        "role": "neutral",
+        "displayName": "Walnut Wood",
+        "canonical": "oklch(20% 0.018 50)",
+        "tonalRamp": [
+          "oklch(12% 0.010 50)",
+          "oklch(20% 0.018 50)",
+          "oklch(30% 0.022 50)",
+          "oklch(42% 0.026 50)",
+          "oklch(56% 0.026 50)",
+          "oklch(70% 0.022 50)",
+          "oklch(84% 0.016 50)",
+          "oklch(95% 0.008 50)"
+        ]
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Parchment (Cream on Dark)",
+        "canonical": "oklch(93.5% 0.034 88)",
+        "tonalRamp": [
+          "oklch(20% 0.012 88)",
+          "oklch(32% 0.018 88)",
+          "oklch(45% 0.024 88)",
+          "oklch(58% 0.028 88)",
+          "oklch(70% 0.032 88)",
+          "oklch(82% 0.034 88)",
+          "oklch(93.5% 0.034 88)",
+          "oklch(98% 0.018 88)"
+        ]
+      },
+      "vu-red": {
+        "role": "tertiary",
+        "displayName": "VU Peak Red",
+        "canonical": "oklch(48% 0.190 28)",
+        "tonalRamp": [
+          "oklch(18% 0.080 28)",
+          "oklch(28% 0.130 28)",
+          "oklch(38% 0.170 28)",
+          "oklch(48% 0.190 28)",
+          "oklch(60% 0.180 28)",
+          "oklch(74% 0.130 28)",
+          "oklch(86% 0.080 28)",
+          "oklch(95% 0.030 28)"
+        ]
+      },
+      "ink-night": {
+        "role": "secondary",
+        "displayName": "Ink Study",
+        "canonical": "oklch(13% 0.005 80)",
+        "tonalRamp": [
+          "oklch(8% 0.003 80)",
+          "oklch(13% 0.005 80)",
+          "oklch(22% 0.008 80)",
+          "oklch(34% 0.010 80)",
+          "oklch(48% 0.010 80)",
+          "oklch(64% 0.008 80)",
+          "oklch(80% 0.006 80)",
+          "oklch(94% 0.004 80)"
+        ]
+      },
+      "carbon": {
+        "role": "neutral",
+        "displayName": "Carbon",
+        "canonical": "oklch(18% 0.005 80)",
+        "tonalRamp": [
+          "oklch(10% 0.003 80)",
+          "oklch(18% 0.005 80)",
+          "oklch(28% 0.006 80)",
+          "oklch(40% 0.006 80)",
+          "oklch(54% 0.006 80)",
+          "oklch(70% 0.005 80)",
+          "oklch(84% 0.005 80)",
+          "oklch(95% 0.003 80)"
+        ]
+      },
+      "cobalt-edu": {
+        "role": "tertiary",
+        "displayName": "Cobalt (Education)",
+        "canonical": "oklch(62% 0.190 256)",
+        "tonalRamp": [
+          "oklch(20% 0.080 256)",
+          "oklch(32% 0.130 256)",
+          "oklch(46% 0.180 256)",
+          "oklch(62% 0.190 256)",
+          "oklch(74% 0.150 256)",
+          "oklch(85% 0.100 256)",
+          "oklch(92% 0.060 256)",
+          "oklch(97% 0.020 256)"
+        ]
+      },
+      "moss-research": {
+        "role": "tertiary",
+        "displayName": "Moss (Research)",
+        "canonical": "oklch(72% 0.180 145)",
+        "tonalRamp": [
+          "oklch(22% 0.080 145)",
+          "oklch(36% 0.130 145)",
+          "oklch(54% 0.170 145)",
+          "oklch(72% 0.180 145)",
+          "oklch(82% 0.140 145)",
+          "oklch(90% 0.090 145)",
+          "oklch(95% 0.050 145)",
+          "oklch(98% 0.020 145)"
+        ]
+      },
+      "orchid-music-sw": {
+        "role": "tertiary",
+        "displayName": "Orchid (Music Software)",
+        "canonical": "oklch(66% 0.220 305)",
+        "tonalRamp": [
+          "oklch(20% 0.090 305)",
+          "oklch(34% 0.150 305)",
+          "oklch(50% 0.210 305)",
+          "oklch(66% 0.220 305)",
+          "oklch(78% 0.170 305)",
+          "oklch(88% 0.110 305)",
+          "oklch(94% 0.060 305)",
+          "oklch(98% 0.020 305)"
+        ]
+      },
+      "ember-music": {
+        "role": "tertiary",
+        "displayName": "Ember (Music)",
+        "canonical": "oklch(70% 0.180 50)",
+        "tonalRamp": [
+          "oklch(22% 0.080 50)",
+          "oklch(36% 0.130 50)",
+          "oklch(52% 0.170 50)",
+          "oklch(70% 0.180 50)",
+          "oklch(82% 0.140 50)",
+          "oklch(90% 0.090 50)",
+          "oklch(95% 0.050 50)",
+          "oklch(98% 0.020 50)"
+        ]
+      },
+      "slate-industry": {
+        "role": "tertiary",
+        "displayName": "Slate (Industry)",
+        "canonical": "oklch(56% 0.020 260)",
+        "tonalRamp": [
+          "oklch(20% 0.008 260)",
+          "oklch(32% 0.012 260)",
+          "oklch(44% 0.016 260)",
+          "oklch(56% 0.020 260)",
+          "oklch(70% 0.020 260)",
+          "oklch(82% 0.016 260)",
+          "oklch(91% 0.010 260)",
+          "oklch(97% 0.005 260)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero name only. One per page max." },
+      "headline": { "displayName": "Headline", "purpose": "Page H1 (Vinyl Listening Room, Journey Through Time, project hero)." },
+      "title": { "displayName": "Title", "purpose": "Card titles, section labels (Record Collection, Get in Touch)." },
+      "body": { "displayName": "Body", "purpose": "Paragraph copy. Cap line length at 65–75ch." },
+      "label": { "displayName": "Label", "purpose": "Uppercase meta labels (Technologies, Period). Sparingly." },
+      "mono": { "displayName": "Mono", "purpose": "kbd hints, percentages, file paths. Never decoration." }
+    },
+    "shadows": [
+      { "name": "ambient-halo", "value": "0 8px 24px rgba(196, 162, 101, 0.30)", "purpose": "Warm gold glow under brass-gold elements (profile photo, play button). Decorative atmosphere." },
+      { "name": "object-shadow", "value": "0 25px 50px -12px rgba(0, 0, 0, 0.50)", "purpose": "Music room only. Turntable + crate. Reads as physical thing on wood floor." },
+      { "name": "card-rest", "value": "0 4px 6px rgba(0, 0, 0, 0.10)", "purpose": "Landing project cards at rest. Subtle settle." },
+      { "name": "card-hover", "value": "0 20px 25px -5px rgba(0, 0, 0, 0.10)", "purpose": "Landing project cards on hover. Lift cue." },
+      { "name": "chrome-edge", "value": "0 4px 8px rgba(0, 0, 0, 0.10)", "purpose": "Navbar bottom edge. Inverted on footer top." },
+      { "name": "profile-halo", "value": "0 10px 30px rgba(252, 211, 77, 0.30)", "purpose": "Amber-200/30 ring around profile photo on Landing hero." }
+    ],
+    "motion": [
+      { "name": "page-transition", "value": "0.6s cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Framer AnimatePresence between routes. Ease-out-quart curve." },
+      { "name": "hover-quick", "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default for color/opacity hover states on buttons and links." },
+      { "name": "vinyl-spin", "value": "3s linear infinite", "purpose": "Turntable platter rotation. Halts on pause." },
+      { "name": "cassette-reels", "value": "2s linear infinite", "purpose": "LoadingScreen tape reels rotation." },
+      { "name": "tonearm", "value": "0.8s cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Tonearm swing on play/pause. No spring, no bounce." },
+      { "name": "ambient-orb-slow", "value": "8s ease-in-out infinite", "purpose": "Hero amber orb scale + opacity cycle. Patient." },
+      { "name": "ambient-orb-slower", "value": "10s ease-in-out infinite", "purpose": "Hero orange orb. Offset cycle from amber for compound rhythm." },
+      { "name": "stagger-step", "value": "0.05s", "purpose": "Project card entrance stagger delay multiplier." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Conversion-grade CTA on cream surfaces. Used for Download CV.",
+      "html": "<button class=\"ds-btn-primary\">Download CV</button>",
+      "css": ".ds-btn-primary { display: inline-block; background: #92400e; color: #fef3c7; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; padding: 10px 24px; border: none; border-radius: 9999px; cursor: pointer; transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #2d2d2d; } .ds-btn-primary:focus-visible { outline: 2px solid rgba(196, 162, 101, 0.8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Non-conversion CTA on cream surfaces. Backdrop-blurred over warm gradient.",
+      "html": "<button class=\"ds-btn-ghost\">Listen to my music →</button>",
+      "css": ".ds-btn-ghost { display: inline-block; background: rgba(255, 255, 255, 0.5); color: #92400e; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.875rem; font-weight: 400; padding: 10px 24px; border: 1px solid #fde68a; border-radius: 9999px; backdrop-filter: blur(4px); cursor: pointer; transition: background 200ms ease, border-color 200ms ease; } .ds-btn-ghost:hover { background: rgba(255, 255, 255, 0.7); border-color: rgba(196, 162, 101, 0.5); }"
+    },
+    {
+      "name": "Nav Pill (Active)",
+      "kind": "nav",
+      "refersTo": "nav-pill-active",
+      "description": "Active navigation item on the Landing linen-band navbar. Active fill carries via framer-motion layoutId between routes.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-pill\">Home</a><a class=\"ds-nav-pill ds-nav-pill-active\"><span class=\"ds-nav-pill-bg\"></span><span class=\"ds-nav-pill-text\">Music</span></a><a class=\"ds-nav-pill\">Timeline</a></nav>",
+      "css": ".ds-nav { display: inline-flex; gap: 12px; padding: 12px 24px; background: #c4b69c; border-radius: 9999px; } .ds-nav-pill { position: relative; padding: 8px 16px; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; color: #6c5c3b; border-radius: 9999px; cursor: pointer; transition: color 300ms ease; } .ds-nav-pill:hover { color: #2d2d2d; } .ds-nav-pill-active { color: #2d2d2d; } .ds-nav-pill-bg { position: absolute; inset: 0; background: rgba(45, 45, 45, 0.08); border-radius: 9999px; } .ds-nav-pill-text { position: relative; z-index: 1; }"
+    },
+    {
+      "name": "Project Card (Landing)",
+      "kind": "card",
+      "refersTo": "project-card",
+      "description": "Square cream card on Landing. Default shows icon + bottom shortTitle strip; hover swaps to linen overlay with title and description.",
+      "html": "<a class=\"ds-project-card\"><div class=\"ds-project-card-bg\"></div><div class=\"ds-project-card-icon\">♪</div><div class=\"ds-project-card-overlay\"><h3 class=\"ds-project-card-title\">Optical Music Recognition</h3><p class=\"ds-project-card-desc\">Extending Sheet Music Transformer to jazz lead sheets using curriculum learning.</p><span class=\"ds-project-card-cta\">View details →</span></div><div class=\"ds-project-card-strip\"><p>Jazz OMR</p></div></a>",
+      "css": ".ds-project-card { position: relative; display: block; aspect-ratio: 1 / 1; width: 220px; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.10); transition: box-shadow 300ms ease; } .ds-project-card:hover { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.10); } .ds-project-card-bg { position: absolute; inset: 0; background: #e8dcc8; transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-project-card:hover .ds-project-card-bg { transform: scale(1.05); } .ds-project-card-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 4.5rem; opacity: 0.4; transition: opacity 300ms ease; } .ds-project-card:hover .ds-project-card-icon { opacity: 0.2; } .ds-project-card-overlay { position: absolute; inset: 0; padding: 20px; background: rgba(196, 182, 156, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 300ms ease; } .ds-project-card:hover .ds-project-card-overlay { opacity: 1; } .ds-project-card-title { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 1rem; font-weight: 700; color: #2d2d2d; text-align: center; line-height: 1.2; margin: 0 0 8px; } .ds-project-card-desc { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.875rem; color: #6c5c3b; text-align: center; line-height: 1.5; margin: 0 0 12px; } .ds-project-card-cta { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; color: #6c5c3b; } .ds-project-card-strip { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px; background: rgba(196, 182, 156, 0.7); backdrop-filter: blur(4px); transition: opacity 300ms ease; } .ds-project-card:hover .ds-project-card-strip { opacity: 0; } .ds-project-card-strip p { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; color: #2d2d2d; text-align: center; margin: 0; }"
+    },
+    {
+      "name": "Timeline Card (Research)",
+      "kind": "card",
+      "refersTo": "timeline-card",
+      "description": "Alternating left/right card on the Timeline night-study page. Color tinted by category. Click to expand description.",
+      "html": "<div class=\"ds-tl-card\"><span class=\"ds-tl-dot\"></span><div class=\"ds-tl-body\"><div class=\"ds-tl-head\"><h3 class=\"ds-tl-title\">VIVO Research Assistant</h3><span class=\"ds-tl-cat\">Research</span></div><div class=\"ds-tl-hint\">Click to expand</div></div></div>",
+      "css": ".ds-tl-card { position: relative; padding-left: 24px; max-width: 360px; } .ds-tl-dot { position: absolute; left: -6px; top: 24px; width: 12px; height: 12px; border-radius: 9999px; background: #22c55e; border: 2px solid #0f0f0f; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.30); transition: transform 200ms ease; } .ds-tl-card:hover .ds-tl-dot { transform: scale(1.5); } .ds-tl-body { padding: 20px; border: 1px solid rgba(34, 197, 94, 0.30); background: rgba(34, 197, 94, 0.05); border-radius: 12px; backdrop-filter: blur(4px); transition: border-color 300ms ease; cursor: pointer; } .ds-tl-card:hover .ds-tl-body { border-color: rgba(34, 197, 94, 0.50); } .ds-tl-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; } .ds-tl-title { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 1rem; font-weight: 600; color: #f4e8d1; line-height: 1.25; margin: 0; } .ds-tl-cat { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; color: #22c55e; flex-shrink: 0; } .ds-tl-hint { margin-top: 8px; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.75rem; color: #6b7280; }"
+    },
+    {
+      "name": "Tag Chip",
+      "kind": "chip",
+      "refersTo": "tag-chip",
+      "description": "Static metadata chip on Project Detail. Linen-tinted on cream.",
+      "html": "<div class=\"ds-chip-row\"><span class=\"ds-tag-chip\">Python</span><span class=\"ds-tag-chip\">Deep Learning</span><span class=\"ds-tag-chip\">OMR</span></div>",
+      "css": ".ds-chip-row { display: flex; flex-wrap: wrap; gap: 8px; } .ds-tag-chip { display: inline-block; padding: 4px 12px; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 0.75rem; color: #4a3f35; background: rgba(196, 182, 156, 0.20); border: 1px solid #c4b69c; border-radius: 9999px; }"
+    },
+    {
+      "name": "Turntable Play Button",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Brass-gold play/pause button on the turntable. Halo when active. The signature button of the Music room.",
+      "html": "<button class=\"ds-play-btn ds-play-btn-active\" aria-label=\"Pause\">⏸</button>",
+      "css": ".ds-play-btn { width: 56px; height: 56px; border-radius: 9999px; border: none; background: #c4a265; color: #2a1f15; font-size: 1.25rem; cursor: pointer; box-shadow: 0 8px 24px rgba(196, 162, 101, 0.30); transition: background 300ms ease, transform 200ms ease; } .ds-play-btn:hover { background: rgba(196, 162, 101, 0.80); transform: scale(1.1); } .ds-play-btn:active { transform: scale(0.95); } .ds-play-btn:disabled { background: #4b5563; color: #6b7280; cursor: not-allowed; box-shadow: none; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Analog Workshop",
+    "overview": "This is the personal site of someone who builds with their hands and their ears. Tape reels, vinyl grooves, brass knobs, VU needles, the warm shadow of an evening studio: the chrome of the site references the actual instruments of audio work. There are three rooms in this workshop. The Landing is the front parlor at golden hour, dressed in cream and amber, where guests arrive. The Music room is the listening lounge: dim espresso wood, brass-gold gleams, a working turntable. The Timeline is the night study: ink-dark, dotted with category lights, used for reflection. Same craftsperson, three rooms, one continuous mood.\n\nThe system is not maximalist. Each room is committed to its palette and stays there. Motion is patient (long ambient orbs, slow vinyl rotation, deliberate scroll reveals); never frenetic. Type is one warm geometric sans (Space Grotesk) carrying both the parlor copy and the listening-room labels, so the rooms read as the same author. Hierarchy is built through scale and weight, not color or chrome. Restraint is the proof of skill.",
+    "keyCharacteristics": [
+      "Three committed palettes (Cream Parlor, Espresso Lounge, Ink Study) bound by one warm thread: brass-gold (#c4a265).",
+      "One typeface across the entire site (Space Grotesk), with JetBrains Mono reserved for keyboard hints and percentages.",
+      "Tonally layered surfaces; shadows are ambient glow, not structural lift.",
+      "Generous whitespace, calm motion, no glassmorphism.",
+      "One conversion event throughout (Download CV); the rest of the site earns the click."
+    ],
+    "rules": [
+      { "name": "The Brass Thread Rule", "body": "Brass-gold (#c4a265) appears on every page that wants to read as the workshop: Landing and Music. Without it, the rooms become unrelated themes; with it, they become one place. Use brass-gold on ≤8% of any single screen. Its rarity is what makes it precious.", "section": "colors" },
+      { "name": "The No-Pure-Black, No-Pure-White Rule", "body": "#000 and #ffffff are forbidden as raw values. The dark rooms use ink-night (#0f0f0f), espresso (#1a1410), or carbon (#1a1a1a). The bright surfaces use cream-base (#f4e8d1) or cream-light (#fdf7e3). When a 'white' is needed, tint warm.", "section": "colors" },
+      { "name": "The Three-Room Commitment Rule", "body": "Each room commits to its palette; you do not import Music's espresso into Landing for consistency, and you do not import cream into the Timeline. The brass thread is the only color that crosses rooms.", "section": "colors" },
+      { "name": "The One Voice Rule", "body": "Space Grotesk is the only sans-serif on the site. Do not introduce a second display face for drama; weight and size are sufficient hierarchy. JetBrains Mono is reserved for genuinely technical content.", "section": "typography" },
+      { "name": "The Tracking Rule", "body": "Display and Headline are tracked tight (negative letter-spacing) for editorial confidence. Body is tracked normal. Labels are tracked wide (0.1em) only when uppercase. Mixing these breaks the music.", "section": "typography" },
+      { "name": "The Glow-Not-Lift Rule", "body": "When a surface needs emphasis, prefer ambient warm-tinted glow over hard cast shadow. The play-button gold halo and the profile-photo amber ring are the canonical references. Heavy multi-layer shadows belong only to the Music room's turntable and crate.", "section": "elevation" },
+      { "name": "The No-Glassmorphism Rule", "body": "Backdrop-blur is acceptable when the layer beneath has visible color or gradient that the blur is genuinely interpreting. It is forbidden as a default cosmetic; never blur over a flat surface for depth.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do commit to one room palette per page. The Landing wears cream; the Music room wears espresso; the Timeline wears ink. Mixing them across rooms breaks the metaphor.",
+      "Do use brass-gold (#c4a265) as the cross-room thread, on ≤8% of any screen. The rarity is the point.",
+      "Do lead with type hierarchy and whitespace. Add chrome (borders, shadows, fills) only when type cannot do the work alone.",
+      "Do use Space Grotesk for everything; reach for JetBrains Mono only for technical content (kbd, percentages, file paths).",
+      "Do render warm ambient glow under brass-gold elements (profile photo halo, play button), not hard cast shadow.",
+      "Do keep motion patient: 0.6s page transitions, 8–12s ambient orb cycles, 3s vinyl rotation, 2s cassette reels. Restraint reads as confidence.",
+      "Do gate every motion-heavy element on prefers-reduced-motion: reduce. The Loading cassette, vinyl spin, ambient orbs, scroll reveals must all collapse to instant non-animated equivalents.",
+      "Do keep one Download CV CTA per major surface: hero on Landing, contact section, navbar. Three is the limit.",
+      "Do set body line length at 65–75ch on all paragraph copy."
+    ],
+    "donts": [
+      "Don't use #000 or #ffffff as raw values. Tint dark to ink-night (#0f0f0f), espresso (#1a1410), or carbon (#1a1a1a); tint white to cream-base (#f4e8d1) or cream-light (#fdf7e3).",
+      "Don't import the Music room's heavy shadow-2xl cast shadow into the Landing or Timeline. That shadow belongs only to the turntable and crate.",
+      "Don't ship the generic-dev-portfolio look (PRODUCT.md anti-reference): dark mode plus matrix-green accents, identical six-card grid with stack badges, hero-and-features-and-contact layout.",
+      "Don't ship the SaaS-landing template (PRODUCT.md anti-reference): hero plus three feature columns plus testimonials plus pricing strip. This is not a product.",
+      "Don't ship the awwwards-showreel failure mode (PRODUCT.md anti-reference): heavy WebGL intro, autoplay audio, scroll-jacking, slow first paint.",
+      "Don't ship the academic-CV-as-website failure mode (PRODUCT.md anti-reference): unstyled HTML lists of publications and dates with no warmth.",
+      "Don't use border-left greater than 1px as a colored stripe on cards or callouts. Replace with full borders, leading icons, or background tints.",
+      "Don't use background-clip: text with a gradient (gradient text). One solid color, weight as emphasis.",
+      "Don't use glassmorphism as a default decorative effect.",
+      "Don't introduce a second sans-serif typeface. Hierarchy is solved by weight and scale within Space Grotesk.",
+      "Don't autoplay audio. Sound is always user-initiated; the keyboard Space shortcut on the Music page is the canonical pattern.",
+      "Don't create new card-grid sections that mirror the Landing project grid pattern.",
+      "Don't fall into the second-order category reflex (PRODUCT.md AI-slop test): 'music tech grad student who avoided dark + neon → editorial-typographic' is the trap one tier deeper. The answer here is 'Analog Workshop' specifically."
+    ]
+  }
+}
