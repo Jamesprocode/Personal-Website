@@ -1,61 +1,74 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import PageTransition from '../../components/PageTransition';
-import TimelineTrack from './TimelineTrack';
-import CategoryFilter from './CategoryFilter';
-import timeline from '../../data/timeline';
+import ParallelTracks from './ParallelTracks';
+import Credits from './Credits';
 
 function Timeline() {
-  const [activeFilters, setActiveFilters] = useState([
-    'Education',
-    'Research',
-    'Music Software',
-    'Music',
-    'Industry',
-  ]);
-
-  const filteredTimeline = timeline.filter((entry) =>
-    activeFilters.includes(entry.category)
-  );
-
-  const toggleFilter = (category) => {
-    setActiveFilters((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
+  const reduceMotion = useReducedMotion();
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-tl-bg pt-24 px-6 pb-28 relative overflow-hidden">
-        {/* Ambient glow */}
-        <div className="absolute top-1/4 left-0 w-96 h-96 bg-tl-blue/3 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-tl-purple/3 rounded-full blur-3xl" />
-
-        <div className="max-w-5xl mx-auto relative z-10">
+      <main style={{ width: '100%', backgroundColor: '#f4e8d1' }}>
+        {/* Intro */}
+        <section
+          className="relative"
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            paddingTop: 'clamp(7rem, 14vh, 11rem)',
+            paddingBottom: 'clamp(2.5rem, 5vh, 4rem)',
+            paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
+            paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
+          }}
+        >
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-center"
+            style={{ width: '100%', maxWidth: '60ch' }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
-              Journey Through Time
+            <p
+              className="font-mono uppercase text-amber-700/70 mb-[clamp(1rem,2vh,1.5rem)]"
+              style={{ fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)', letterSpacing: '0.22em' }}
+            >
+              Chronology &middot; 2020&ndash;2026
+            </p>
+            <h1
+              className="font-bold tracking-tight text-amber-900"
+              style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.05 }}
+            >
+              Four things, in parallel.
             </h1>
-            <div className="w-16 h-0.5 bg-gradient-to-r from-tl-blue via-tl-purple to-tl-orange mx-auto mb-4" />
-            <p className="text-gray-500 text-base font-light">
-              A chronological timeline of milestones, projects, and experiences
+            <p
+              className="mt-[clamp(1rem,2vh,1.5rem)] mx-auto text-amber-900/70"
+              style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.6, maxWidth: '48ch' }}
+            >
+              Research, music software, performance, industry. Hover a mark for
+              the entry. Below: publications, recordings, and performances
+              &mdash; the liner notes.
             </p>
           </motion.div>
+        </section>
 
-          <CategoryFilter
-            activeFilters={activeFilters}
-            onToggleFilter={toggleFilter}
-          />
+        <ParallelTracks />
 
-          <TimelineTrack entries={filteredTimeline} />
+        {/* Divider between chart and credits */}
+        <div
+          className="mx-auto"
+          style={{
+            width: 'min(82rem, 92vw)',
+            paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
+            paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
+          }}
+          aria-hidden
+        >
+          <div style={{ height: '1px', background: 'rgba(108, 92, 59, 0.18)' }} />
         </div>
-      </div>
+
+        <Credits />
+      </main>
     </PageTransition>
   );
 }

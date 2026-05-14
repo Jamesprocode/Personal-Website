@@ -29,6 +29,7 @@ function PageTransition({ children }) {
       initial="initial"
       animate="animate"
       exit="exit"
+      style={{ width: '100%' }}
     >
       {children}
     </motion.div>

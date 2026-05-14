@@ -1,82 +1,47 @@
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 
 function ContactSection() {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <section className="px-6 md:px-10 xl:px-16 border-t border-amber-100" style={{ paddingTop: '5rem', paddingBottom: '8rem' }}>
-      <div className="max-w-5xl xl:max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Left: Contact */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-amber-900 mb-3">Get in Touch</h2>
-            <p className="text-amber-700/60 mb-6 leading-relaxed">
-              Interested in collaborating on music technology, audio engineering,
-              or AI research? I'd love to hear from you.
-            </p>
-
-            <a
-              href="mailto:jameswangjiayi@gmail.com"
-              className="inline-block text-amber-800 hover:text-amber-900 transition-colors font-medium"
-            >
-              jameswangjiayi@gmail.com
-            </a>
-          </motion.div>
-
-          {/* Right: Quick links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            <h3 className="text-lg font-semibold text-amber-900 mb-4">Explore</h3>
-            <div className="space-y-3">
-              <Link
-                to="/music"
-                className="block p-4 bg-white/50 backdrop-blur-sm border border-amber-100 rounded-xl
-                  hover:bg-white/70 hover:border-amber-200 hover:shadow-md transition-all duration-200 group"
-              >
-                <span className="font-medium text-amber-900 group-hover:text-amber-800">
-                  Vinyl Listening Room
-                </span>
-                <p className="text-sm text-amber-600/60 mt-0.5">
-                  Listen to my recordings on an interactive turntable
-                </p>
-              </Link>
-              <Link
-                to="/timeline"
-                className="block p-4 bg-white/50 backdrop-blur-sm border border-amber-100 rounded-xl
-                  hover:bg-white/70 hover:border-amber-200 hover:shadow-md transition-all duration-200 group"
-              >
-                <span className="font-medium text-amber-900 group-hover:text-amber-800">
-                  Timeline
-                </span>
-                <p className="text-sm text-amber-600/60 mt-0.5">
-                  Career milestones from 2020 to present
-                </p>
-              </Link>
-              <a
-                href="/cv.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-4 bg-white/50 backdrop-blur-sm border border-amber-100 rounded-xl
-                  hover:bg-white/70 hover:border-amber-200 hover:shadow-md transition-all duration-200 group"
-              >
-                <span className="font-medium text-amber-900 group-hover:text-amber-800">
-                  Full CV
-                </span>
-                <p className="text-sm text-amber-600/60 mt-0.5">
-                  Download my complete curriculum vitae
-                </p>
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </div>
+    <section
+      className="relative"
+      style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        backgroundColor: '#f4e8d1',
+        paddingTop: 'clamp(4rem, 8vh, 6.5rem)',
+        paddingBottom: 'clamp(7rem, 12vh, 10rem)',
+        paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
+        paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
+      }}
+    >
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="text-center"
+        style={{ width: '100%', maxWidth: '52ch' }}
+      >
+        <p
+          className="text-amber-900/85"
+          style={{ fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)', lineHeight: 1.45, fontWeight: 500 }}
+        >
+          If anything here matched what you&rsquo;re working on,
+        </p>
+        <a
+          href="mailto:jameswangjiayi@gmail.com"
+          className="inline-block mt-[clamp(0.75rem,1.5vh,1.25rem)] text-amber-900 hover:text-stone-900 transition-colors duration-200 font-medium underline-offset-[6px] decoration-amber-700/40 hover:decoration-amber-700/80"
+          style={{
+            fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)',
+            textDecoration: 'underline',
+          }}
+        >
+          jameswangjiayi@gmail.com
+        </a>
+      </motion.div>
     </section>
   );
 }

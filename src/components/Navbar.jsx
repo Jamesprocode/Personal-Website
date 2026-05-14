@@ -7,6 +7,8 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isLanding = location.pathname === '/';
+  const isTimeline = location.pathname === '/timeline';
+  const isCream = isLanding || isTimeline;
 
   useEffect(() => {
     setMobileOpen(false);
@@ -20,6 +22,13 @@ function Navbar() {
     { path: '/timeline', label: 'Timeline' },
   ];
 
+  const surfaceBg = isCream ? '#c4b69c' : '#1a1a1a';
+  const brandColor = isCream ? '#2d2d2d' : '#ffffff';
+  const activeColor = isCream ? '#2d2d2d' : '#ffffff';
+  const restColor = isCream ? '#6c5c3b' : 'rgba(255,255,255,0.6)';
+  const activePillBg = isCream ? 'rgba(45,45,45,0.08)' : 'rgba(255,255,255,0.1)';
+  const hamburgerColor = isCream ? '#2d2d2d' : '#ffffff';
+
   return (
     <>
       <motion.nav
@@ -27,13 +36,22 @@ function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
         className="fixed top-0 left-0 right-0 z-50 shadow-md"
-        style={{ backgroundColor: isLanding ? '#c4b69c' : '#1a1a1a' }}
+        style={{ backgroundColor: surfaceBg }}
       >
-        <div className="w-full max-w-screen-2xl mx-auto flex justify-between items-center" style={{ padding: '1.25rem clamp(1.5rem, 4vw, 4rem)' }}>
+        <div
+          className="flex items-center justify-between"
+          style={{
+            width: '100%',
+            maxWidth: 'min(82rem, 96vw)',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            padding: '1.25rem clamp(1.5rem, 4vw, 4rem)',
+          }}
+        >
           <Link
             to="/"
             className="text-lg font-bold tracking-tight transition-colors duration-300"
-            style={{ color: isLanding ? '#2d2d2d' : '#ffffff' }}
+            style={{ color: brandColor }}
           >
             James Wang
           </Link>
@@ -45,17 +63,13 @@ function Navbar() {
                 key={link.path}
                 to={link.path}
                 className="relative px-4 py-2 text-sm font-semibold transition-colors duration-300 rounded-full"
-                style={{
-                  color: isLanding
-                    ? (isActive(link.path) ? '#2d2d2d' : '#6c5c3b')
-                    : (isActive(link.path) ? '#ffffff' : 'rgba(255,255,255,0.6)')
-                }}
+                style={{ color: isActive(link.path) ? activeColor : restColor }}
               >
                 {isActive(link.path) && (
                   <motion.div
                     layoutId="navbar-active"
                     className="absolute inset-0 rounded-full"
-                    style={{ backgroundColor: isLanding ? 'rgba(45,45,45,0.08)' : 'rgba(255,255,255,0.1)' }}
+                    style={{ backgroundColor: activePillBg }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
@@ -67,7 +81,7 @@ function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
               className="ml-2 px-4 py-2 text-sm font-semibold transition-colors duration-300 rounded-full"
-              style={{ color: isLanding ? '#6c5c3b' : 'rgba(255,255,255,0.6)' }}
+              style={{ color: restColor }}
             >
               CV
             </a>
@@ -77,21 +91,23 @@ function Navbar() {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden w-8 h-8 flex flex-col items-center justify-center gap-1.5"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
           >
             <motion.div
               animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
               className="w-5 h-0.5 rounded-full"
-              style={{ backgroundColor: isLanding ? '#2d2d2d' : '#ffffff' }}
+              style={{ backgroundColor: hamburgerColor }}
             />
             <motion.div
               animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
               className="w-5 h-0.5 rounded-full"
-              style={{ backgroundColor: isLanding ? '#2d2d2d' : '#ffffff' }}
+              style={{ backgroundColor: hamburgerColor }}
             />
             <motion.div
               animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
               className="w-5 h-0.5 rounded-full"
-              style={{ backgroundColor: isLanding ? '#2d2d2d' : '#ffffff' }}
+              style={{ backgroundColor: hamburgerColor }}
             />
           </button>
         </div>
@@ -105,7 +121,7 @@ function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-24 px-8 md:hidden"
+            className="fixed inset-0 z-40 bg-[#0f0f0f]/95 backdrop-blur-xl pt-24 px-8 md:hidden"
           >
             <div className="flex flex-col gap-2">
               {navLinks.map((link, i) => (

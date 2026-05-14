@@ -52,12 +52,12 @@ function Music() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-14"
+            className="mb-14"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-music-cream mb-3 tracking-tight">
               Vinyl Listening Room
             </h1>
-            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-music-gold to-transparent mx-auto mb-4" />
+            <div className="w-16 h-0.5 bg-gradient-to-r from-music-gold to-transparent mb-4" />
             <p className="text-music-gold/60 text-base">
               Click a record to play &middot; Press{' '}
               <kbd className="px-2 py-0.5 bg-black/30 rounded-md border border-music-gold/20 text-xs font-mono text-music-gold/80">

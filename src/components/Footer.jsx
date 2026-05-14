@@ -3,16 +3,28 @@ import { useLocation } from 'react-router-dom';
 function Footer() {
   const location = useLocation();
   const isLanding = location.pathname === '/';
+  const isTimeline = location.pathname === '/timeline';
+  const isCream = isLanding || isTimeline;
 
-  const iconColor = isLanding ? '#2d2d2d' : 'rgba(255,255,255,0.6)';
-  const iconHover = isLanding ? '#6c5c3b' : '#ffffff';
+  const iconColor = isCream ? '#2d2d2d' : 'rgba(255,255,255,0.6)';
+  const iconHover = isCream ? '#6c5c3b' : '#ffffff';
+  const copyColor = isCream ? '#6c5c3b' : 'rgba(255,255,255,0.4)';
 
   return (
     <footer
       className="fixed bottom-0 left-0 right-0 z-50 shadow-[0_-4px_8px_rgba(0,0,0,0.1)]"
-      style={{ backgroundColor: isLanding ? '#c4b69c' : '#1a1a1a' }}
+      style={{ backgroundColor: isCream ? '#c4b69c' : '#1a1a1a' }}
     >
-      <div className="w-full max-w-screen-2xl mx-auto flex items-center justify-center gap-8" style={{ padding: '1.25rem clamp(1.5rem, 4vw, 4rem)' }}>
+      <div
+        className="flex items-center justify-center gap-8"
+        style={{
+          width: '100%',
+          maxWidth: 'min(82rem, 96vw)',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          padding: '1.25rem clamp(1.5rem, 4vw, 4rem)',
+        }}
+      >
         {/* GitHub */}
         <a
           href="https://github.com/Jamesprocode"
@@ -76,7 +88,10 @@ function Footer() {
         </a>
 
         {/* Copyright */}
-        <span className="text-xs ml-auto" style={{ color: isLanding ? '#6c5c3b' : 'rgba(255,255,255,0.4)' }}>
+        <span
+          className="text-xs ml-auto"
+          style={{ color: copyColor }}
+        >
           &copy; 2026 James Wang
         </span>
       </div>
