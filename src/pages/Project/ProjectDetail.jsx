@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import PageTransition from '../../components/PageTransition';
+import RewindButton from '../../components/RewindButton';
 import projects from '../../data/projects';
 
 const CREAM_BASE = '#f4e8d1';
@@ -182,7 +183,7 @@ function ProjectDetail() {
           minHeight: '100vh',
         }}
       >
-        {/* Back affordance */}
+        {/* Back affordance — REW button */}
         <div
           style={{
             width: '100%',
@@ -191,19 +192,7 @@ function ProjectDetail() {
             padding: 'clamp(6.5rem, 12vh, 9rem) clamp(1.5rem, 6vw, 5rem) 0',
           }}
         >
-          <Link
-            to="/"
-            className="font-mono uppercase transition-colors duration-200 inline-flex items-center gap-1.5"
-            style={{
-              color: `${BRONZE}cc`,
-              fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)',
-              letterSpacing: '0.22em',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = INK_DEEP)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = `${BRONZE}cc`)}
-          >
-            <span aria-hidden>&larr;</span> All projects
-          </Link>
+          <RewindButton to="/" label="Rewind" />
         </div>
 
         {/* Editorial header */}

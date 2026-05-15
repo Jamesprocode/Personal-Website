@@ -1,61 +1,9 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import VUMeter from '../Music/VUMeter';
 import profileImg from '../../assets/me.JPG';
-
-const REACTIVITY_RADIUS = 320;
 
 function HeroSection() {
   const reduceMotion = useReducedMotion();
-  const photoRef = useRef(null);
-  const [vuLevel, setVuLevel] = useState(0.18);
-
-  useEffect(() => {
-    if (reduceMotion) {
-      setVuLevel(0.5);
-      return;
-    }
-
-    let frame = 0;
-    let cursorBoost = 0;
-    let cursorTarget = 0;
-
-    const handleMove = (e) => {
-      const node = photoRef.current;
-      if (!node) return;
-      const rect = node.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      cursorTarget = Math.max(0, 1 - dist / REACTIVITY_RADIUS);
-    };
-
-    const handleLeave = () => {
-      cursorTarget = 0;
-    };
-
-    const tick = () => {
-      frame += 1;
-      cursorBoost += (cursorTarget - cursorBoost) * 0.08;
-      const idle = 0.18 + Math.sin(frame / 22) * 0.06 + Math.sin(frame / 9) * 0.04;
-      const wobble = Math.random() * 0.12 * (0.4 + cursorBoost);
-      const next = Math.min(0.95, idle + cursorBoost * 0.55 + wobble);
-      setVuLevel(next);
-      raf = requestAnimationFrame(tick);
-    };
-
-    let raf = requestAnimationFrame(tick);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseleave', handleLeave);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseleave', handleLeave);
-    };
-  }, [reduceMotion]);
 
   return (
     <section
@@ -65,10 +13,11 @@ function HeroSection() {
         display: 'flex',
         justifyContent: 'center',
         minHeight: 'min(100vh, 1100px)',
-        paddingTop: 'clamp(8rem, 17vh, 13rem)',
-        paddingBottom: 'clamp(8rem, 17vh, 13rem)',
+        paddingTop: 'clamp(7rem, 14vh, 11rem)',
+        paddingBottom: 'clamp(4rem, 8vh, 7rem)',
       }}
     >
+      {/* Ambient warm orbs */}
       <motion.div
         aria-hidden
         animate={reduceMotion ? undefined : { scale: [1, 1.15, 1], opacity: [0.18, 0.28, 0.18] }}
@@ -126,7 +75,7 @@ function HeroSection() {
                 fontWeight: 400,
               }}
             >
-              I’m currently a master’s student in Music Technology at Georgia Institute of Technology, where I work on optical music recognition, audio content analysis, and music AI systems. I graduated from Occidental College with a double major in Music and Computer Science, where I trained as a jazz saxophonist while developing an interest in music technology and audio engineering.
+              I&rsquo;m currently a master&rsquo;s student in Music Technology at Georgia Institute of Technology, where I work on optical music recognition, audio content analysis, and music AI systems. I graduated from Occidental College with a double major in Music and Computer Science, where I trained as a jazz saxophonist while developing an interest in music technology and audio engineering.
             </p>
 
             <div className="flex flex-wrap gap-[clamp(0.75rem,1.2vw,1.25rem)] mt-[clamp(3rem,6vh,4.5rem)] items-center">
@@ -134,37 +83,48 @@ function HeroSection() {
                 href="/cv.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-amber-900 text-amber-50 hover:bg-stone-900 transition-colors duration-200 rounded-full font-medium tracking-wide"
+                className="rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1]"
                 style={{
-                  padding: 'clamp(0.65rem, 1vw, 0.9rem) clamp(1.4rem, 2.2vw, 2rem)',
-                  fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
+                  backgroundColor: '#4a3f35',
+                  color: '#f4e8d1',
+                  padding: 'clamp(0.75rem, 1.05vw, 0.95rem) clamp(1.5rem, 2.3vw, 2rem)',
+                  fontSize: 'clamp(0.88rem, 1vw, 0.95rem)',
+                  fontWeight: 500,
+                  textDecoration: 'none',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d2d2d')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#4a3f35')}
               >
                 Download CV
               </a>
               <Link
                 to="/music"
-                className="bg-white/55 hover:bg-white/75 backdrop-blur-sm border border-amber-200 hover:border-amber-400 text-amber-900 transition-colors duration-200 rounded-full"
+                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1]"
                 style={{
-                  padding: 'clamp(0.65rem, 1vw, 0.9rem) clamp(1.4rem, 2.2vw, 2rem)',
-                  fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
+                  color: '#4a3f35',
+                  padding: 'clamp(0.75rem, 1.05vw, 0.95rem) clamp(1.2rem, 1.8vw, 1.6rem)',
+                  fontSize: 'clamp(0.88rem, 1vw, 0.95rem)',
+                  fontWeight: 500,
+                  textDecoration: 'none',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#2d2d2d')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#4a3f35')}
               >
-                Listen to my music →
+                Listen to my music
+                <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
               </Link>
             </div>
           </motion.div>
 
-          {/* RIGHT: photo + VU column */}
+          {/* RIGHT: photo */}
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="col-span-12 lg:col-span-5 order-1 lg:order-2 flex flex-col items-center lg:items-end"
           >
-            <div className="relative" style={{ width: 'clamp(200px, 26vw, 360px)' }}>
+            <div className="relative" style={{ width: 'clamp(220px, 28vw, 380px)' }}>
               <div
-                ref={photoRef}
                 className="relative overflow-hidden rounded-[18%] border border-amber-200 shadow-[0_24px_60px_-20px_rgba(180,120,40,0.45)]"
                 style={{ aspectRatio: '1 / 1' }}
               >
@@ -175,23 +135,6 @@ function HeroSection() {
                   decoding="async"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </div>
-
-              <div className="mt-[clamp(0.75rem,1.5vh,1.25rem)] flex items-end justify-between gap-3">
-                <div>
-                  <p
-                    className="font-mono uppercase text-amber-700/70"
-                    style={{ fontSize: 'clamp(0.6rem, 0.7vw, 0.7rem)', letterSpacing: '0.18em' }}
-                  >
-                    M.S. · Music Tech
-                  </p>
-                  <p className="text-amber-900/80" style={{ fontSize: 'clamp(0.85rem, 1vw, 0.95rem)' }}>
-                    Georgia Tech, 2025–2027
-                  </p>
-                </div>
-                <div style={{ width: 'clamp(110px, 14vw, 170px)' }}>
-                  <VUMeter level={vuLevel} segments={16} tone="mono" label="Lvl" />
-                </div>
               </div>
             </div>
           </motion.div>
@@ -216,7 +159,7 @@ function HeroSection() {
               className="text-amber-700/45 text-lg"
               aria-hidden
             >
-              ↓
+              &darr;
             </motion.div>
           </motion.div>
         )}

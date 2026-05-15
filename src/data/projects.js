@@ -9,11 +9,11 @@ const projects = [
     period: 'Aug 2025 – present',
     category: 'AI / Machine Learning',
     github: 'https://github.com/Jamesprocode',
-    tileImage: '/projects/omr/pipeline-output.png',
+    tileImage: '/projects/omr/pipeline-output.jpg',
     body: [
       {
         kind: 'image',
-        src: '/projects/omr/poster.png',
+        src: '/projects/omr/poster.jpg',
         alt: 'ISMIR project poster summarizing the system and results.',
         caption: 'ISMIR poster — one-page summary of architecture, training, and results.',
       },
@@ -62,7 +62,7 @@ const projects = [
       },
       {
         kind: 'image',
-        src: '/projects/omr/pipeline-output.png',
+        src: '/projects/omr/pipeline-output.jpg',
         alt: 'Inference pipeline output: predicted score overlaid on input lead sheet.',
         caption: 'Pipeline output — recognized score (right) re-laid against the input lead sheet (left).',
       },
@@ -157,7 +157,7 @@ const projects = [
       },
       {
         kind: 'audio',
-        src: '/projects/f0/vocal-sample.wav',
+        src: '/projects/f0/vocal-sample.mp3',
         caption: 'Vocadito #19 — the evaluation clip behind both salience maps below.',
       },
       {
@@ -362,11 +362,11 @@ const projects = [
     period: 'Jun – Dec 2024',
     category: 'Research',
     github: 'https://github.com/Jamesprocode',
-    tileImage: '/projects/stem-separation/poster.png',
+    tileImage: '/projects/stem-separation/poster.jpg',
     body: [
       {
         kind: 'image',
-        src: '/projects/stem-separation/poster.png',
+        src: '/projects/stem-separation/poster.jpg',
         alt: 'Conference poster summarizing the framework and results.',
         caption: 'Conference poster — full one-page summary of the framework and results.',
       },

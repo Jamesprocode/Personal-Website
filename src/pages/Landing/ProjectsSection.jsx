@@ -264,8 +264,9 @@ function ProjectsSection() {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#f4e8d1',
-        paddingTop: 'clamp(7rem, 14vh, 12rem)',
+        backgroundColor: '#efe3c9',
+        borderTop: '1px solid rgba(108, 92, 59, 0.16)',
+        paddingTop: 'clamp(5rem, 10vh, 8.5rem)',
         paddingBottom: 'clamp(7rem, 14vh, 12rem)',
       }}
     >

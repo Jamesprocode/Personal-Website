@@ -1,6 +1,6 @@
 ---
 name: James Wang Portfolio
-description: Personal site for a jazz saxophonist, music technology researcher, audio engineer, and developer. Three rooms in one analog workshop.
+description: Personal site for a jazz saxophonist, music technology researcher, audio engineer, and developer. Two rooms in one analog workshop.
 colors:
   cream-base: "#f4e8d1"
   cream-deep: "#efe3c9"
@@ -125,14 +125,14 @@ components:
 
 **Creative North Star: "The Analog Workshop"**
 
-This is the personal site of someone who builds with their hands and their ears. Tape reels, vinyl grooves, brass knobs, VU needles, the warm shadow of an evening studio: the chrome of the site references the actual instruments of audio work. There are three rooms in this workshop. The Landing is the front parlor at golden hour, dressed in cream and amber, where guests arrive. The Music room is the listening lounge: dim espresso wood, brass-gold gleams, a working turntable. The Timeline is the night study: ink-dark, dotted with category lights, used for reflection. Same craftsperson, three rooms, one continuous mood.
+This is the personal site of someone who builds with their hands and their ears. Tape reels, vinyl grooves, brass knobs, VU needles, the warm shadow of an evening studio: the chrome of the site references the actual instruments of audio work. The site has two committed rooms. The Landing, Timeline, and Project pages all share the front parlor at golden hour, dressed in cream and amber, where guests arrive and read. The Music room is the listening lounge: dim espresso wood, brass-gold gleams, a working turntable. Same craftsperson, two rooms, one continuous mood.
 
 The system is not maximalist. Each room is committed to its palette and stays there. Motion is patient (long ambient orbs, slow vinyl rotation, deliberate scroll reveals); never frenetic. Type is one warm geometric sans (Space Grotesk) carrying both the parlor copy and the listening-room labels, so the rooms read as the same author. Hierarchy is built through scale and weight, not color or chrome. Restraint is the proof of skill.
 
 What the system rejects, named in PRODUCT.md and reaffirmed here: generic-dev-portfolio dark mode with neon-green accents and identical project-card grids; SaaS landing-page templates with three feature columns and a pricing strip; awwwards-showreel scroll-jacking with autoplay audio and heavy WebGL; and academic-CV-as-website plain-HTML lists with no personality. None of these. If the visitor could guess "music tech grad student" from the chrome alone, the site has failed.
 
 **Key Characteristics:**
-- Three committed palettes (Cream Parlor, Espresso Lounge, Ink Study) bound by one warm thread: brass-gold (`#c4a265`).
+- Two committed palettes (Cream Parlor, Espresso Lounge) bound by one warm thread: brass-gold (`#c4a265`).
 - One typeface across the entire site (Space Grotesk), with JetBrains Mono reserved for keyboard hints and percentages.
 - Tonally layered surfaces; shadows are ambient glow, not structural lift.
 - Generous whitespace, calm motion, no glassmorphism.
@@ -146,14 +146,12 @@ The palette is three warm-room committed schemes, joined by a single brass threa
 - **Brass Gold** (`#c4a265` / oklch(72.5% 0.084 75)): the one warm thread. Buttons, dividers, gold gleams on the turntable, kbd hint borders, profile-photo halo, "playing" indicators. Appears in both Landing and Music rooms; this is what makes the rooms feel like one workshop. Rare on Timeline by design.
 
 ### Secondary
-- **Cream Parlor** (`#f4e8d1` / oklch(93.5% 0.034 88)): the Landing background. Aged paper, warm sunlight on plaster. Also serves as the cream text color on dark pages (token: `parchment`).
+- **Cream Parlor** (`#f4e8d1` / oklch(93.5% 0.034 88)): the background of Landing, Timeline, and Project pages. Aged paper, warm sunlight on plaster. Also serves as the cream text color on dark pages (token: `parchment`).
 - **Espresso Lounge** (`#1a1410` / oklch(15.5% 0.014 50)): the Music room background. Coffee-soaked wood, dim and inviting. Dark but never neutral; tinted toward the brass.
-- **Ink Study** (`#0f0f0f` / oklch(13% 0.005 80)): the Timeline background. The deepest of the three rooms. Slightly tinted warm so it never reads as pure black.
 
 ### Tertiary (Timeline category lights)
 
-The Timeline uses five category accents as quiet "category lights" along the night study. Their saturation is deliberate; never decorative.
-- **Cobalt** (`#3b82f6`): Education.
+The Timeline uses four category accents as quiet "category dots" on the parallel-tracks chart. Their saturation is deliberate; never decorative. They sit on the cream parlor surface, not on ink.
 - **Moss** (`#22c55e`): Research.
 - **Orchid** (`#a855f7`): Music Software.
 - **Ember** (`#f97316`): Music.
@@ -172,11 +170,11 @@ The Timeline uses five category accents as quiet "category lights" along the nig
 
 ### Named Rules
 
-**The Brass Thread Rule.** Brass-gold (`#c4a265`) appears on every page that wants to read as the workshop: Landing and Music. Without it, the rooms become unrelated themes; with it, they become one place. Use brass-gold on ≤8% of any single screen. Its rarity is what makes it precious.
+**The Brass Thread Rule.** Brass-gold (`#c4a265`) appears on every page that wants to read as the workshop. On cream surfaces (Landing, Timeline, Project pages) it shows up as the 96px hairline rule under the editorial header, focus rings, and the GitHub/paper badges in the meta row. On the Music page it gleams on the play button, the turntable label, and the volume knob highlight. Use brass-gold on ≤8% of any single screen. Its rarity is what makes it precious.
 
 **The No-Pure-Black, No-Pure-White Rule.** `#000` and `#ffffff` are forbidden as raw values. The dark rooms use ink-night (`#0f0f0f`), espresso (`#1a1410`), or carbon (`#1a1a1a`). The bright surfaces use cream-base (`#f4e8d1`) or cream-light (`#fdf7e3`). When a "white" is needed (pill button text, mobile menu surface), tint warm: rgba 255 / 250 / 240, or oklch(98% 0.01 85). The Tailwind `text-white` utility on themed pages is acceptable contextually but should be revisited if it ever leaks onto a cream surface.
 
-**The Three-Room Commitment Rule.** Each room commits to its palette; you do not import Music's espresso into Landing for "consistency," and you do not import cream into the Timeline. The brass thread is the only color that crosses rooms.
+**The Two-Room Commitment Rule.** Each room commits to its palette. Cream surfaces (Landing, Timeline, Project pages) hold a single mood across the long-form scroll. The Music room owns espresso wood and turntable shadow and does not leak elsewhere. The brass thread is the only color that crosses rooms.
 
 ## 3. Typography
 
@@ -246,7 +244,7 @@ Cards are used deliberately, never reflexively. Each card type has a distinct sh
 - **Project Card (Landing):** Square `aspect-square`, 16px corner radius (`rounded-2xl`). Cream-shadow background at rest. Hover reveals a linen-band-95% overlay with the title and short description appearing centered. Bottom strip with shortTitle is visible at rest, hides on hover. Internal padding 20px.
 - **Timeline Card:** No solid surface at rest, transparent with a 5%-tinted category-color background, 30% category-color border, 12px corner radius. 20px internal padding. Connector dot (12px) sits on the central spine, colored to match. Click expands to reveal description.
 - **Turntable / Record Crate (Music):** Walnut-wood-to-espresso vertical gradient, 24px corner radius (`rounded-3xl`), 32px internal padding (24px on the crate). 1px brass-gold-at-15% border. `shadow-2xl` cast shadow. These are the only two cards on the site that are unambiguously physical objects.
-- **Project Detail Hero Banner:** No corner radius (full-bleed). Project's gradient classes form the background. Project icon at 9xl, 20% opacity, centered. Black-at-20% overlay for text contrast. White headline.
+- **Project Detail Page:** Cream parlor surface, single-column flow. Top: a small "← All projects" mono link in aged-bronze. Editorial header: mono kicker (`CATEGORY · PERIOD`), Display-grade headline, one-line tagline at body+ size, a 96-px brass-gold hairline, then a meta row of tag chips and outward-link badges (GitHub, paper, poster). Body: an ordered array of typed blocks (`text`, `image`, `audio`) rendered in order, so each figure earns its place next to the paragraph that names it. Text blocks capped at a 46-rem measure; image and audio blocks at 52-rem; both centered inside a 6vw side gutter. Closes with a centered prev / All projects / next nav above the footer.
 
 ### Inputs / Fields
 
@@ -284,7 +282,7 @@ This component is the introduction; do not call it from a sub-page.
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** commit to one room palette per page. The Landing wears cream; the Music room wears espresso; the Timeline wears ink. Mixing them across rooms breaks the metaphor.
+- **Do** commit to one room palette per page. Landing, Timeline, and Project pages wear cream; the Music room wears espresso. Mixing them across rooms breaks the metaphor.
 - **Do** use brass-gold (`#c4a265`) as the cross-room thread, on ≤8% of any screen. The rarity is the point.
 - **Do** lead with type hierarchy and whitespace. Add chrome (borders, shadows, fills) only when type cannot do the work alone.
 - **Do** use Space Grotesk for everything; reach for JetBrains Mono only for technical content (`<kbd>Space</kbd>`, percentages, file paths).
@@ -296,8 +294,8 @@ This component is the introduction; do not call it from a sub-page.
 
 ### Don't:
 - **Don't** use `#000` or `#ffffff` as raw values. Tint dark to ink-night (`#0f0f0f`), espresso (`#1a1410`), or carbon (`#1a1a1a`); tint white to cream-base (`#f4e8d1`) or cream-light (`#fdf7e3`).
-- **Don't** import the Music room's heavy `shadow-2xl` cast shadow into the Landing or Timeline. That shadow belongs only to the turntable and crate.
-- **Don't** ship the generic-dev-portfolio look (PRODUCT.md anti-reference): dark mode plus matrix-green accents, identical six-card grid with stack badges, hero-and-features-and-contact layout. The Coding page that previously matched this aesthetic was retired for exactly this reason; do not re-introduce it.
+- **Don't** import the Music room's heavy `shadow-2xl` cast shadow into the cream surfaces. That shadow belongs only to the turntable and crate.
+- **Don't** ship the generic-dev-portfolio look (PRODUCT.md anti-reference): dark mode plus matrix-green accents, identical six-card grid with stack badges, hero-and-features-and-contact layout. Reads as "first React tutorial." A `/coding` page in this style was previously built and retired; do not re-introduce it.
 - **Don't** ship the SaaS-landing template (PRODUCT.md anti-reference): hero plus three feature columns plus testimonials plus pricing strip. This is not a product.
 - **Don't** ship the awwwards-showreel failure mode (PRODUCT.md anti-reference): heavy WebGL intro, autoplay audio, scroll-jacking, slow first paint. The Loading cassette is the only "wow" gate; everything past it is calm.
 - **Don't** ship the academic-CV-as-website failure mode (PRODUCT.md anti-reference): unstyled HTML lists of publications and dates with no warmth. The PDF CV is the canonical lineage; the site is the personality.
