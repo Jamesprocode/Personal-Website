@@ -29,3 +29,22 @@ audi/555.wav
 Vinyl Audio/
 
 Project papers/
+
+# Never commit raw / lossless audio source files — only the mastered MP3s
+# under public/audio/ are meant to ship.
+*.wav
+*.WAV
+*.aif
+*.AIF
+*.aiff
+*.AIFF
+*.flac
+*.FLAC
+*.m4a
+*.M4A
+*.alac
+*.ALAC
+*.raw
+*.RAW
+*.dsd
+*.dsf
