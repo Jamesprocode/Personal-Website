@@ -1,7 +1,9 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import tracks from '../../data/tracks';
+import albums from '../../data/albums';
+
+const tracks = albums.flatMap((a) => a.tracks);
 
 function VinylDisc({ hovered, reduceMotion }) {
   return (
@@ -104,8 +106,8 @@ function MusicPreview() {
   const reduceMotion = useReducedMotion();
   const [hovered, setHovered] = useState(false);
 
+  const albumCount = albums.length;
   const trackCount = tracks.length;
-  const playableCount = tracks.filter((t) => t.file).length;
 
   return (
     <section
@@ -165,9 +167,9 @@ function MusicPreview() {
                 maxWidth: '50ch',
               }}
             >
-              Saxophone work going back ten years; recording and mixing engineering on
-              five albums; the occasional live electronics set. The full crate is in
-              the next room.
+              Audio engineering work: recording, mixing, and mastering across
+              jazz, electronic, and singer-songwriter sessions. The full crate
+              is in the next room.
             </p>
 
             <div
@@ -182,10 +184,10 @@ function MusicPreview() {
                     color: 'rgba(196, 162, 101, 0.6)',
                   }}
                 >
-                  Records on the shelf
+                  Albums on the shelf
                 </p>
                 <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: '#f4e8d1', fontWeight: 600 }}>
-                  {trackCount}
+                  {albumCount}
                 </p>
               </div>
               <div>
@@ -197,10 +199,10 @@ function MusicPreview() {
                     color: 'rgba(196, 162, 101, 0.6)',
                   }}
                 >
-                  Playable now
+                  Total tracks
                 </p>
                 <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: '#f4e8d1', fontWeight: 600 }}>
-                  {playableCount}
+                  {trackCount}
                 </p>
               </div>
             </div>

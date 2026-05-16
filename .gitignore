@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 audi/555.wav
+
+# Source recordings (mastered MP3s live under public/audio/)
+Vinyl Audio/
+
+Project papers/

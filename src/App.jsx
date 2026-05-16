@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import MiniPlayer from './components/MiniPlayer';
 import Landing from './pages/Landing/Landing';
 import Music from './pages/Music/Music';
 import Timeline from './pages/Timeline/Timeline';
 import ProjectDetail from './pages/Project/ProjectDetail';
+import { AudioPlayerProvider } from './hooks/useAudioPlayer';
 import './App.css';
 
 function App() {
@@ -34,18 +36,21 @@ function App() {
 
       {showContent && (
         <Router>
-          <div className="app">
-            <Navbar />
-            <AnimatePresence mode="wait">
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/music" element={<Music />} />
-                <Route path="/timeline" element={<Timeline />} />
-                <Route path="/projects/:id" element={<ProjectDetail />} />
-              </Routes>
-            </AnimatePresence>
-            <Footer />
-          </div>
+          <AudioPlayerProvider>
+            <div className="app">
+              <Navbar />
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/music" element={<Music />} />
+                  <Route path="/timeline" element={<Timeline />} />
+                  <Route path="/projects/:id" element={<ProjectDetail />} />
+                </Routes>
+              </AnimatePresence>
+              <Footer />
+              <MiniPlayer />
+            </div>
+          </AudioPlayerProvider>
         </Router>
       )}
     </>

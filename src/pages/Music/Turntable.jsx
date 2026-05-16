@@ -1,106 +1,759 @@
-import { motion } from 'framer-motion';
-import VUMeter from './VUMeter';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useMotionValue, useAnimationFrame, useReducedMotion } from 'framer-motion';
+import AnalogVUMeter from './AnalogVUMeter';
 import Knob from './Knob';
+import { LoopButton, NextButton } from './TransportButtons';
 
-function Turntable({ track, isPlaying, onPlayPause, volume, onVolumeChange, onSeek }) {
+// Tonearm sweeps along an arc that maps 1:1 to playback progress, matching
+// a real turntable: the stylus drops on the outer groove at the start and
+// spirals inward toward the label as the record plays. When nothing is
+// playing the needle rests at the outer groove, queued up to start.
+// Empirically calibrated against the rendered geometry (pivot at ~upper-right
+// of the platter zone, tube length ~190px from pivot to stylus tip).
+const ARM_OUTER = 78;   // progress=0 → stylus on outer groove (also the idle position)
+const ARM_INNER = 128;  // progress=1 → stylus near label (record ends here)
+const ARM_SWEEP = ARM_INNER - ARM_OUTER;
+
+function Turntable({
+  album,
+  track,
+  isPlaying,
+  onPlayPause,
+  volume,
+  onVolumeChange,
+  getLevel,
+  currentTime = 0,
+  duration = 0,
+  onSeek,
+  loopMode = 'album',
+  onCycleLoop,
+  onNext,
+}) {
+  const reduceMotion = useReducedMotion();
+  const accent = album?.accentColor || '#c4a265';
+  const hasTrack = Boolean(track && track.file);
+  const onDisc = hasTrack && (isPlaying || currentTime > 0);
+
+  const platterRef = useRef(null);
+  const pivotRef = useRef(null);
+  const rotation = useMotionValue(0);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [isScrubbingArm, setIsScrubbingArm] = useState(false);
+  const dragStateRef = useRef(null); // platter drag
+  const accumulatedDeltaRef = useRef(0);
+  const armScrubRef = useRef(null); // { pivotX, pivotY } during needle scrub
+  // Seek throttle: setting audio.currentTime back-to-back puts the element
+  // into a perpetual "seeking" state and silences playback. The platter feels
+  // best with rapid updates (audio "follows" the disc), the needle prefers
+  // a calmer cadence so each preview snippet is long enough to register.
+  const lastSeekAtRef = useRef(0);
+  const pendingSeekRef = useRef(null);
+  const PLATTER_SEEK_INTERVAL_MS = 10;  // ~100Hz: rotation drives audio nearly continuously
+  const NEEDLE_SEEK_INTERVAL_MS = 50;   // 20Hz: preview snippets while sweeping the arm
+
+  const throttledSeek = (time, intervalMs) => {
+    if (!onSeek) return;
+    pendingSeekRef.current = time;
+    const now = performance.now();
+    if (now - lastSeekAtRef.current >= intervalMs) {
+      lastSeekAtRef.current = now;
+      onSeek(time);
+      pendingSeekRef.current = null;
+    }
+  };
+
+  const flushSeek = () => {
+    if (pendingSeekRef.current !== null && onSeek) {
+      onSeek(pendingSeekRef.current);
+      pendingSeekRef.current = null;
+      lastSeekAtRef.current = performance.now();
+    }
+  };
+
+  // Tonearm rotation: a separate motion value that follows playback progress
+  // (or pointer position while the needle is being dragged).
+  const armRotation = useMotionValue(ARM_OUTER);
+  const armTargetRef = useRef(ARM_OUTER);
+
+  useEffect(() => {
+    if (isScrubbingArm) return; // handled by pointer move directly
+    if (onDisc && duration > 0) {
+      const p = Math.min(1, Math.max(0, currentTime / duration));
+      armTargetRef.current = ARM_OUTER + ARM_SWEEP * p;
+    } else {
+      // Idle: needle sits at the outer groove, ready to play.
+      armTargetRef.current = ARM_OUTER;
+    }
+  }, [onDisc, currentTime, duration, isScrubbingArm]);
+
+  // Drive both the platter spin and the arm sweep from one animation frame.
+  useAnimationFrame((_, deltaMs) => {
+    // Platter spin
+    if (!isScrubbing && isPlaying && !reduceMotion) {
+      rotation.set(rotation.get() + deltaMs * 0.12);
+    }
+
+    // Arm: snap immediately if scrubbing the needle, otherwise ease toward target.
+    if (isScrubbingArm) {
+      armRotation.set(armTargetRef.current);
+      return;
+    }
+    const cur = armRotation.get();
+    const target = armTargetRef.current;
+    const diff = target - cur;
+    if (Math.abs(diff) < 0.02) {
+      if (cur !== target) armRotation.set(target);
+      return;
+    }
+    // Big swings (rest ↔ playback) ease slowly; in-flight tracking is snappier.
+    const tau = Math.abs(diff) > 6 ? 360 : 140;
+    const step = diff * Math.min(1, deltaMs / tau);
+    armRotation.set(cur + step);
+  });
+
+  // Helper: pointer angle relative to platter center, in degrees
+  const angleFromCenter = (clientX, clientY) => {
+    if (!platterRef.current) return 0;
+    const rect = platterRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    return (Math.atan2(clientY - cy, clientX - cx) * 180) / Math.PI;
+  };
+
+  const onPlatterPointerDown = (e) => {
+    if (!hasTrack || !duration) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const startAngle = angleFromCenter(e.clientX, e.clientY);
+    dragStateRef.current = {
+      startAngle,
+      lastAngle: startAngle,
+      startRotation: rotation.get(),
+      startTime: currentTime,
+    };
+    accumulatedDeltaRef.current = 0;
+    setIsScrubbing(true);
+  };
+
+  const onPlatterPointerMove = (e) => {
+    const drag = dragStateRef.current;
+    if (!drag) return;
+
+    const currentAngle = angleFromCenter(e.clientX, e.clientY);
+    // Compute delta since last frame, unwrapping the -180..180 boundary
+    let frameDelta = currentAngle - drag.lastAngle;
+    if (frameDelta > 180) frameDelta -= 360;
+    if (frameDelta < -180) frameDelta += 360;
+    drag.lastAngle = currentAngle;
+    accumulatedDeltaRef.current += frameDelta;
+
+    const totalDelta = accumulatedDeltaRef.current;
+    rotation.set(drag.startRotation + totalDelta);
+
+    // Map angle delta to seek delta. 360° = 1/12 of total duration (so ~12 rotations cover the track),
+    // with a minimum of 5 seconds per rotation so very short tracks still scrub usefully.
+    const secondsPerDegree = Math.max(duration / 12, 5) / 360;
+    const newTime = Math.max(0, Math.min(duration, drag.startTime + totalDelta * secondsPerDegree));
+    throttledSeek(newTime, PLATTER_SEEK_INTERVAL_MS);
+  };
+
+  const onPlatterPointerUp = (e) => {
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    dragStateRef.current = null;
+    setIsScrubbing(false);
+    flushSeek();
+  };
+
+  // Needle scrub: drag the tonearm headshell to seek.
+  const onArmPointerDown = (e) => {
+    if (!hasTrack || !duration) return;
+    const pivot = pivotRef.current;
+    if (!pivot) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const r = pivot.getBoundingClientRect();
+    armScrubRef.current = { px: r.left + r.width / 2, py: r.top + r.height / 2 };
+    setIsScrubbingArm(true);
+  };
+
+  const onArmPointerMove = (e) => {
+    const s = armScrubRef.current;
+    if (!s) return;
+    const dx = e.clientX - s.px;
+    const dy = e.clientY - s.py;
+    const ang = (Math.atan2(dy, dx) * 180) / Math.PI;
+    const clamped = Math.min(ARM_INNER, Math.max(ARM_OUTER, ang));
+    armTargetRef.current = clamped;
+    armRotation.set(clamped);
+    if (duration) {
+      const progress = (clamped - ARM_OUTER) / ARM_SWEEP;
+      throttledSeek(progress * duration, NEEDLE_SEEK_INTERVAL_MS);
+    }
+  };
+
+  const onArmPointerUp = (e) => {
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    armScrubRef.current = null;
+    setIsScrubbingArm(false);
+    flushSeek();
+  };
+
+  // Reset rotation when track changes
+  useEffect(() => {
+    rotation.set(0);
+    accumulatedDeltaRef.current = 0;
+  }, [track?.id, rotation]);
+
+  const fmtTime = (s) => {
+    if (!Number.isFinite(s) || s < 0) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <div className="bg-gradient-to-br from-music-wood to-music-wood/80 rounded-3xl p-8 shadow-2xl
-      border border-music-gold/15 backdrop-blur-sm">
-      {/* Turntable Base */}
-      <div className="relative aspect-square max-w-lg mx-auto">
-        {/* Platter */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.div
-            animate={{ rotate: isPlaying ? 360 : 0 }}
-            transition={{
-              duration: 3,
-              repeat: isPlaying ? Infinity : 0,
-              ease: 'linear',
-            }}
-            className="w-full h-full rounded-full bg-gradient-to-br from-gray-800 to-black
-              shadow-[inset_0_2px_20px_rgba(0,0,0,0.5)] border-2 border-gray-700/50
-              flex items-center justify-center"
-          >
-            {/* Vinyl grooves */}
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full border border-gray-700/20"
-                style={{
-                  width: `${90 - i * 10}%`,
-                  height: `${90 - i * 10}%`,
-                }}
-              />
-            ))}
+    <div
+      className="relative"
+      style={{
+        background: 'linear-gradient(135deg, #2a1f15 0%, #1a130c 100%)',
+        borderRadius: 24,
+        padding: 'clamp(1.5rem, 3vw, 2.5rem)',
+        border: '1px solid rgba(196, 162, 101, 0.18)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+      }}
+    >
+      {/* Top trim hairline */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 24,
+          right: 24,
+          top: 0,
+          height: 1,
+          background: 'linear-gradient(to right, transparent, rgba(196,162,101,0.4), transparent)',
+        }}
+      />
 
-            {track ? (
-              <div
-                className="w-3/5 h-3/5 rounded-full flex items-center justify-center
-                  text-center p-6 shadow-lg relative z-10"
-                style={{ backgroundColor: track.color || '#c4a265' }}
-              >
-                <div>
-                  <p className="font-bold text-lg mb-1 leading-tight">{track.title}</p>
-                  <p className="text-sm opacity-70">{track.album}</p>
-                  <p className="text-xs opacity-50 mt-1">{track.year}</p>
-                </div>
-              </div>
+      {/* Platter zone */}
+      <div className="relative" style={{ aspectRatio: '1 / 1', maxWidth: 560, margin: '0 auto' }}>
+        {/* Platter */}
+        <motion.div
+          ref={platterRef}
+          onPointerDown={onPlatterPointerDown}
+          onPointerMove={onPlatterPointerMove}
+          onPointerUp={onPlatterPointerUp}
+          onPointerCancel={onPlatterPointerUp}
+          style={{
+            rotate: rotation,
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'radial-gradient(circle at 50% 50%, #2a2a2a 0%, #0a0a0a 70%, #050505 100%)',
+            boxShadow: 'inset 0 2px 24px rgba(0,0,0,0.6), 0 4px 18px rgba(0,0,0,0.5)',
+            border: '2px solid rgba(64, 64, 64, 0.45)',
+            cursor: hasTrack && duration ? (isScrubbing ? 'grabbing' : 'grab') : 'default',
+            touchAction: 'none',
+          }}
+        >
+          {/* Concentric vinyl grooves */}
+          {Array.from({ length: 14 }).map((_, i) => (
+            <div
+              key={i}
+              aria-hidden
+              className="absolute rounded-full"
+              style={{
+                width: `${95 - i * 5}%`,
+                height: `${95 - i * 5}%`,
+                border: `0.5px solid rgba(120, 120, 120, ${i % 2 === 0 ? 0.12 : 0.06})`,
+              }}
+            />
+          ))}
+
+          {/* Label disc (album cover or fallback) */}
+          <div
+            className="relative rounded-full flex items-center justify-center overflow-hidden"
+            style={{
+              width: '38%',
+              height: '38%',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
+              backgroundColor: accent,
+              border: '1px solid rgba(20,15,10,0.4)',
+              pointerEvents: 'none',
+            }}
+          >
+            {album?.coverImage ? (
+              <img
+                src={album.coverImage}
+                alt={album.title}
+                className="absolute inset-0 w-full h-full object-cover"
+                draggable={false}
+              />
             ) : (
-              <div className="text-music-cream/20 text-center relative z-10">
-                <p className="text-sm font-light">Select a record</p>
+              // Title sits in the upper third; album + composer in the lower
+              // third; the empty middle band leaves room for the spindle.
+              <div
+                className="absolute inset-0 flex flex-col items-center text-center"
+                style={{
+                  paddingTop: '18%',
+                  paddingBottom: '18%',
+                  paddingLeft: '14%',
+                  paddingRight: '14%',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {track ? (
+                  <>
+                    <p
+                      style={{
+                        fontFamily: 'Space Grotesk, system-ui, sans-serif',
+                        fontWeight: 700,
+                        fontSize: 'clamp(0.9rem, 1.55vw, 1.2rem)',
+                        color: '#1a1410',
+                        lineHeight: 1.1,
+                        margin: 0,
+                      }}
+                    >
+                      {track.title}
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: 'clamp(0.55rem, 0.8vw, 0.68rem)',
+                        color: 'rgba(26,20,16,0.75)',
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                        margin: 0,
+                      }}
+                    >
+                      {album?.title || ''}
+                    </p>
+                  </>
+                ) : (
+                  // No track: anchor the hint slightly above the spindle.
+                  <>
+                    <p
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: 'clamp(0.6rem, 0.8vw, 0.7rem)',
+                        color: 'rgba(26,20,16,0.6)',
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase',
+                        margin: 0,
+                        marginTop: '25%',
+                      }}
+                    >
+                      No track loaded
+                    </p>
+                    <span />
+                  </>
+                )}
               </div>
             )}
+          </div>
 
-            {/* Center spindle */}
-            <div className="absolute w-6 h-6 rounded-full bg-gray-900 border border-gray-600 z-20" />
+          {/* Center spindle */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              width: 16,
+              height: 16,
+              borderRadius: 9999,
+              background: 'radial-gradient(circle, #2a2a2a, #0a0a0a)',
+              border: '1px solid rgba(196,162,101,0.3)',
+              boxShadow: 'inset 0 1px 2px rgba(196,162,101,0.2)',
+              zIndex: 10,
+              pointerEvents: 'none',
+            }}
+          />
+        </motion.div>
+
+        {/* Tonearm assembly */}
+        <div
+          className="absolute"
+          style={{
+            top: '6%',
+            right: '4%',
+            width: '38%',
+            height: '46%',
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Base / pivot housing */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 56,
+              height: 56,
+              borderRadius: 9999,
+              background: 'radial-gradient(circle at 35% 30%, #4a3f35 0%, #1a130c 75%, #0a0806 100%)',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.45), inset 0 1px 2px rgba(196,162,101,0.25)',
+            }}
+          />
+          {/* Brass collar on pivot */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 14,
+              right: 14,
+              width: 28,
+              height: 28,
+              borderRadius: 9999,
+              background: 'radial-gradient(circle at 35% 30%, #d4b76e, #8c6e3b)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 -1px 2px rgba(0,0,0,0.35)',
+            }}
+          />
+          {/* Brass center cap (= pivot point that anchors the arm's rotation) */}
+          <div
+            ref={pivotRef}
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 22,
+              right: 22,
+              width: 12,
+              height: 12,
+              borderRadius: 9999,
+              background: '#1a1410',
+              border: '1px solid #c4a265',
+            }}
+          />
+
+          {/* Tonearm motion wrapper. Rotation is driven by playback progress
+              (or the user's pointer while scrubbing the needle). */}
+          <motion.div
+            style={{
+              rotate: armRotation,
+              position: 'absolute',
+              top: 28,
+              right: 28,
+              transformOrigin: '0 0',
+              width: 0,
+              height: 0,
+            }}
+          >
+            {/* Counterweight + tube */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: -7,
+                left: -28,
+                width: 28,
+                height: 14,
+                borderRadius: 4,
+                background: 'linear-gradient(135deg, #4a3f35, #1a130c)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(196,162,101,0.2)',
+              }}
+            />
+            {/* Anti-skate knob */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: -4,
+                left: -38,
+                width: 8,
+                height: 8,
+                borderRadius: 9999,
+                background: 'radial-gradient(circle at 30% 30%, #d4b76e, #8c6e3b)',
+              }}
+            />
+
+            {/* Main tonearm tube */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: -3,
+                left: 0,
+                width: 168,
+                height: 6,
+                borderRadius: 4,
+                background: 'linear-gradient(to bottom, #b8b8b8 0%, #6a6a6a 50%, #3a3a3a 100%)',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.18)',
+              }}
+            />
+
+            {/* Headshell */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: -10,
+                left: 162,
+                width: 26,
+                height: 20,
+                background: 'linear-gradient(135deg, #2a1f15, #1a130c)',
+                borderRadius: '4px 8px 8px 4px',
+                border: '1px solid rgba(196,162,101,0.35)',
+                boxShadow: '0 3px 6px rgba(0,0,0,0.5)',
+              }}
+            />
+            {/* Cartridge stylus */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: -1,
+                left: 186,
+                width: 4,
+                height: 8,
+                background: '#c70000',
+                borderRadius: 1,
+                boxShadow: '0 0 4px rgba(199,0,0,0.45)',
+              }}
+            />
+
+            {/* Drag handle: invisible hit area over the headshell. Re-enables
+                pointer events that the assembly disabled, so users can grab
+                the needle to seek. */}
+            <div
+              role="slider"
+              aria-label="Tonearm position (drag to seek)"
+              aria-valuemin={0}
+              aria-valuemax={duration || 0}
+              aria-valuenow={currentTime}
+              onPointerDown={onArmPointerDown}
+              onPointerMove={onArmPointerMove}
+              onPointerUp={onArmPointerUp}
+              onPointerCancel={onArmPointerUp}
+              style={{
+                position: 'absolute',
+                top: -18,
+                left: 150,
+                width: 56,
+                height: 38,
+                cursor: hasTrack && duration ? (isScrubbingArm ? 'grabbing' : 'grab') : 'default',
+                touchAction: 'none',
+                pointerEvents: hasTrack && duration ? 'auto' : 'none',
+              }}
+            />
           </motion.div>
         </div>
 
-        {/* Tonearm */}
-        <motion.div
-          animate={{
-            rotate: isPlaying ? -25 : 0,
-            x: isPlaying ? 40 : 0,
-          }}
-          transition={{ duration: 0.8 }}
-          className="absolute top-1/4 right-0 w-48 h-1.5 bg-gradient-to-r from-gray-500 to-gray-600
-            rounded-full origin-right transform translate-x-8 shadow-lg"
-          style={{ transformOrigin: '90% 50%' }}
-        >
-          <div className="absolute left-0 w-3 h-3 bg-gray-700 rounded-full -translate-y-0.5" />
-          <div className="absolute right-2 w-2.5 h-2.5 bg-red-900/80 rounded-full -translate-y-0.5" />
-        </motion.div>
+        {/* Scrub hint (mono, visible only when scrubbing) */}
+        {isScrubbing && (
+          <div
+            aria-hidden
+            className="absolute font-mono uppercase pointer-events-none"
+            style={{
+              left: '50%',
+              bottom: -8,
+              transform: 'translateX(-50%)',
+              color: '#c4a265',
+              fontSize: '0.65rem',
+              letterSpacing: '0.22em',
+              background: 'rgba(26,20,16,0.85)',
+              padding: '4px 10px',
+              borderRadius: 9999,
+              border: '1px solid rgba(196,162,101,0.4)',
+            }}
+          >
+            Scrub
+          </div>
+        )}
       </div>
 
-      {/* Controls */}
-      <div className="mt-8 flex items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
-          {/* Play/Pause Button */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onPlayPause}
-            disabled={!track || !track.file}
-            className={`w-14 h-14 rounded-full flex items-center justify-center text-xl
-              transition-all duration-300 shadow-lg ${
-                track && track.file
-                  ? 'bg-music-gold hover:bg-music-gold/80 text-music-wood cursor-pointer shadow-music-gold/20'
-                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              }`}
+      {/* Controls strip — two columns, mirrored stacks.
+            Left:  Time (top)         → Play + Volume (bottom)
+            Right: Instructions (top) → VU meter (bottom)
+          `items-stretch` lets both columns share the taller column's height
+          so the time readout sits flush under the divider line — aligned
+          with the first line of the instructions text on the right. */}
+      <div
+        className="flex items-stretch justify-between flex-wrap"
+        style={{
+          marginTop: 'clamp(1.5rem, 3vh, 2.5rem)',
+          paddingTop: 'clamp(0.75rem, 1.5vh, 1rem)',
+          borderTop: '1px solid rgba(196,162,101,0.12)',
+          gap: 'clamp(1rem, 3vw, 2rem)',
+        }}
+      >
+        {/* Left column */}
+        <div className="flex flex-col" style={{ justifyContent: 'space-between', gap: 'clamp(0.6rem, 1.2vh, 0.9rem)' }}>
+          <div
+            className="font-mono"
+            style={{
+              color: hasTrack ? '#c4a265' : 'rgba(196,162,101,0.35)',
+              fontSize: 'clamp(0.82rem, 1vw, 0.95rem)',
+              letterSpacing: '0.08em',
+              fontVariantNumeric: 'tabular-nums',
+            }}
           >
-            {isPlaying ? '⏸' : '▶'}
-          </motion.button>
+            {fmtTime(currentTime)}
+            <span style={{ color: 'rgba(196,162,101,0.3)', margin: '0 0.4em' }}>/</span>
+            {fmtTime(duration)}
+          </div>
+          <div
+            className="flex items-end"
+            style={{
+              gap: 'clamp(0.25rem, 0.6vw, 0.5rem)',
+              marginBottom: 'clamp(1rem, 2.5vh, 1.75rem)',
+            }}
+          >
+            {/* Loop / shuffle */}
+            <div
+              className="flex flex-col items-center"
+              style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <p
+                className="font-mono uppercase"
+                style={{
+                  color: 'rgba(244,232,209,0.55)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.22em',
+                  margin: 0,
+                }}
+              >
+                {loopMode === 'shuffle' ? 'Shuffle' : loopMode === 'one' ? 'Loop 1' : 'Loop'}
+              </p>
+              <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <LoopButton mode={loopMode} onClick={onCycleLoop} size={24} />
+              </div>
+            </div>
 
-          {/* Volume Knob */}
-          <div>
-            <p className="text-xs text-music-cream/50 mb-2 text-center tracking-wider uppercase">Volume</p>
-            <Knob value={volume} onChange={onVolumeChange} />
+            {/* Play/Pause */}
+            <div
+              className="flex flex-col items-center"
+              style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <p
+                className="font-mono uppercase"
+                style={{
+                  color: 'rgba(244,232,209,0.55)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.22em',
+                  margin: 0,
+                }}
+              >
+                {isPlaying ? 'Pause' : 'Play'}
+              </p>
+              <motion.button
+                whileHover={hasTrack ? { scale: 1.06 } : undefined}
+                whileTap={hasTrack ? { scale: 0.94 } : undefined}
+                onClick={onPlayPause}
+                disabled={!hasTrack}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+                className="rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+                style={{
+                  width: 56,
+                  height: 56,
+                  backgroundColor: hasTrack ? '#c4a265' : 'rgba(196,162,101,0.25)',
+                  color: hasTrack ? '#1a1410' : 'rgba(244,232,209,0.4)',
+                  cursor: hasTrack ? 'pointer' : 'not-allowed',
+                  boxShadow: hasTrack
+                    ? '0 6px 14px -4px rgba(196,162,101,0.45), inset 0 1px 2px rgba(255,235,170,0.45)'
+                    : 'none',
+                }}
+              >
+                {isPlaying ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <rect x="6" y="5" width="4" height="14" rx="1" />
+                    <rect x="14" y="5" width="4" height="14" rx="1" />
+                  </svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </motion.button>
+            </div>
+
+            {/* Next track */}
+            <div
+              className="flex flex-col items-center"
+              style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <p
+                className="font-mono uppercase"
+                style={{
+                  color: 'rgba(244,232,209,0.55)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.22em',
+                  margin: 0,
+                }}
+              >
+                Next
+              </p>
+              <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <NextButton onClick={onNext} size={24} disabled={!hasTrack} />
+              </div>
+            </div>
+
+            {/* Volume */}
+            <div
+              className="flex flex-col items-center"
+              style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <p
+                className="font-mono uppercase"
+                style={{
+                  color: 'rgba(244,232,209,0.55)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.22em',
+                  margin: 0,
+                }}
+              >
+                Volume
+              </p>
+              <Knob value={volume} onChange={onVolumeChange} size={56} />
+            </div>
           </div>
         </div>
 
-        {/* VU Meter */}
-        <div className="flex-1">
-          <VUMeter isPlaying={isPlaying} />
+        {/* Right column: instructions on top, VU meter directly below.
+            Column sizes to fit the longest instruction line so each line
+            stays on one row; both items right-align to the same edge. */}
+        <div
+          className="flex flex-col items-end"
+          style={{ gap: 'clamp(0.6rem, 1.2vh, 0.9rem)', flex: '0 0 auto', justifyContent: 'space-between' }}
+        >
+          <p
+            className="font-mono uppercase"
+            style={{
+              color: 'rgba(244,232,209,0.55)',
+              fontSize: 'clamp(0.6rem, 0.72vw, 0.68rem)',
+              letterSpacing: '0.14em',
+              lineHeight: 1.7,
+              margin: 0,
+              textAlign: 'right',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Drag the needle to skip around
+            <br />
+            Spin the disc to scrub
+            <br />
+            <kbd
+              style={{
+                display: 'inline-block',
+                padding: '1px 6px',
+                margin: '0 2px',
+                backgroundColor: 'rgba(0,0,0,0.35)',
+                borderRadius: 3,
+                border: '1px solid rgba(196,162,101,0.3)',
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '0.85em',
+                color: 'rgba(196,162,101,0.85)',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Space
+            </kbd>{' '}
+            to play / pause
+          </p>
+          <AnalogVUMeter isPlaying={isPlaying} getLevel={getLevel} />
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ const projects = [
     description: 'Extending the Sheet Music Transformer to full-page jazz lead sheets through a jazz-aware tokenizer, a stave-stacking strategy, and curriculum learning on the JazzMus corpus.',
     tags: ['Deep Learning', 'Transformers', 'OMR', 'Python'],
     period: 'Aug 2025 – present',
-    category: 'AI / Machine Learning',
+    category: 'Machine Learning',
     github: 'https://github.com/Jamesprocode',
     tileImage: '/projects/omr/pipeline-output.jpg',
     body: [
@@ -99,7 +99,7 @@ const projects = [
     description: 'Coupling an Anticipatory Music Transformer with a Viterbi path planner to generate physically feasible music for a four-armed robotic marimba player.',
     tags: ['Music Transformer', 'Viterbi', 'Robotics', 'Python'],
     period: 'Oct 2025 – present',
-    category: 'AI / Machine Learning',
+    category: 'Machine Learning',
     github: 'https://github.com/Jamesprocode',
     tileImage: '/projects/amt/shimon-detail.jpg',
     body: [
@@ -146,7 +146,7 @@ const projects = [
     description: 'CNN-based F0 estimation from Harmonic Constant-Q Transform inputs, comparing a from-scratch FCN against a ResNet18 transfer-learned variant on the Vocadito vocal corpus.',
     tags: ['Deep Learning', 'CNN', 'MIR', 'Python'],
     period: 'Sep – Dec 2025',
-    category: 'AI / Machine Learning',
+    category: 'Machine Learning',
     github: 'https://github.com/Jamesprocode',
     tileImage: '/projects/f0/icon.png',
     body: [
@@ -204,7 +204,7 @@ const projects = [
     description: 'End-to-end audio-to-audio musical continuation using a Gaussian HMM over PCA-reduced mel-spectrogram observations at 16th-note resolution, with Griffin-Lim resynthesis.',
     tags: ['Audio ML', 'HMM', 'DSP', 'Python'],
     period: 'Sep – Dec 2025',
-    category: 'AI / Machine Learning',
+    category: 'Machine Learning',
     github: 'https://github.com/Jamesprocode',
     tileImage: '/projects/hmm-patterns/icon.png',
     body: [

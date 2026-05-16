@@ -12,9 +12,8 @@ function HeroSection() {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        minHeight: 'min(100vh, 1100px)',
         paddingTop: 'clamp(7rem, 14vh, 11rem)',
-        paddingBottom: 'clamp(4rem, 8vh, 7rem)',
+        paddingBottom: 'clamp(3rem, 6vh, 5rem)',
       }}
     >
       {/* Ambient warm orbs */}
@@ -140,29 +139,6 @@ function HeroSection() {
           </motion.div>
         </div>
 
-        {!reduceMotion && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.1 }}
-            className="absolute left-1/2 -translate-x-1/2 bottom-[clamp(1.5rem,4vh,3rem)] flex flex-col items-center pointer-events-none"
-          >
-            <p
-              className="font-mono uppercase text-amber-700/55 mb-2"
-              style={{ fontSize: 'clamp(0.6rem, 0.7vw, 0.7rem)', letterSpacing: '0.22em' }}
-            >
-              Projects below
-            </p>
-            <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-              className="text-amber-700/45 text-lg"
-              aria-hidden
-            >
-              &darr;
-            </motion.div>
-          </motion.div>
-        )}
       </div>
     </section>
   );
