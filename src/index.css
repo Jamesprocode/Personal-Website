@@ -65,3 +65,13 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+.ref-pulse {
+  background-color: rgba(196, 162, 101, 0.22) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ref-pulse {
+    background-color: rgba(196, 162, 101, 0.12) !important;
+  }
+}

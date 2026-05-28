@@ -5,6 +5,7 @@ import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import MiniPlayer from './components/MiniPlayer';
+import ScrollToTop from './components/ScrollToTop';
 import Landing from './pages/Landing/Landing';
 import Music from './pages/Music/Music';
 import Timeline from './pages/Timeline/Timeline';
@@ -36,6 +37,7 @@ function App() {
 
       {showContent && (
         <Router>
+          <ScrollToTop />
           <AudioPlayerProvider>
             <div className="app">
               <Navbar />

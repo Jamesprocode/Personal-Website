@@ -29,7 +29,7 @@ function ContactSection() {
           className="text-amber-900/85"
           style={{ fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)', lineHeight: 1.45, fontWeight: 500 }}
         >
-          If anything here matched what you&rsquo;re working on,
+          If anything here interests you, email me @
         </p>
         <a
           href="mailto:jameswangjiayi@gmail.com"

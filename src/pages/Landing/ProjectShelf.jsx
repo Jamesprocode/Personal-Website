@@ -4,8 +4,13 @@ import { Link } from 'react-router-dom';
 import projects from '../../data/projects';
 
 const CATEGORY_COLORS = {
+  'Musical Interaction': '#f59e0b',          // amber — GEMS, Shimon × AMT
+  'Music Information Retrieval': '#06b6d4',  // cyan — F0, HMM, stem-separation
+  'Music Theory': '#ec4899',                 // pink — rock harmony, harmonic divorce
+  'Computer Vision': '#8b5cf6',              // violet — OMR
+  'Music Software': '#a855f7',               // purple — Super Awesome
+  // Legacy fallbacks (in case any project still uses the old buckets)
   'Machine Learning': '#3b82f6',
-  'Music Software': '#a855f7',
   Research: '#22c55e',
 };
 

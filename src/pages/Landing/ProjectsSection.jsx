@@ -9,6 +9,7 @@ function ProjectsSection() {
 
   return (
     <section
+      id="research-projects-top"
       className="relative"
       style={{
         width: '100%',
@@ -18,6 +19,7 @@ function ProjectsSection() {
         borderTop: '1px solid rgba(108, 92, 59, 0.16)',
         paddingTop: 'clamp(2.5rem, 5vh, 4rem)',
         paddingBottom: 'clamp(7rem, 14vh, 12rem)',
+        scrollMarginTop: '4rem',
       }}
     >
       <div
@@ -61,6 +63,7 @@ function ProjectsSection() {
         </motion.div>
 
         <ProjectShelf />
+        <div id="research-projects-bottom" aria-hidden style={{ scrollMarginBottom: '4rem' }} />
       </div>
     </section>
   );
