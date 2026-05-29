@@ -234,7 +234,7 @@ const projects = [
     tags: ['Music Transformer', 'Viterbi', 'Robotics', 'Python'],
     period: 'Oct 2025 – present',
     category: 'Musical Interaction',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/AMT',
     tileImage: '/projects/amt/shimon-detail.jpg',
     body: [
       // ---------- Demo video ----------
@@ -371,7 +371,7 @@ const projects = [
     tags: ['Max/MSP', 'Python', 'Computer Vision', 'Interactive Music'],
     period: '2025',
     category: 'Musical Interaction',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/GEMS',
     tileImage: '/projects/gems/bass-engine.png',
     body: [
       // ---------- Demo video ----------
@@ -463,14 +463,14 @@ const projects = [
     tags: ['Deep Learning', 'CNN', 'MIR', 'Python'],
     period: 'Sep – Dec 2025',
     category: 'Music Information Retrieval',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/Deep-Salient-Detection-for-F0-Estimation',
     tileImage: '/projects/f0/icon.png',
     body: [
 
       // ---------- Methodology / Input ----------
       {
         kind: 'heading',
-        eyebrow: 'Section 1.1',
+        eyebrow: 'Section 1',
         text: 'Model Architecture',
       },
       {
@@ -581,7 +581,7 @@ const projects = [
       // ---------- Discussion ----------
       {
         kind: 'heading',
-        eyebrow: 'Section 3.1',
+        eyebrow: 'Section 4',
         text: 'Discussion',
       },
       {
@@ -611,6 +611,12 @@ const projects = [
         ],
       },
     ],
+    links: [
+      {
+        label: 'Paper (PDF)',
+        url: '/projects/f0/paper.pdf',
+      },
+    ],
   },
 
   {
@@ -620,60 +626,47 @@ const projects = [
     venue: 'Audio Content Analysis class project · Co-author with Anthony Cammarota and Ling Qi',
     shortTitle: 'Patterns for Prediction',
     description:
-      'Hum the first few bars of a tune and a musician can hum back what comes next — anticipation is baked into how we listen. We build that completion behavior end-to-end in audio: the MIREX Patterns for Prediction task without symbolic MIDI in the middle. Three modeling iterations push from raw spectrograms through clustered spectrograms to clustered musical features driving a variable-order Hidden Markov Model — the first configuration that produces musically interpretable continuations.',
+      'Modern transformer architectures handle MIDI continuation well — give Music Transformer or the Anticipatory Music Transformer a few bars and they produce stylistically coherent symbolic music. Audio continuation, with no symbolic step in between, is still largely unexplored. This project tackles the [MIREX Patterns for Prediction task](https://music-ir.org/mirex/wiki/2021:Patterns_for_Prediction) end-to-end in audio: three modeling iterations push from raw spectrograms through clustered spectrograms to clustered musical features driving a variable-order Hidden Markov Model — the first configuration that produces musically interpretable continuations.',
     tags: ['Audio ML', 'HMM', 'DSP', 'Python'],
     period: 'Sep – Dec 2025',
     category: 'Music Information Retrieval',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/Pattern-for-Prediction-audio-to-audio',
     tileImage: '/projects/hmm-patterns/icon.png',
     body: [
-
-      // ---------- Introduction ----------
+      // ---------- §1 Data ----------
       {
         kind: 'heading',
-        eyebrow: 'Section I',
-        text: 'Introduction',
-      },
-      {
-        kind: 'text',
-        content:
-          'Pattern prediction systems mirror how listeners form expectations about what comes next. The MIREX Patterns for Prediction task asks for a continuation given a short musical prime, evaluated against ground-truth continuations. Prior work uses symbolic representations (MIDI in, MIDI out), bypassing the acoustic detail and performance variability that exist in real audio. We work directly with audio.',
-      },
-
-      // ---------- Methodology / Data ----------
-      {
-        kind: 'heading',
-        eyebrow: 'Section III.A',
+        eyebrow: 'Section 1',
         text: 'Data',
       },
       {
         kind: 'text',
         content:
-          'PPDD-Jul2018 (monophonic subset, derived from Lakh MIDI). Primes have varying tempos, so all files are time-normalized to 120 BPM before synthesis at 22,050 Hz with a fixed soundfont. Audio is segmented into 16th-note slices; longer notes span multiple consecutive slices. After filtering, 75 valid primes remain — 60 training, 15 test.',
+          'PPDD-Jul2018, the [MIREX Patterns for Prediction development set](https://music-ir.org/mirex/wiki/2021:Patterns_for_Prediction) derived from the Lakh MIDI corpus. We use the small monophonic subset. Because the original primes have varying tempos, every file is time-normalized to 120 BPM, synthesized at 22,050 Hz with a fixed soundfont, then segmented into 16th-note slices so every observation has the same shape. After filtering, 75 valid primes remain — 60 training, 15 test.',
       },
 
-      // ---------- Pipeline ----------
+      // ---------- §2 Pipeline ----------
       {
         kind: 'heading',
-        eyebrow: 'Section III.B – III.C',
+        eyebrow: 'Section 2',
         text: 'Pipeline & Modeling Variants',
       },
       {
-        kind: 'sideBySide',
-        imageSide: 'right',
-        text:
-          'Three attempts are evaluated against the same pipeline. Each varies the input representation and the HMM order. Earlier attempts produced noise-like or jittery output; only Attempt 3 yields coherent continuations.',
-        image: {
-          src: '/projects/hmm-patterns/icon.png',
-          alt: 'Pipeline flowchart for the audio-to-audio HMM system.',
-          caption: 'Pipeline — tempo-normalize, slice at 16th notes, extract features, train HMM, decode, reconstruct spectrogram and audio.',
-        },
+        kind: 'text',
+        content:
+          'Three modeling attempts share the same pre-processing and post-processing scaffolding. They differ in what gets clustered (spectrogram pixels vs. musical features) and what HMM is trained on it (first-order Gaussian, first-order Categorical, or our variable-order implementation). Earlier attempts produce noise-like or jittery output; only Attempt 3 yields musically interpretable continuations.',
+      },
+      {
+        kind: 'image',
+        src: '/projects/hmm-patterns/pipeline.png',
+        alt: 'Full audio-to-audio HMM pipeline with the three modeling attempts marked A, B, C.',
+        caption: 'Full pipeline. Pre-processing (tempo-normalize, slice at 16th notes) feeds three branches: (A) raw spectrograms → first-order Gaussian HMM; (B) clustered spectrograms → first-order Categorical HMM; (C, best) clustered musical features → variable-order HMM, decoded by sampling an exemplar slice per cluster.',
       },
       {
         kind: 'list',
         items: [
-          { label: 'Attempt 1', body: 'PCA-reduced raw spectrograms (80-D → 20-D) + first-order Gaussian HMM. Output: noise. Pitch/rhythm not recoverable.' },
-          { label: 'Attempt 2', body: 'Clustered spectrograms (k-means, K=290 via silhouette score) + first-order Categorical HMM. Output: sporadic melodic fragments, but jittery and low-fidelity. First-order context too short to capture musical structure.' },
+          { label: 'Attempt 1', body: 'PCA-reduced raw spectrograms (80-D → 20-D) + first-order Gaussian HMM. Output: noise. Pitch and rhythm are not recoverable from the result.' },
+          { label: 'Attempt 2', body: 'k-means clustered spectrograms + first-order Categorical HMM. Cluster IDs are decoded back to spectrograms via cluster centroids. Output: sporadic melodic fragments, but jittery and low-fidelity — first-order context is too short to capture musical structure.' },
         ],
       },
       {
@@ -681,30 +674,30 @@ const projects = [
         variant: 'highlight',
         intro: 'Best configuration — Attempt 3:',
         items: [
-          { label: 'Features', body: 'Musical features (chroma, center pitch, RMS amplitude) extracted from each slice, then k-means clustered (K=500) so each cluster represents a musically coherent observation. Spectrograms are reconstructed by sampling the cluster\'s nearest exemplar — not its centroid — to preserve spectral detail.' },
-          { label: 'Model', body: 'Variable-order HMM (custom implementation, since hmmlearn supports only first-order). At training, the model stores context distributions up to 50 steps; at generation, it tries the longest available context and falls back progressively. Generation is biased toward patterns from the local prime sequence, so continuations favor patterns specific to each test piece rather than the training corpus average.' },
+          { label: 'Features', body: 'Musical features (chroma, RMS energy, spectral flux/centroid) extracted from each slice, then k-means clustered (K = 500) so each cluster represents a musically coherent observation. Spectrograms are reconstructed by sampling the cluster\'s nearest exemplar slice — not its centroid — to preserve spectral detail.' },
+          { label: 'Model', body: 'Variable-order HMM (custom implementation, since hmmlearn supports only first-order). Training stores context distributions up to 50 steps long, plus all shorter contexts; at generation, it tries the longest available context and falls back progressively. Generation is biased toward patterns from the local prime sequence, so continuations favor patterns specific to each test piece rather than the training-corpus average.' },
         ],
       },
 
-      // ---------- Evaluation ----------
+      // ---------- §3 Evaluation ----------
       {
         kind: 'heading',
-        eyebrow: 'Section IV',
+        eyebrow: 'Section 3',
         text: 'Evaluation',
       },
       {
         kind: 'list',
-        intro: 'Two MIREX explicit-task metrics:',
+        intro: 'Two MIREX explicit-task metrics, both computed after transcribing the generated audio back to symbolic onsets and pitches with librosa.yin:',
         items: [
-          { label: 'Cardinality Score', body: 'How well the predicted continuation matches the rhythmic and structural pattern of the ground truth. Generated continuations are transcribed (librosa.yin) into onset+pitch sequences and aligned to ground-truth events under the best temporal/pitch shift. F1-like behavior — rewards correct events, penalizes missing or wrong ones.' },
-          { label: 'Pitch Score', body: 'How closely the predicted continuation matches the melodic content of the ground truth, regardless of rhythm. Both predictions and ground truth are converted to pitch-class histograms (mod 12, so a correct key in a different octave is not penalized); the score is histogram overlap.' },
+          { label: 'Cardinality Score', body: 'How well the predicted continuation matches the rhythmic and structural pattern of the ground truth. Note events in the prediction are aligned to ground-truth events under the best temporal/pitch shift. F1-like behavior — rewards correct events, penalizes missing or wrong ones.' },
+          { label: 'Pitch Score', body: 'How closely the predicted continuation matches the melodic content of the ground truth, regardless of rhythm. Both predictions and ground truth are converted to pitch-class histograms (mod 12, so a correct key in a different octave is not penalized); the score is the histogram overlap.' },
         ],
       },
 
-      // ---------- Results ----------
+      // ---------- §4 Results ----------
       {
         kind: 'heading',
-        eyebrow: 'Section V',
+        eyebrow: 'Section 4',
         text: 'Results',
       },
       {
@@ -714,22 +707,26 @@ const projects = [
           { cells: ['Cardinality Score', '0.263 ± 0.208', '≈ 0.27 – 0.30'] },
           { cells: ['Pitch Score', '0.429 ± 0.196', '≈ 0.45 – 0.50'], highlight: true },
         ],
-        caption: 'Table I — Attempt 3 vs. MIREX symbolic Markov baseline on PPDD test set (explicit task). The audio-based HMM is slightly below the symbolic reference, with high variance across primes.',
+        caption: 'Table I — Attempt 3 vs. MIREX symbolic Markov baseline on the PPDD test set (explicit task). The audio-based HMM lands just below the symbolic reference, with high variance across primes.',
       },
 
-      // ---------- Discussion ----------
+      // ---------- §5 Discussion ----------
       {
         kind: 'heading',
-        eyebrow: 'Section VI',
+        eyebrow: 'Section 5',
         text: 'Discussion',
       },
       {
         kind: 'text',
         content:
-          'Two structural limitations explain most of the gap to symbolic baselines. First, generating audio by concatenating 16th-note slices produces discontinuities at slice boundaries, and the fixed grid biases the output toward staccato events — sustained notes and complex phrasing don\'t reconstruct cleanly. Second, the MIREX Cardinality and Pitch Scores are symbolic metrics that require transcribing the generated audio back to MIDI before scoring. Standard audio-to-MIDI assumes high-fidelity input; our outputs have slicing artifacts, so the transcription step itself introduces error. Future evaluation of audio-to-audio systems probably needs perceptual metrics computed directly on the audio, not symbolic proxies.',
+          'Two structural limitations explain most of the gap to symbolic baselines. First, generating audio by concatenating 16th-note slices produces discontinuities at slice boundaries, and the fixed grid biases the output toward staccato events — sustained notes and complex phrasing don\'t reconstruct cleanly. Second, the MIREX Cardinality and Pitch Scores are symbolic metrics that require transcribing the generated audio back to MIDI before scoring. Standard audio-to-MIDI assumes high-fidelity input; our outputs carry slicing artifacts, so the transcription step itself introduces error and the metric never sees the actual acoustic detail we were trying to model in the first place. Future evaluation of audio-to-audio systems probably needs perceptual metrics computed directly on the audio, not symbolic proxies.',
       },
     ],
     links: [
+      {
+        label: 'Paper (PDF)',
+        url: '/projects/hmm-patterns/report.pdf',
+      },
       {
         label: 'Slide deck (PDF)',
         url: '/projects/hmm-patterns/paper.pdf',
@@ -748,60 +745,14 @@ const projects = [
     tags: ['C++', 'JUCE', 'React', 'DSP', 'Audio Plugin'],
     period: 'Aug – Dec 2025',
     category: 'Music Software',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/Super-Awesome-Final-Project',
     tileImage: '/projects/super-awesome/ui-screenshot.png',
     body: [
-      // ---------- Overview ----------
       {
-        kind: 'heading',
-        eyebrow: 'Section 1',
-        text: 'Overview',
-      },
-      {
-        kind: 'sideBySide',
-        imageSide: 'right',
-        text:
-          'The plugin is a single-window vocal chain: parametric EQ, dynamic compressor, noise gate, and de-esser, with a macro mapping panel that lets one knob drive multiple parameters across processors. Designed for a fast, opinionated vocal workflow rather than a kitchen-sink modular chain.',
-        image: {
-          src: '/projects/super-awesome/ui-screenshot.png',
-          alt: 'Super Awesome Vocal Chain plugin UI as shipped.',
-          caption: 'Shipped UI — full vocal chain on one screen, macro mapping panel below.',
-        },
-      },
-
-      // ---------- DSP ----------
-      {
-        kind: 'heading',
-        eyebrow: 'Section 2',
-        text: 'DSP Architecture',
-      },
-      {
-        kind: 'list',
-        items: [
-          { label: 'EQ', body: 'Parametric EQ built as biquad cascades with audio-thread parameter smoothing (no clicks on knob moves).' },
-          { label: 'Compressor', body: 'Dynamic compressor with feedforward sidechain detector — shared with the de-esser so the two stages don\'t fight each other for gain reduction on a sibilant.' },
-          { label: 'Gate', body: 'Noise gate with hysteresis to avoid chattering on borderline signals.' },
-          { label: 'De-esser', body: 'Frequency-selective compressor on a bandpass-filtered detector path. Shares the compressor\'s sidechain to stay coherent.' },
-          { label: 'Routing', body: 'Each processor is its own JUCE AudioProcessor; chain order is reconfigurable at runtime.' },
-        ],
-      },
-
-      // ---------- UI Architecture ----------
-      {
-        kind: 'heading',
-        eyebrow: 'Section 3',
-        text: 'UI Architecture',
-      },
-      {
-        kind: 'sideBySide',
-        imageSide: 'left',
-        text:
-          'The UI is a React application served by Vite and embedded in the plugin via JUCE\'s WebView component, with a thin C++↔JS bridge for parameter sync. Design iteration happens in a browser at React-fast speeds; the bridge to the audio engine is bound only after layout is final. Every interactive component on screen — knobs, meters, the EQ frequency-response curve, the macro mapping view, the saturation-type selector — is a custom React component rather than a UI kit, keeping the visual identity coherent and the bundle small.',
-        image: {
-          src: '/projects/super-awesome/ui-diagram.png',
-          alt: 'UI architecture: React app, JUCE WebView bridge, DSP processors.',
-          caption: 'Architecture — React app served by Vite, JUCE WebView, C++↔JS parameter bridge, native DSP processors.',
-        },
+        kind: 'cta',
+        text: 'The project has its own site with full UI walkthrough, DSP architecture details, and demo videos.',
+        label: 'Visit the project site',
+        url: 'https://super-awesome.vercel.app/',
       },
     ],
   },
@@ -845,45 +796,40 @@ const projects = [
     tags: ['Computational Musicology', 'Python', 'Statistics'],
     period: 'Jun – Dec 2024',
     category: 'Music Theory',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/Tracing-the-Evolution-of-Rock-and-Popular-Music-Harmony--A-Computational-Study-Using-Shannon-Entropy',
     tileImage: '/projects/rock-harmony/entropy-by-year.png',
     body: [
-
-      // ---------- Introduction ----------
+      // ---------- §1 Dataset ----------
       {
         kind: 'heading',
         eyebrow: 'Section 1',
-        text: 'Introduction',
+        text: 'Dataset',
       },
       {
-        kind: 'text',
-        content:
-          'Popular music shapes societal trends, fashion, and other musical genres, but analyses of it rely heavily on traditional Western music-theory frameworks that don\'t fully capture the harmonic practices that define the genre. Computational musicology — corpus analysis at scale — opens up large-scale questions that traditional methods can\'t reach. De Clercq and Temperley\'s "A Corpus Analysis of Rock Music" identified chord-progression patterns; Lavengood applied topic modeling to video game music. These studies expand our understanding of chord-to-chord relationships, but they don\'t ask broader questions: how does harmonic complexity itself evolve over decades, and how does it vary by song section?',
-      },
-      {
-        kind: 'text',
-        content:
-          'Information theory has been applied to melodic and rhythmic structures, but rarely to harmony in popular music. This study uses Shannon entropy on chord progressions to quantify harmonic complexity across 890 songs and five decades. Two research questions: (1) has harmonic complexity in popular music increased over the decades? (2) Do musical forms — verse, chorus, bridge — exhibit significantly different levels of harmonic complexity?',
+        kind: 'sideBySide',
+        imageSide: 'right',
+        text:
+          'The McGill Billboard Project [1]: expert chord annotations for 890 Billboard-charting songs across five decades, with chord progressions, section labels (verse / chorus / bridge / outro), meter, and key. Each song is stored as plain text with timestamps; sections and chords are extracted directly from those files. Earlier corpus work — most notably De Clercq & Temperley [2] — used this kind of data to characterize chord-to-chord relationships; we use it to ask a different question.',
+        image: {
+          src: '/projects/rock-harmony/dataset-sample.png',
+          alt: 'Sample annotation from the McGill Billboard dataset — "You\'ve Got a Friend".',
+          caption: 'Sample annotation — timestamps, section labels, and chord progressions per line.',
+        },
       },
 
-      // ---------- Data & Method ----------
+      // ---------- §2 Method ----------
       {
         kind: 'heading',
         eyebrow: 'Section 2',
-        text: 'Data & Method',
+        text: 'Method',
       },
       {
         kind: 'text',
         content:
-          'The McGill Billboard Project dataset: expert chord annotations for 890 Billboard-charting popular songs from the 1950s to the 2000s. Annotations include chord progressions, song structures (verse, chorus, bridge, outro), meter, and key. The dataset is widely used as ground truth for audio chord recognition, with detailed harmonic information well-suited to corpus-scale harmonic analysis. One known bias: the Billboard Hot 100 selects for commercial popularity, so less-popular subgenres are under-represented.',
-      },
-      {
-        kind: 'text',
-        content:
-          'For each song, chord sequences are extracted and section labels (verse, chorus, bridge) preserved. Shannon entropy H(X) = −Σ p(xi) log p(xi) is computed over the chord-class distribution of each sequence. High entropy = wider chord palette used in roughly equal proportion (more harmonic unpredictability). Low entropy = a few chords dominating (less unpredictability).',
+          'Shannon entropy over each song\'s chord-class distribution gives a single number for harmonic unpredictability — higher when many chords are used in roughly equal proportion, lower when a few dominate. We compute it both at the whole-song level (for the yearly arc) and per section (verse / chorus / bridge), then track how the distribution shifts over decades.',
       },
 
-      // ---------- Results ----------
+      // ---------- §3 Results ----------
       {
         kind: 'heading',
         eyebrow: 'Section 3',
@@ -893,7 +839,7 @@ const projects = [
         kind: 'sideBySide',
         imageSide: 'right',
         text:
-          'Mean entropy by year shows three regimes: a 1950s–60s baseline (I–IV–V era), a 1970s climb (modal and extended harmony entering the popular vocabulary), a peak around the 1980s, and a decline through the 1990s–2000s. The arc is not a monotonic increase or "harmonic divorce" — it is genre-cycle-dependent.',
+          'Mean entropy by year shows a 1950s–60s baseline, a 1970s climb as modal and extended harmony entered the popular vocabulary, a peak around the 1980s, and a decline through the 1990s–2000s. Not a monotonic "harmonic divorce" from common-practice tonality — an oscillation tied to genre cycles.',
         image: {
           src: '/projects/rock-harmony/entropy-by-year.png',
           alt: 'Mean harmonic entropy by year, 1950s–2000s.',
@@ -904,7 +850,7 @@ const projects = [
         kind: 'sideBySide',
         imageSide: 'left',
         text:
-          'Entropy varies systematically by song section. Verses and choruses cluster at lower entropy — a tight palette holds the song\'s identity; bridges spike. This pattern is stable across decades even as overall entropy rises and falls, suggesting the structural function of the bridge as a "harmonic detour" is fixed regardless of stylistic fashion.',
+          'By section, verses and choruses sit at low entropy — a tight palette holds the song\'s identity — and bridges spike. This pattern is stable across decades, so the harmonic role of each formal section appears robust to stylistic change.',
         image: {
           src: '/projects/rock-harmony/entropy-by-section.png',
           alt: 'Mean entropy by song section.',
@@ -912,7 +858,7 @@ const projects = [
         },
       },
 
-      // ---------- Discussion ----------
+      // ---------- §4 Discussion ----------
       {
         kind: 'heading',
         eyebrow: 'Section 4',
@@ -921,7 +867,37 @@ const projects = [
       {
         kind: 'text',
         content:
-          'The takeaway is that "popular music has become harmonically simpler" — a common critical narrative — is wrong as stated. Harmonic complexity rose through the 1970s and peaked in the 1980s before declining; the recent dip is real but is part of an oscillation, not a one-way trajectory. The section-level pattern adds another dimension: regardless of decade, bridges spike in entropy while verses/choruses stay tight, which suggests the harmonic role of each formal section is robust across stylistic change.',
+          'From this corpus, popular music has not gotten harmonically simpler — the 1980s sit at peak entropy with lower-entropy decades on either side. Whether that holds beyond the McGill Billboard set is a separate question; the Billboard Hot 100 selects for commercial popularity, and a stronger conclusion would need additional corpora. What this study adds is one piece of evidence against the one-way-decline narrative, plus a section-level observation that\'s stable across decades: the bridge does most of the harmonic risk-taking while verses and choruses stay tight.',
+      },
+
+      // ---------- References ----------
+      {
+        kind: 'heading',
+        eyebrow: 'Key references',
+        text: 'References',
+      },
+      {
+        kind: 'references',
+        items: [
+          {
+            id: '1',
+            authors: 'Burgoyne, J. A., Wild, J., & Fujinaga, I.',
+            year: '2011',
+            title: 'An Expert Ground Truth Set for Audio Chord Recognition and Music Analysis',
+            venue: 'Proceedings of the 12th International Society for Music Information Retrieval Conference (ISMIR), Miami, FL, pp. 633–638',
+            note: 'The McGill Billboard Project — 890 expert chord annotations of Billboard-charting songs, the corpus this study runs on.',
+            url: 'https://ismir2011.ismir.net/papers/OS8-1.pdf',
+          },
+          {
+            id: '2',
+            authors: 'De Clercq, T., & Temperley, D.',
+            year: '2011',
+            title: 'A Corpus Analysis of Rock Music',
+            venue: 'Popular Music, 30(1), 47–70',
+            note: 'Foundational corpus study of rock harmony — characterizes chord-to-chord transition patterns. This project builds on the same data but asks an evolution-over-time question rather than a static one.',
+            url: 'https://doi.org/10.1017/S026114301000067X',
+          },
+        ],
       },
     ],
     links: [
@@ -943,7 +919,7 @@ const projects = [
     tags: ['Audio DSP', 'Evaluation Metrics', 'Python', 'Research'],
     period: 'Jun – Dec 2024',
     category: 'Music Information Retrieval',
-    github: 'https://github.com/Jamesprocode',
+    github: 'https://github.com/Jamesprocode/A-Reference-Free-Framework-for-Stem-Separation-Evaluation',
     tileImage: '/projects/stem-separation/poster.jpg',
     body: [
 
@@ -1023,24 +999,6 @@ const projects = [
         ],
         caption: 'Multiple regression — SAR ≈ β0 + βFIS·FIS + βDSS·DSS. Low R² (5.5%) but jointly statistically significant (p < 0.05).',
       },
-      {
-        kind: 'sideBySide',
-        imageSide: 'left',
-        text:
-          'The DSS regression has a positive slope: greater temporal stability mildly associates with better artifact suppression. The FIS regression is slightly negative, suggesting a real trade-off — pushing harder on frequency isolation can introduce artifacts elsewhere. Either way, the regressions are weak because SAR misses what FIS and DSS measure.',
-        image: {
-          src: '/projects/stem-separation/sar-vs-dss.png',
-          alt: 'Linear regression: SAR vs DSS across the test set.',
-          caption: 'SAR vs. DSS — weak positive slope; temporal stability ≈ artifact quality, but only loosely.',
-        },
-      },
-      {
-        kind: 'image',
-        src: '/projects/stem-separation/sar-vs-fis.png',
-        alt: 'Linear regression: SAR vs FIS across the test set.',
-        caption: 'SAR vs. FIS — weak negative slope; frequency isolation can come at the cost of more artifacts.',
-      },
-
       // ---------- Discussion ----------
       {
         kind: 'heading',
@@ -1051,18 +1009,6 @@ const projects = [
         kind: 'text',
         content:
           'The headline result is that FIS and DSS do not duplicate SAR — and that\'s the right outcome. A reference-free metric that closely tracked SAR would just be a noisier SAR. FIS and DSS measure complementary signal-processing properties that SAR misses entirely. The low R² means SAR is influenced by additional factors not captured by these two metrics, which points to a multi-dimensional evaluation framework rather than any single number.',
-      },
-
-      // ---------- Future Work ----------
-      {
-        kind: 'heading',
-        eyebrow: 'Section 8',
-        text: 'Future Work',
-      },
-      {
-        kind: 'text',
-        content:
-          'Two directions stand out. First, AI-generated stems — where no ground truth exists by definition — are the natural application; future work would compare AI-separated stems against human-engineered ones using FIS/DSS to see whether they exhibit comparable harmonic preservation and temporal coherence. Second, integrating perceptual evaluation (listener studies) alongside FIS/DSS would help bridge signal-processing measures and listener satisfaction.',
       },
 
       // ---------- Poster ----------

@@ -36,43 +36,67 @@ function Caption({ children }) {
 
 function renderCitations(text) {
   if (text == null || typeof text !== 'string') return text;
-  const parts = text.split(/(\[\d+\])/g);
+  // Tokenize on numeric citations like [1] and markdown-style links like [label](url).
+  const parts = text.split(/(\[\d+\]|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
-    const m = part.match(/^\[(\d+)\]$/);
-    if (!m) return part;
-    const id = m[1];
-    return (
-      <a
-        key={`cite-${i}-${id}`}
-        href={`#ref-${id}`}
-        onClick={(e) => {
-          const el = document.getElementById(`ref-${id}`);
-          if (el) {
-            e.preventDefault();
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('ref-pulse');
-            window.setTimeout(() => el.classList.remove('ref-pulse'), 1400);
-          }
-        }}
-        className="font-mono"
-        aria-label={`Reference ${id}`}
-        style={{
-          color: BRONZE,
-          fontWeight: 600,
-          textDecoration: 'none',
-          verticalAlign: 'super',
-          fontSize: '0.7em',
-          lineHeight: 1,
-          margin: '0 0.1em',
-          padding: '1px 4px',
-          borderRadius: 4,
-          backgroundColor: `${BRASS}1f`,
-          letterSpacing: '0.02em',
-        }}
-      >
-        {id}
-      </a>
-    );
+    const cite = part.match(/^\[(\d+)\]$/);
+    if (cite) {
+      const id = cite[1];
+      return (
+        <a
+          key={`cite-${i}-${id}`}
+          href={`#ref-${id}`}
+          onClick={(e) => {
+            const el = document.getElementById(`ref-${id}`);
+            if (el) {
+              e.preventDefault();
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.classList.add('ref-pulse');
+              window.setTimeout(() => el.classList.remove('ref-pulse'), 1400);
+            }
+          }}
+          className="font-mono"
+          aria-label={`Reference ${id}`}
+          style={{
+            color: BRONZE,
+            fontWeight: 600,
+            textDecoration: 'none',
+            verticalAlign: 'super',
+            fontSize: '0.7em',
+            lineHeight: 1,
+            margin: '0 0.1em',
+            padding: '1px 4px',
+            borderRadius: 4,
+            backgroundColor: `${BRASS}1f`,
+            letterSpacing: '0.02em',
+          }}
+        >
+          {id}
+        </a>
+      );
+    }
+    const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (link) {
+      const [, label, url] = link;
+      const external = /^https?:\/\//i.test(url);
+      return (
+        <a
+          key={`link-${i}`}
+          href={url}
+          {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          style={{
+            color: 'inherit',
+            textDecoration: 'underline',
+            textDecorationColor: `${BRASS}99`,
+            textDecorationThickness: '1px',
+            textUnderlineOffset: '3px',
+          }}
+        >
+          {label}
+        </a>
+      );
+    }
+    return part;
   });
 }
 

@@ -1,14 +1,22 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import PageTransition from '../../components/PageTransition';
 import ParallelTracks from './ParallelTracks';
-import Credits from './Credits';
 
 function Timeline() {
   const reduceMotion = useReducedMotion();
 
   return (
     <PageTransition>
-      <main style={{ width: '100%', backgroundColor: '#f4e8d1' }}>
+      <main
+        style={{
+          width: '100%',
+          backgroundColor: '#f4e8d1',
+          // Footer is position:fixed at the viewport bottom (~72 px tall on
+          // the Cream Parlor route). Leave space so the last band's labels
+          // and the year axis can scroll above it instead of slipping under.
+          paddingBottom: 'clamp(5rem, 9vh, 7rem)',
+        }}
+      >
         {/* Intro */}
         <section
           className="relative"
@@ -17,7 +25,7 @@ function Timeline() {
             display: 'flex',
             justifyContent: 'center',
             paddingTop: 'clamp(7rem, 14vh, 11rem)',
-            paddingBottom: 'clamp(2.5rem, 5vh, 4rem)',
+            paddingBottom: 'clamp(0.75rem, 2vh, 1.5rem)',
             paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
             paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
           }}
@@ -27,10 +35,10 @@ function Timeline() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="text-center"
-            style={{ width: '100%', maxWidth: '60ch' }}
+            style={{ width: '100%', maxWidth: '68ch' }}
           >
             <p
-              className="font-mono uppercase text-amber-700/70 mb-[clamp(1rem,2vh,1.5rem)]"
+              className="font-mono uppercase text-amber-700/70 mb-[clamp(0.75rem,1.5vh,1.25rem)]"
               style={{ fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)', letterSpacing: '0.22em' }}
             >
               Chronology &middot; 2020&ndash;2026
@@ -39,35 +47,18 @@ function Timeline() {
               className="font-bold tracking-tight text-amber-900"
               style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.05 }}
             >
-              Four things, in parallel.
+              Where I&rsquo;ve been.
             </h1>
             <p
-              className="mt-[clamp(1rem,2vh,1.5rem)] mx-auto text-amber-900/70"
-              style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.6, maxWidth: '48ch' }}
+              className="mt-[clamp(0.75rem,1.5vh,1.25rem)] mx-auto text-amber-900/70"
+              style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.6 }}
             >
-              Research, music software, performance, industry. Hover a mark for
-              the entry. Below: publications, recordings, and performances
-              &mdash; the liner notes.
+              Five years across three lanes &mdash; degrees, internships, and music.
             </p>
           </motion.div>
         </section>
 
         <ParallelTracks />
-
-        {/* Divider between chart and credits */}
-        <div
-          className="mx-auto"
-          style={{
-            width: 'min(82rem, 92vw)',
-            paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
-            paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
-          }}
-          aria-hidden
-        >
-          <div style={{ height: '1px', background: 'rgba(108, 92, 59, 0.18)' }} />
-        </div>
-
-        <Credits />
       </main>
     </PageTransition>
   );

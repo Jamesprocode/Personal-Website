@@ -4,10 +4,9 @@ import { useMemo } from 'react';
 import timeline from '../../data/timeline';
 
 const TRACKS = [
-  { key: 'Research', color: '#22c55e' },
-  { key: 'Music Software', color: '#a855f7' },
-  { key: 'Music', color: '#f97316' },
-  { key: 'Industry', color: '#6b7280' },
+  { key: 'Academic', color: '#3b82f6' },
+  { key: 'Internships', color: '#6b7280' },
+  { key: 'Music Performance', color: '#f97316' },
 ];
 
 const START_YEAR = 2020;
@@ -74,14 +73,14 @@ function TimelinePreview() {
               className="font-bold tracking-tight text-amber-900"
               style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', lineHeight: 1.05 }}
             >
-              Six years,<br className="hidden sm:block" /> in parallel.
+              Where I&rsquo;ve been.
             </h2>
             <p
               className="mt-[clamp(1rem,2vh,1.5rem)] text-amber-900/70"
-              style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '32ch', lineHeight: 1.55 }}
+              style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55 }}
             >
-              Research, music software, performance, and industry &mdash; four careers
-              running at once. The full picture is in the next room.
+              Five years across three lanes &mdash; degrees, internships, and music.
+              The full chronology is one room over.
             </p>
             <Link
               to="/timeline"
@@ -93,7 +92,7 @@ function TimelinePreview() {
                 letterSpacing: '0.02em',
               }}
             >
-              See the chronology
+              Walk the timeline
               <span aria-hidden>&rarr;</span>
             </Link>
           </div>

@@ -30,6 +30,10 @@ Vinyl Audio/
 
 Project papers/
 
+# Local-only source folders / reference PDFs
+GEMS/
+mto.25.31.4.hudson_wang.pdf
+
 # Never commit raw / lossless audio source files — only the mastered MP3s
 # under public/audio/ are meant to ship.
 *.wav

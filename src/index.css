@@ -70,6 +70,15 @@ body {
   background-color: rgba(196, 162, 101, 0.22) !important;
 }
 
+@keyframes cd-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-spinner { animation: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ref-pulse {
     background-color: rgba(196, 162, 101, 0.12) !important;
