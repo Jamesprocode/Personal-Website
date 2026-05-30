@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import TransportButton from '../../components/TransportButton';
 import projects from '../../data/projects';
@@ -124,6 +125,7 @@ function TextBlock({ content }) {
 }
 
 function ImageBlock({ src, alt, caption, onOpen, inline = false }) {
+  const { t } = useTranslation();
   const wrapperStyle = inline
     ? { width: '100%' }
     : {
@@ -138,7 +140,7 @@ function ImageBlock({ src, alt, caption, onOpen, inline = false }) {
         type="button"
         onClick={() => onOpen && onOpen({ src, alt })}
         className="group block w-full"
-        aria-label="Enlarge image"
+        aria-label={t('project.enlargeImage')}
         style={{
           padding: 0,
           margin: 0,
@@ -319,6 +321,7 @@ function ListBlock({ intro, items, variant = 'default' }) {
 }
 
 function Lightbox({ image, onClose }) {
+  const { t } = useTranslation();
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
@@ -340,7 +343,7 @@ function Lightbox({ image, onClose }) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Enlarged image"
+      aria-label={t('project.enlargedImage')}
       style={{
         position: 'fixed',
         inset: 0,
@@ -356,7 +359,7 @@ function Lightbox({ image, onClose }) {
       <button
         type="button"
         onClick={onClose}
-        aria-label="Close enlarged image"
+        aria-label={t('project.closeEnlarged')}
         className="font-mono uppercase"
         style={{
           position: 'absolute',
@@ -797,6 +800,138 @@ function AbstractBlock({ content, label = 'Abstract' }) {
   );
 }
 
+// Build a localized clone of a body block by wrapping every translatable string
+// with `t('project.<slug>.body.<i>.<path>', { defaultValue: original })`. URLs,
+// src paths, kind, ids, and structural flags pass through untouched.
+function localizeBlock(slug, i, block, t) {
+  const base = `project.${slug}.body.${i}`;
+  const tr = (suffix, value) =>
+    value == null ? value : t(`${base}.${suffix}`, { defaultValue: value });
+
+  switch (block.kind) {
+    case 'text':
+      return { ...block, content: tr('text', block.content) };
+    case 'image':
+      return {
+        ...block,
+        alt: tr('alt', block.alt),
+        caption: tr('caption', block.caption),
+      };
+    case 'audio':
+      return { ...block, caption: tr('caption', block.caption) };
+    case 'video':
+      return { ...block, caption: tr('caption', block.caption) };
+    case 'heading':
+      return {
+        ...block,
+        text: tr('heading', block.text),
+        eyebrow: tr('eyebrow', block.eyebrow),
+      };
+    case 'abstract':
+    case 'tldr':
+      return {
+        ...block,
+        content: tr('text', block.content),
+        label: tr('label', block.label),
+      };
+    case 'sideBySide': {
+      // Translator emitted sideBySide image alt/caption at body.<i>.alt and
+      // body.<i>.caption (alongside text at body.<i>.text). Try those first;
+      // fall back to body.<i>.image.alt / .image.caption.
+      const localizedImage = block.image
+        ? {
+            ...block.image,
+            alt:
+              block.image.alt == null
+                ? block.image.alt
+                : t(`${base}.alt`, {
+                    defaultValue: t(`${base}.image.alt`, {
+                      defaultValue: block.image.alt,
+                    }),
+                  }),
+            caption:
+              block.image.caption == null
+                ? block.image.caption
+                : t(`${base}.caption`, {
+                    defaultValue: t(`${base}.image.caption`, {
+                      defaultValue: block.image.caption,
+                    }),
+                  }),
+          }
+        : block.image;
+      return {
+        ...block,
+        text: tr('text', block.text),
+        image: localizedImage,
+      };
+    }
+    case 'list':
+      return {
+        ...block,
+        intro: tr('intro', block.intro),
+        items: (block.items || []).map((item, j) => {
+          if (typeof item === 'string') {
+            return t(`${base}.items.${j}.body`, { defaultValue: item });
+          }
+          if (!item || typeof item !== 'object') return item;
+          const out = { ...item };
+          if (item.label != null)
+            out.label = t(`${base}.items.${j}.label`, { defaultValue: item.label });
+          if (item.text != null)
+            out.text = t(`${base}.items.${j}.text`, { defaultValue: item.text });
+          if (item.body != null)
+            out.body = t(`${base}.items.${j}.body`, { defaultValue: item.body });
+          if (item.note != null)
+            out.note = t(`${base}.items.${j}.note`, { defaultValue: item.note });
+          return out;
+        }),
+      };
+    case 'references':
+      return {
+        ...block,
+        items: (block.items || []).map((item, j) => {
+          if (!item || typeof item !== 'object') return item;
+          const out = { ...item };
+          if (item.title != null)
+            out.title = t(`${base}.items.${j}.title`, { defaultValue: item.title });
+          if (item.venue != null)
+            out.venue = t(`${base}.items.${j}.venue`, { defaultValue: item.venue });
+          if (item.note != null)
+            out.note = t(`${base}.items.${j}.note`, { defaultValue: item.note });
+          return out;
+        }),
+      };
+    case 'cta':
+      return {
+        ...block,
+        text: tr('text', block.text),
+        label: tr('label', block.label),
+      };
+    case 'table':
+      return {
+        ...block,
+        headers: (block.headers || []).map((h, k) =>
+          h == null ? h : t(`${base}.headers.${k}`, { defaultValue: h }),
+        ),
+        rows: (block.rows || []).map((row, k) => {
+          if (!row || typeof row !== 'object') return row;
+          return {
+            ...row,
+            cells: (row.cells || []).map((cell, m) =>
+              cell == null
+                ? cell
+                : t(`${base}.rows.${k}.cells.${m}`, { defaultValue: cell }),
+            ),
+          };
+        }),
+        caption: tr('caption', block.caption),
+        footnote: tr('footnote', block.footnote),
+      };
+    default:
+      return block;
+  }
+}
+
 function BodyBlock({ block, onOpenImage }) {
   if (block.kind === 'text') return <TextBlock content={block.content} />;
   if (block.kind === 'image')
@@ -840,6 +975,7 @@ function BodyBlock({ block, onOpenImage }) {
 }
 
 function NotFound() {
+  const { t } = useTranslation();
   return (
     <PageTransition>
       <main
@@ -861,10 +997,10 @@ function NotFound() {
               color: `${BRONZE}b3`,
             }}
           >
-            404 &middot; Project not found
+            {t('project.404.eyebrow')}
           </p>
           <p style={{ fontSize: '1.15rem', color: INK_DEEP, marginBottom: '1.5rem' }}>
-            We can&rsquo;t find that project. Try the projects list.
+            {t('project.404.body')}
           </p>
           <Link
             to="/"
@@ -877,7 +1013,7 @@ function NotFound() {
               fontWeight: 500,
             }}
           >
-            All projects
+            {t('project.allProjects')}
           </Link>
         </div>
       </main>
@@ -888,6 +1024,7 @@ function NotFound() {
 function ProjectDetail() {
   const { id } = useParams();
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
   const project = projects.find((p) => p.id === parseInt(id, 10));
 
   if (!project) return <NotFound />;
@@ -899,6 +1036,37 @@ function ProjectDetail() {
   const links = project.links || [];
   const comingSoon = project.comingSoon || [];
   const [lightbox, setLightbox] = useState(null);
+
+  // Localized meta — defaultValue falls through to the English source when no zh key exists.
+  const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
+  const shortTitle = t(`project.${project.slug}.shortTitle`, {
+    defaultValue: project.shortTitle,
+  });
+  const period = t(`project.${project.slug}.period`, { defaultValue: project.period });
+  const subtitle = t(`project.${project.slug}.subtitle`, {
+    defaultValue: project.venue,
+  });
+  const category = t(`project.${project.slug}.category`, {
+    defaultValue: project.category,
+  });
+  const description = t(`project.${project.slug}.description`, {
+    defaultValue: project.description,
+  });
+  const localizedTags = (project.tags || []).map((tag, i) =>
+    t(`project.${project.slug}.tags.${i}`, { defaultValue: tag }),
+  );
+  const prevShortTitle = prevProject
+    ? t(`project.${prevProject.slug}.shortTitle`, { defaultValue: prevProject.shortTitle })
+    : null;
+  const nextShortTitle = nextProject
+    ? t(`project.${nextProject.slug}.shortTitle`, { defaultValue: nextProject.shortTitle })
+    : null;
+  const prevTitle = prevProject
+    ? t(`project.${prevProject.slug}.title`, { defaultValue: prevProject.title })
+    : null;
+  const nextTitle = nextProject
+    ? t(`project.${nextProject.slug}.title`, { defaultValue: nextProject.title })
+    : null;
 
   return (
     <PageTransition>
@@ -939,8 +1107,8 @@ function ProjectDetail() {
               to="/#research-projects-top"
               variant="rew"
               size={52}
-              label="Rewind"
-              sublabel="back to parlor"
+              label={t('project.rewind')}
+              sublabel={t('project.backToParlor', { defaultValue: 'back to parlor' })}
             />
           </div>
         </div>
@@ -968,7 +1136,7 @@ function ProjectDetail() {
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.25rem)',
               }}
             >
-              {project.category} &middot; {project.period}
+              {category} &middot; {period}
             </p>
             <h1
               className="font-bold"
@@ -981,9 +1149,9 @@ function ProjectDetail() {
                 WebkitTextWrap: 'balance',
               }}
             >
-              {project.title}
+              {title}
             </h1>
-            {project.venue && (
+            {subtitle && (
               <p
                 style={{
                   color: BRONZE,
@@ -993,7 +1161,7 @@ function ProjectDetail() {
                   marginTop: 'clamp(0.85rem, 1.6vh, 1.1rem)',
                 }}
               >
-                {project.venue}
+                {subtitle}
               </p>
             )}
             <p
@@ -1002,12 +1170,12 @@ function ProjectDetail() {
                 fontSize: 'clamp(1.05rem, 1.5vw, 1.35rem)',
                 lineHeight: 1.6,
                 maxWidth: '78ch',
-                marginTop: project.venue
+                marginTop: subtitle
                   ? 'clamp(0.85rem, 1.6vh, 1.1rem)'
                   : 'clamp(1.25rem, 2.5vh, 1.75rem)',
               }}
             >
-              {renderCitations(project.description)}
+              {renderCitations(description)}
             </p>
 
             {/* Brass hairline — the cross-room thread */}
@@ -1024,9 +1192,9 @@ function ProjectDetail() {
 
             {/* Meta row: tags + outward links */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              {project.tags.map((tag) => (
+              {localizedTags.map((tag, idx) => (
                 <span
-                  key={tag}
+                  key={`${idx}-${tag}`}
                   className="font-mono uppercase"
                   style={{
                     backgroundColor: `${LINEN}33`,
@@ -1087,7 +1255,7 @@ function ProjectDetail() {
                   key={`coming-${label}`}
                   className="font-mono uppercase inline-flex items-center gap-1"
                   aria-disabled="true"
-                  title="Coming soon"
+                  title={t('project.comingSoon')}
                   style={{
                     backgroundColor: 'transparent',
                     border: `1px dashed ${LINEN}`,
@@ -1109,37 +1277,40 @@ function ProjectDetail() {
         {/* Body — interleaved blocks */}
         {body.length > 0 && (
           <section style={{ width: '100%' }}>
-            {body.map((block, i) => (
-              <motion.div
-                key={i}
-                initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  marginTop:
-                    i === 0
-                      ? 0
-                      : block.kind === 'heading'
-                      ? 'clamp(3rem, 6vh, 4.5rem)'
-                      : block.kind === 'abstract' || block.kind === 'tldr'
-                      ? 'clamp(2rem, 4vh, 3rem)'
-                      : block.kind === 'table'
-                      ? 'clamp(1.75rem, 3.5vh, 2.5rem)'
-                      : block.kind === 'list'
-                      ? 'clamp(1.25rem, 2.5vh, 2rem)'
-                      : block.kind === 'references'
-                      ? 'clamp(1.5rem, 3vh, 2.25rem)'
-                      : block.kind === 'sideBySide'
-                      ? 'clamp(1.75rem, 3.5vh, 2.5rem)'
-                      : block.kind === 'text'
-                      ? 'clamp(1.5rem, 3vh, 2.25rem)'
-                      : 'clamp(2rem, 4vh, 3.25rem)',
-                }}
-              >
-                <BodyBlock block={block} onOpenImage={setLightbox} />
-              </motion.div>
-            ))}
+            {body.map((block, i) => {
+              const localized = localizeBlock(project.slug, i, block, t);
+              return (
+                <motion.div
+                  key={i}
+                  initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    marginTop:
+                      i === 0
+                        ? 0
+                        : block.kind === 'heading'
+                        ? 'clamp(3rem, 6vh, 4.5rem)'
+                        : block.kind === 'abstract' || block.kind === 'tldr'
+                        ? 'clamp(2rem, 4vh, 3rem)'
+                        : block.kind === 'table'
+                        ? 'clamp(1.75rem, 3.5vh, 2.5rem)'
+                        : block.kind === 'list'
+                        ? 'clamp(1.25rem, 2.5vh, 2rem)'
+                        : block.kind === 'references'
+                        ? 'clamp(1.5rem, 3vh, 2.25rem)'
+                        : block.kind === 'sideBySide'
+                        ? 'clamp(1.75rem, 3.5vh, 2.5rem)'
+                        : block.kind === 'text'
+                        ? 'clamp(1.5rem, 3vh, 2.25rem)'
+                        : 'clamp(2rem, 4vh, 3.25rem)',
+                  }}
+                >
+                  <BodyBlock block={localized} onOpenImage={setLightbox} />
+                </motion.div>
+              );
+            })}
           </section>
         )}
 
@@ -1185,7 +1356,7 @@ function ProjectDetail() {
                 variant="prev"
                 size={38}
                 disabled={!prevProject}
-                ariaLabel={prevProject ? `Previous project: ${prevProject.title}` : 'No previous project'}
+                ariaLabel={prevProject ? `Previous project: ${prevTitle}` : 'No previous project'}
               />
               {prevProject && (
                 <Link
@@ -1202,7 +1373,7 @@ function ProjectDetail() {
                   }}
                   className="hover:underline"
                 >
-                  {prevProject.shortTitle}
+                  {prevShortTitle}
                 </Link>
               )}
             </div>
@@ -1223,7 +1394,7 @@ function ProjectDetail() {
                   }}
                   className="hover:underline"
                 >
-                  {nextProject.shortTitle}
+                  {nextShortTitle}
                 </Link>
               )}
               <TransportButton
@@ -1231,7 +1402,7 @@ function ProjectDetail() {
                 variant="next"
                 size={38}
                 disabled={!nextProject}
-                ariaLabel={nextProject ? `Next project: ${nextProject.title}` : 'No next project'}
+                ariaLabel={nextProject ? `Next project: ${nextTitle}` : 'No next project'}
               />
             </div>
           </div>

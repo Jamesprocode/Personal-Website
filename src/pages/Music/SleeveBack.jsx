@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 // Sort key: last whitespace-delimited token of a name, lowercased.
 // Works for "Haowen Luo" → "luo", "Ben Langer Weida" → "weida".
@@ -21,6 +22,7 @@ const lastName = (name) => {
  * track-row bullet icons bleed through the backdrop.
  */
 function SleeveBack({ album, onClose }) {
+  const { t } = useTranslation();
   // Esc to close
   useEffect(() => {
     if (!album) return undefined;
@@ -65,7 +67,7 @@ function SleeveBack({ album, onClose }) {
           }}
           role="dialog"
           aria-modal="true"
-          aria-label={`${album.title} — liner notes`}
+          aria-label={t('music.sleeveAria', { title: album.title })}
         >
           <motion.div
             key="sleeve"
@@ -96,7 +98,7 @@ function SleeveBack({ album, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close liner notes"
+              aria-label={t('music.closeLiner')}
               style={{
                 position: 'absolute',
                 top: 14,
@@ -129,7 +131,7 @@ function SleeveBack({ album, onClose }) {
                   margin: 0,
                 }}
               >
-                Liner Notes
+                {t('music.linerHeader')}
               </p>
               <h2
                 style={{
@@ -145,7 +147,8 @@ function SleeveBack({ album, onClose }) {
               </h2>
             </div>
 
-            {/* Liner notes prose */}
+            {/* Liner notes prose — Chinese mode pulls from the per-album
+                t() key; English mode falls back to the raw notes string. */}
             {album.liner?.notes && (
               <p
                 style={{
@@ -158,7 +161,7 @@ function SleeveBack({ album, onClose }) {
                   maxWidth: '60ch',
                 }}
               >
-                {album.liner.notes}
+                {t(`music.album.${album.id}.notes`, { defaultValue: album.liner.notes })}
               </p>
             )}
 
@@ -185,7 +188,7 @@ function SleeveBack({ album, onClose }) {
                         marginBottom: 4,
                       }}
                     >
-                      {role}
+                      {t(`music.role.${role}`, { defaultValue: role })}
                     </p>
                     <p
                       style={{
@@ -221,7 +224,7 @@ function SleeveBack({ album, onClose }) {
               }}
             >
               <span>{album.year}</span>
-              <span>James Wang · jameswangjiayi@gmail.com</span>
+              <span>{t('nav.brand')} · jameswangjiayi@gmail.com</span>
             </div>
           </motion.div>
         </motion.div>

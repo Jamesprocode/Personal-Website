@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import SleeveBack from './SleeveBack';
 
 function AlbumThumb({ album, size = 56 }) {
@@ -143,6 +144,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, onClick })
 });
 
 const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, activeTrackId, isPlaying, onToggle, onSelectTrack, onOpenSleeve, reduceMotion }) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -269,7 +271,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
                     e.currentTarget.style.borderColor = 'rgba(196,162,101,0.35)';
                   }}
                 >
-                  Liner Notes
+                  {t('music.linerHeader')}
                 </button>
               )}
             </div>
@@ -281,6 +283,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
 });
 
 function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelectTrack }) {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const [expandedId, setExpandedId] = useState(activeAlbumId || albums[0]?.id || null);
   const [sleeveAlbum, setSleeveAlbum] = useState(null);
@@ -320,7 +323,7 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelec
               letterSpacing: '-0.005em',
             }}
           >
-            Record Crate
+            {t('music.recordCrate', { defaultValue: 'Record Crate' })}
           </p>
           <p
             style={{
@@ -331,11 +334,11 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelec
               textTransform: 'uppercase',
             }}
           >
-            {albums.length} albums
+            {albums.length} {t('music.albumsLabel', { defaultValue: 'albums' })}
           </p>
         </div>
 
-        <div role="list" aria-label="Albums">
+        <div role="list" aria-label={t('music.albumsList')}>
           {albums.map((album) => (
             <AlbumRow
               key={album.id}

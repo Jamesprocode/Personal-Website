@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 function RewindButton({ to = '/', label = 'Rewind' }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={to}
@@ -73,7 +75,7 @@ function RewindButton({ to = '/', label = 'Rewind' }) {
             marginTop: 2,
           }}
         >
-          back to parlor
+          {t('project.backToParlor')}
         </span>
       </span>
     </Link>

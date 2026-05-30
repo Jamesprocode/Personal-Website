@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useAnimationFrame, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import AnalogVUMeter from './AnalogVUMeter';
 import Knob from './Knob';
 import { LoopButton, NextButton } from './TransportButtons';
@@ -29,6 +30,7 @@ function Turntable({
   onCycleLoop,
   onNext,
 }) {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const accent = album?.accentColor || '#c4a265';
   const hasTrack = Boolean(track && track.file);
@@ -347,7 +349,7 @@ function Turntable({
                         marginTop: '25%',
                       }}
                     >
-                      No track loaded
+                      {t('music.noTrack', { defaultValue: 'No track loaded' })}
                     </p>
                     <span />
                   </>
@@ -520,7 +522,7 @@ function Turntable({
                 the needle to seek. */}
             <div
               role="slider"
-              aria-label="Tonearm position (drag to seek)"
+              aria-label={t('music.tonearm')}
               aria-valuemin={0}
               aria-valuemax={duration || 0}
               aria-valuenow={currentTime}
@@ -616,7 +618,7 @@ function Turntable({
                   margin: 0,
                 }}
               >
-                {loopMode === 'shuffle' ? 'Shuffle' : loopMode === 'one' ? 'Loop 1' : 'Loop'}
+                {t(loopMode === 'shuffle' ? 'music.transport.shuffle' : loopMode === 'one' ? 'music.transport.loopOne' : 'music.transport.loop')}
               </p>
               <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <LoopButton mode={loopMode} onClick={onCycleLoop} size={24} />
@@ -637,14 +639,14 @@ function Turntable({
                   margin: 0,
                 }}
               >
-                {isPlaying ? 'Pause' : 'Play'}
+                {t(isPlaying ? 'music.transport.pause' : 'music.transport.play')}
               </p>
               <motion.button
                 whileHover={hasTrack ? { scale: 1.06 } : undefined}
                 whileTap={hasTrack ? { scale: 0.94 } : undefined}
                 onClick={onPlayPause}
                 disabled={!hasTrack}
-                aria-label={isPlaying ? 'Pause' : 'Play'}
+                aria-label={t(isPlaying ? 'music.transport.pause' : 'music.transport.play')}
                 className="rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
                 style={{
                   width: 56,
@@ -684,7 +686,7 @@ function Turntable({
                   margin: 0,
                 }}
               >
-                Next
+                {t('music.transport.next')}
               </p>
               <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <NextButton onClick={onNext} size={24} disabled={!hasTrack} />
@@ -705,7 +707,7 @@ function Turntable({
                   margin: 0,
                 }}
               >
-                Volume
+                {t('music.transport.volume')}
               </p>
               <Knob value={volume} onChange={onVolumeChange} size={56} />
             </div>
@@ -731,9 +733,9 @@ function Turntable({
               whiteSpace: 'nowrap',
             }}
           >
-            Drag the needle to skip around
+            {t('music.hint.drag')}
             <br />
-            Spin the disc to scrub
+            {t('music.hint.spin')}
             <br />
             <kbd
               style={{
@@ -750,8 +752,8 @@ function Turntable({
               }}
             >
               Space
-            </kbd>{' '}
-            to play / pause
+            </kbd>
+            {t('music.hint.spaceSuffix')}
           </p>
           <AnalogVUMeter isPlaying={isPlaying} getLevel={getLevel} />
         </div>

@@ -1,9 +1,13 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import profileImg from '../../assets/me.JPG';
 
 function HeroSection() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
+  const titleMiddle = t('hero.titleMiddle');
+  const titleLast = t('hero.titleLast');
 
   return (
     <section
@@ -48,36 +52,40 @@ function HeroSection() {
             className="col-span-12 lg:col-span-7 order-2 lg:order-1"
           >
             <h1
-              className="font-bold tracking-[-0.025em] text-amber-900 leading-[0.95]"
-              style={{ fontSize: 'clamp(2.75rem, 8vw, 7rem)' }}
+              className="font-bold tracking-[-0.025em] text-amber-900 leading-[1]"
+              style={{ fontSize: 'clamp(2.75rem, 8vw, 7rem)', marginBottom: '0.25em' }}
             >
-              James{' '}
-              <span
-                className="font-normal text-amber-900/55"
-                style={{ fontSize: '0.5em', letterSpacing: '-0.01em', verticalAlign: '0.18em' }}
-              >
-                (Jiayi)
-              </span>{' '}
-              Wang
+              {t('hero.titleFirst')}
+              {titleMiddle && (
+                <span
+                  className="font-normal text-amber-900/55"
+                  style={{ fontSize: '0.5em', letterSpacing: '-0.01em', verticalAlign: '0.18em' }}
+                >
+                  {' '}{titleMiddle}{' '}
+                </span>
+              )}
+              {titleLast && <>{' '}{titleLast}</>}
             </h1>
 
             <div
-              className="bg-amber-700/40 my-[clamp(2.75rem,5.5vh,4rem)]"
+              className="bg-amber-700/40 my-[clamp(4rem,8vh,6rem)]"
               style={{ height: '1px', width: 'clamp(60px, 8vw, 96px)' }}
             />
 
             <p
-              className="text-amber-900/85 leading-[1.8]"
+              className="text-amber-900/85"
               style={{
                 fontSize: 'clamp(1rem, 1.35vw, 1.3rem)',
+                lineHeight: 2,
                 maxWidth: '52ch',
                 fontWeight: 400,
+                letterSpacing: '0.01em',
               }}
             >
-              I&rsquo;m currently a master&rsquo;s student in Music Technology at Georgia Institute of Technology, where I work on optical music recognition, audio content analysis, and music AI systems. I graduated from Occidental College with a double major in Music and Computer Science, where I trained as a jazz saxophonist while developing an interest in music technology and audio engineering.
+              {t('hero.bio')}
             </p>
 
-            <div className="flex flex-wrap gap-[clamp(0.75rem,1.2vw,1.25rem)] mt-[clamp(3rem,6vh,4.5rem)] items-center">
+            <div className="flex flex-wrap gap-[clamp(1.25rem,2vw,2rem)] mt-[clamp(4.5rem,9vh,6.5rem)] items-center">
               <a
                 href="/cv.pdf"
                 target="_blank"
@@ -94,7 +102,7 @@ function HeroSection() {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d2d2d')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#4a3f35')}
               >
-                Download CV
+                {t('hero.downloadCv')}
               </a>
               <Link
                 to="/music"
@@ -109,7 +117,7 @@ function HeroSection() {
                 onMouseEnter={(e) => (e.currentTarget.style.color = '#2d2d2d')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = '#4a3f35')}
               >
-                Listen to my music
+                {t('hero.listenToMusic')}
                 <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
               </Link>
             </div>
@@ -129,7 +137,7 @@ function HeroSection() {
               >
                 <img
                   src={profileImg}
-                  alt="James Wang"
+                  alt={t('nav.brand')}
                   loading="eager"
                   decoding="async"
                   className="absolute inset-0 w-full h-full object-cover"

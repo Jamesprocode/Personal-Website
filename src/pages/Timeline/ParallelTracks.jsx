@@ -1,15 +1,33 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
 import CompanyIcon from '../../components/CompanyIcon';
 
 // Cream parlor palette — Timeline shares the brand surface with Landing
 // and Project pages. The "digital" touch comes from the CD disc shape +
 // the brief spin on hover, not a palette change.
+// `labelKey` / `legendKey` map to flat i18n keys; the English labels stay
+// as the source-of-truth `key` (data filter joins on these).
 const TRACKS = [
-  { key: 'Academic', label: 'Academic', color: '#3b82f6' }, // cobalt
-  { key: 'Internships', label: 'Internships', color: '#6b7280' }, // slate
-  { key: 'Music Performance', label: 'Music Performance', color: '#f97316' }, // ember
+  {
+    key: 'Academic',
+    labelKey: 'timeline.tracks.academic',
+    legendKey: 'timeline.legend.academic',
+    color: '#3b82f6',
+  }, // cobalt
+  {
+    key: 'Internships',
+    labelKey: 'timeline.tracks.internships',
+    legendKey: 'timeline.legend.internships',
+    color: '#6b7280',
+  }, // slate
+  {
+    key: 'Music Performance',
+    labelKey: 'timeline.tracks.performance',
+    legendKey: 'timeline.legend.performance',
+    color: '#f97316',
+  }, // ember
 ];
 
 const START_YEAR = 2020;
@@ -31,6 +49,7 @@ const MIN_LABEL_FRAC = 0.135;
 
 function ParallelTracks() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
   // `pinned` is the entry whose tooltip is sticky after a click. Hover-only
   // tooltips disappear on mouseleave, but a click pins the card so the user
   // can take their cursor away to read.
@@ -133,7 +152,7 @@ function ParallelTracks() {
         paddingTop: 'clamp(0.5rem, 1.5vh, 1.25rem)',
         paddingBottom: 'clamp(3rem, 6vh, 5rem)',
       }}
-      aria-label="Three parallel tracks: academic, internships, music performance"
+      aria-label={t('timeline.rackAria')}
     >
       <div
         style={{
@@ -145,15 +164,15 @@ function ParallelTracks() {
       >
         {/* Legend */}
         <div className="flex flex-wrap justify-center gap-x-[clamp(1rem,2vw,2.5rem)] gap-y-2 mb-[clamp(0.75rem,1.5vh,1.25rem)]">
-          {TRACKS.map((t) => (
-            <div key={t.key} className="flex items-center gap-2">
+          {TRACKS.map((track) => (
+            <div key={track.key} className="flex items-center gap-2">
               <span
                 style={{
                   display: 'inline-block',
                   width: 9,
                   height: 9,
                   borderRadius: 9999,
-                  backgroundColor: t.color,
+                  backgroundColor: track.color,
                 }}
                 aria-hidden
               />
@@ -165,7 +184,7 @@ function ParallelTracks() {
                   letterSpacing: '0.18em',
                 }}
               >
-                {t.label}
+                {t(track.legendKey)}
               </span>
             </div>
           ))}
@@ -199,7 +218,7 @@ function ParallelTracks() {
                   alignSelf: 'center',
                 }}
               >
-                {track.label}
+                {t(track.labelKey)}
               </p>
 
               <div className="relative" style={{ height: BAND_HEIGHT }}>
@@ -227,6 +246,7 @@ function ParallelTracks() {
                       isHovered={isHovered}
                       dimOthers={dimOthers}
                       reduceMotion={reduceMotion}
+                      t={t}
                       onTogglePin={() =>
                         setPinned((prev) => (prev?.id === item.id ? null : item))
                       }
@@ -247,6 +267,7 @@ function ParallelTracks() {
                       item={active}
                       color={track.color}
                       isPinned={!!pinned && pinned.id === active.id}
+                      t={t}
                     />
                   );
                 })()}
@@ -291,7 +312,7 @@ function ParallelTracks() {
           className="mt-[clamp(1.5rem,3vh,2.5rem)] text-center text-amber-700/60 italic"
           style={{ fontSize: 'clamp(0.9rem, 1.1vw, 1rem)' }}
         >
-          Hover a disc for the credit &mdash; click to pin it.
+          {t('timeline.hint')}
         </p>
       </div>
     </section>
@@ -305,6 +326,7 @@ function Entry({
   isHovered,
   dimOthers,
   reduceMotion,
+  t,
   onTogglePin,
   onHoverChange,
 }) {
@@ -314,6 +336,14 @@ function Entry({
   const lit = isPinned || isHovered;
   const spinning = lit && !reduceMotion;
   const cdSize = lit ? CD_LIT : CD_REST;
+  // Entry strings are translated against `timeline.entry.<id>.<field>` keys
+  // in zh.json. English mode has no entry keys — `defaultValue` falls back
+  // to the raw data string from `src/data/timeline.js`, which stays the
+  // source of truth for English.
+  const titleTr = t(`timeline.entry.${item.id}.title`, { defaultValue: item.title });
+  const displayTitleTr = t(`timeline.entry.${item.id}.displayTitle`, {
+    defaultValue: item.displayTitle || item.title,
+  });
 
   return (
     <div
@@ -350,7 +380,7 @@ function Entry({
         onMouseLeave={() => onHoverChange(false)}
         onFocus={() => onHoverChange(true)}
         onBlur={() => onHoverChange(false)}
-        aria-label={`${item.title}, ${item.year}`}
+        aria-label={`${titleTr}, ${item.year}`}
         aria-pressed={isPinned ? 'true' : 'false'}
         className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1] rounded-sm"
         style={{
@@ -388,7 +418,7 @@ function Entry({
           transition: reduceMotion ? 'none' : 'color 150ms ease',
         }}
       >
-        {item.displayTitle || item.title}
+        {displayTitleTr}
       </span>
 
       {/* Stem */}
@@ -424,18 +454,22 @@ function Entry({
 // left, right-half entries pop to the right — labels sail outward into the
 // chart's empty margins rather than crashing into neighboring discs. Per-
 // entry `tooltipSide` overrides the default.
-function EntryTooltip({ item, color, isPinned }) {
+function EntryTooltip({ item, color, isPinned, t }) {
   const placeOnLeft = item.tooltipSide
     ? item.tooltipSide === 'left'
     : item.xFrac < 0.5;
   const sideStyle = placeOnLeft
     ? { right: `calc(${(1 - item.xFrac) * 100}% + 30px)` }
     : { left: `calc(${item.xFrac * 100}% + 30px)` };
+  const titleTr = t(`timeline.entry.${item.id}.title`, { defaultValue: item.title });
+  const detailsTr = t(`timeline.entry.${item.id}.details`, {
+    defaultValue: item.details || item.description,
+  });
   return (
     <div
       data-entry-id={item.id}
       role="dialog"
-      aria-label={`${item.title} details`}
+      aria-label={`${titleTr} details`}
       style={{
         position: 'absolute',
         top: SPINE_Y,
@@ -499,7 +533,7 @@ function EntryTooltip({ item, color, isPinned }) {
           }}
         >
           {item.year} &middot; {item.category}
-          {isPinned ? ' · pinned' : ''}
+          {isPinned ? ` · ${t('timeline.tooltipPinned')}` : ''}
         </p>
         <h3
           style={{
@@ -510,7 +544,7 @@ function EntryTooltip({ item, color, isPinned }) {
             marginBottom: 6,
           }}
         >
-          {item.title}
+          {titleTr}
         </h3>
         <p
           style={{
@@ -519,7 +553,7 @@ function EntryTooltip({ item, color, isPinned }) {
             lineHeight: 1.55,
           }}
         >
-          {item.details || item.description}
+          {detailsTr}
         </p>
       </div>
     </div>

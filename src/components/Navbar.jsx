@@ -1,9 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from './LanguageToggle';
 
 function Navbar() {
   const location = useLocation();
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isLanding = location.pathname === '/';
@@ -17,17 +20,23 @@ function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/music', label: 'Music' },
-    { path: '/timeline', label: 'Timeline' },
+    { path: '/', label: t('nav.home') },
+    { path: '/music', label: t('nav.music') },
+    { path: '/timeline', label: t('nav.timeline') },
   ];
 
   const surfaceBg = isCream ? '#c4b69c' : '#1a1a1a';
   const brandColor = isCream ? '#2d2d2d' : '#ffffff';
   const activeColor = isCream ? '#2d2d2d' : '#ffffff';
   const restColor = isCream ? '#6c5c3b' : 'rgba(255,255,255,0.6)';
-  const activePillBg = isCream ? 'rgba(45,45,45,0.08)' : 'rgba(255,255,255,0.1)';
   const hamburgerColor = isCream ? '#2d2d2d' : '#ffffff';
+
+  // Brass-gold cross-room thread — the only chrome the navbar permits.
+  // Active nav item gets a small brass LED dot; the navbar's bottom edge
+  // is finished with a 1 px brass hairline that runs the full width.
+  const brass = '#c4a265';
+  const brassLight = '#d4b76e';
+  const brassDark = '#8c6e3b';
 
   return (
     <>
@@ -36,7 +45,12 @@ function Navbar() {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
         className="fixed top-0 left-0 right-0 z-50 shadow-md"
-        style={{ backgroundColor: surfaceBg }}
+        style={{
+          backgroundColor: surfaceBg,
+          // Single brass hairline along the bottom — the cross-room thread
+          // running through the navbar. The only chrome the header carries.
+          borderBottom: `1px solid ${brass}40`,
+        }}
       >
         <div
           className="flex items-center justify-between"
@@ -51,39 +65,64 @@ function Navbar() {
           <Link
             to="/"
             className="text-lg font-bold tracking-tight transition-colors duration-300"
-            style={{ color: brandColor }}
+            style={{
+              color: brandColor,
+              // Reserve enough room for the wider English wordmark so the
+              // toggle and nav don't shift when the brand becomes 王嘉毅.
+              minWidth: '7.5rem',
+              display: 'inline-block',
+            }}
           >
-            James Wang
+            {t('nav.brand')}
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className="relative px-4 py-2 text-sm font-semibold transition-colors duration-300 rounded-full"
-                style={{ color: isActive(link.path) ? activeColor : restColor }}
-              >
-                {isActive(link.path) && (
-                  <motion.div
-                    layoutId="navbar-active"
-                    className="absolute inset-0 rounded-full"
-                    style={{ backgroundColor: activePillBg }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          {/* Desktop nav — clean text with a single brass LED dot next to
+              the active link. Each slot has a fixed min-width so EN/ZH
+              never shift the layout. */}
+          <div className="hidden md:flex items-center gap-4">
+            <LanguageToggle />
+            {navLinks.map((link) => {
+              const active = isActive(link.path);
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="relative inline-flex items-center justify-center gap-2 text-sm font-medium transition-colors duration-200"
+                  style={{
+                    color: active ? activeColor : restColor,
+                    minWidth: link.path === '/timeline' ? '4.5rem' : '3.5rem',
+                  }}
+                >
+                  {/* Brass LED — lit amber jewel with a glow halo. Hot
+                      center so it reads as a status light against either
+                      cream or espresso surfaces. */}
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: 9999,
+                      background: active
+                        ? 'radial-gradient(circle at 35% 30%, #fff3c2 0%, #f5b942 40%, #b07a18 100%)'
+                        : 'transparent',
+                      boxShadow: active
+                        ? '0 0 6px rgba(245,185,66,0.75), 0 0 2px rgba(176,122,24,0.9)'
+                        : 'none',
+                      transition: 'background 220ms ease, box-shadow 220ms ease',
+                    }}
                   />
-                )}
-                <span className="relative z-10">{link.label}</span>
-              </Link>
-            ))}
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
             <a
               href="/cv.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-2 px-4 py-2 text-sm font-semibold transition-colors duration-300 rounded-full"
-              style={{ color: restColor }}
+              className="inline-flex items-center justify-center text-sm font-medium transition-colors duration-200"
+              style={{ color: restColor, minWidth: '2.5rem' }}
             >
-              CV
+              {t('nav.cv')}
             </a>
           </div>
 
@@ -91,7 +130,7 @@ function Navbar() {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden w-8 h-8 flex flex-col items-center justify-center gap-1.5"
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-label={t(mobileOpen ? 'nav.closeMenu' : 'nav.openMenu')}
             aria-expanded={mobileOpen}
           >
             <motion.div
@@ -124,6 +163,14 @@ function Navbar() {
             className="fixed inset-0 z-40 bg-[#0f0f0f]/95 backdrop-blur-xl pt-24 px-8 md:hidden"
           >
             <div className="flex flex-col gap-2">
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mb-4"
+              >
+                <LanguageToggle variant="mobile" />
+              </motion.div>
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.path}
@@ -155,7 +202,7 @@ function Navbar() {
                   className="block px-4 py-4 text-2xl font-medium text-gray-400
                     hover:text-white hover:bg-white/5 rounded-xl transition-colors"
                 >
-                  CV
+                  {t('nav.cv')}
                 </a>
               </motion.div>
             </div>

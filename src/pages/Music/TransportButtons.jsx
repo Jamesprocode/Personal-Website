@@ -3,6 +3,7 @@
  * controls strip and the floating MiniPlayer. Keeping them in one place
  * means the icons and the loop-mode glyph stay in sync.
  */
+import { useTranslation } from 'react-i18next';
 
 const ACCENT = '#c4a265';
 const DIM = 'rgba(196,162,101,0.55)';
@@ -105,6 +106,7 @@ export function LoopButton({ mode, onClick, size = 22, hint = false }) {
 }
 
 export function NextButton({ onClick, size = 22, disabled = false }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -114,8 +116,8 @@ export function NextButton({ onClick, size = 22, disabled = false }) {
       }}
       onPointerDown={(e) => e.stopPropagation()}
       disabled={disabled}
-      aria-label="Next track"
-      title="Next track"
+      aria-label={t('music.nextTrack')}
+      title={t('music.nextTrack')}
       style={{
         background: 'transparent',
         border: 'none',

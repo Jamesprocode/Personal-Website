@@ -768,7 +768,7 @@ const projects = [
     tags: ['Music Theory', 'Music Cognition', 'Popular Music'],
     period: 'Published 2025',
     category: 'Music Theory',
-    tileImage: '/projects/rock-harmony/entropy-by-year.png',
+    tileImage: '/projects/harmonic-divorce/hudson_wang_ex10.png',
     body: [
       {
         kind: 'cta',

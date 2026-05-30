@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function LoadingScreen({ onLoadingComplete }) {
+  const { t } = useTranslation();
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -128,13 +130,13 @@ function LoadingScreen({ onLoadingComplete }) {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-4xl font-bold text-amber-100 mb-4">
-                Loading Experience...
+                {t('loading.heading')}
               </h2>
               <p className="text-amber-300 text-lg mb-6">
-                {progress < 30 && "Tuning the instruments..."}
-                {progress >= 30 && progress < 60 && "Setting up the stage..."}
-                {progress >= 60 && progress < 90 && "Sound check in progress..."}
-                {progress >= 90 && "Ready to perform!"}
+                {progress < 30 && t('loading.status.tuning')}
+                {progress >= 30 && progress < 60 && t('loading.status.setup')}
+                {progress >= 60 && progress < 90 && t('loading.status.sound')}
+                {progress >= 90 && t('loading.status.ready')}
               </p>
 
               {/* Progress Bar */}

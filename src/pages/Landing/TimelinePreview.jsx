@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
 
 const TRACKS = [
@@ -15,6 +16,7 @@ const YEAR_SPAN = END_YEAR - START_YEAR;
 
 function TimelinePreview() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
 
   const trackData = useMemo(() => {
     return TRACKS.map((track) => {
@@ -73,14 +75,13 @@ function TimelinePreview() {
               className="font-bold tracking-tight text-amber-900"
               style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', lineHeight: 1.05 }}
             >
-              Where I&rsquo;ve been.
+              {t('timelinePreview.heading')}
             </h2>
             <p
               className="mt-[clamp(1rem,2vh,1.5rem)] text-amber-900/70"
               style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55 }}
             >
-              Five years across three lanes &mdash; degrees, internships, and music.
-              The full chronology is one room over.
+              {t('timelinePreview.bio')}
             </p>
             <Link
               to="/timeline"
@@ -92,7 +93,7 @@ function TimelinePreview() {
                 letterSpacing: '0.02em',
               }}
             >
-              Walk the timeline
+              {t('timelinePreview.cta')}
               <span aria-hidden>&rarr;</span>
             </Link>
           </div>

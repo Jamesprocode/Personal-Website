@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import ProjectShelf from './ProjectShelf';
 
 const INK_DEEP = '#2d2d2d';
@@ -6,6 +7,7 @@ const WALNUT = '#4a3f35';
 
 function ProjectsSection() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
 
   return (
     <section
@@ -46,7 +48,7 @@ function ProjectsSection() {
               margin: 0,
             }}
           >
-            Research Projects
+            {t('projects.heading')}
           </h2>
           <p
             className="col-span-12 lg:col-span-5"
@@ -58,7 +60,7 @@ function ProjectsSection() {
               margin: 0,
             }}
           >
-            Each tape is one project. Pick one off the shelf to play.
+            {t('projects.subtitle')}
           </p>
         </motion.div>
 

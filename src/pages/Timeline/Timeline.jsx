@@ -1,9 +1,11 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import ParallelTracks from './ParallelTracks';
 
 function Timeline() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
 
   return (
     <PageTransition>
@@ -41,19 +43,19 @@ function Timeline() {
               className="font-mono uppercase text-amber-700/70 mb-[clamp(0.75rem,1.5vh,1.25rem)]"
               style={{ fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)', letterSpacing: '0.22em' }}
             >
-              Chronology &middot; 2020&ndash;2026
+              {t('timeline.eyebrow')}
             </p>
             <h1
               className="font-bold tracking-tight text-amber-900"
               style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.05 }}
             >
-              Where I&rsquo;ve been.
+              {t('timeline.heading')}
             </h1>
             <p
               className="mt-[clamp(0.75rem,1.5vh,1.25rem)] mx-auto text-amber-900/70"
               style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.6 }}
             >
-              Five years across three lanes &mdash; degrees, internships, and music.
+              {t('timeline.bio')}
             </p>
           </motion.div>
         </section>

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation, Trans } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import Turntable from './Turntable';
 import AlbumBrowser from './AlbumBrowser';
@@ -7,6 +8,7 @@ import albums from '../../data/albums';
 import useAudioPlayer from '../../hooks/useAudioPlayer';
 
 function Music() {
+  const { t } = useTranslation();
   const {
     isPlaying,
     volume,
@@ -73,7 +75,7 @@ function Music() {
                 lineHeight: 1.05,
               }}
             >
-              Vinyl Listening Room
+              {t('music.heading')}
             </h1>
             <div
               style={{
@@ -96,7 +98,7 @@ function Music() {
                 marginRight: 'auto',
               }}
             >
-              Pick an album from the crate on the right and click a track to start playing. A floating record follows you across the site &mdash; click to pause, drag to move, double-click to come back.
+              {t('music.intro')}
             </p>
           </motion.div>
 
@@ -197,7 +199,7 @@ function Music() {
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.25rem)',
               }}
             >
-              Also on streaming
+              {t('music.streaming.kicker')}
             </p>
             <div
               style={{
@@ -217,7 +219,7 @@ function Music() {
                     margin: 0,
                   }}
                 >
-                  OxyJazz &rsquo;23
+                  {t('music.streaming.album')}
                 </p>
                 <p
                   style={{
@@ -227,7 +229,7 @@ function Music() {
                     marginTop: 6,
                   }}
                 >
-                  Released earlier with the Occidental College Chamber Jazz ensemble &mdash; stream the full album on your preferred service.
+                  {t('music.streaming.body')}
                 </p>
               </div>
               <div
@@ -332,7 +334,7 @@ function Music() {
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.25rem)',
               }}
             >
-              Disclaimer
+              {t('music.disclaimer.kicker')}
             </p>
             <p
               style={{
@@ -342,8 +344,8 @@ function Music() {
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.2rem)',
               }}
             >
-              All recordings on this page were music that I have worked on, mostly on recording, mixing, and mastering. Compositions remain the property of their respective writers and publishers, with composer credits listed beside each track. Original compositions are my own work. Credit to Occidental College Chamber Jazz player for performing on most of the tracks, and to main collaborators on select projects as noted in the liner notes.
-            </p>  
+              {t('music.disclaimer.body1')}
+            </p>
             <p
               style={{
                 color: 'rgba(244, 232, 209, 0.6)',
@@ -351,14 +353,18 @@ function Music() {
                 lineHeight: 1.6,
               }}
             >
-              Tracks on this site are shared as personal portfolio work and are not offered for commercial use, licensing, or redistribution. If you are a rights holder and would like a recording removed, please reach me at{' '}
-              <a
-                href="mailto:jameswangjiayi@gmail.com"
-                style={{ color: '#c4a265', textDecoration: 'underline', textDecorationColor: 'rgba(196,162,101,0.5)' }}
-              >
-                jameswangjiayi@gmail.com
-              </a>
-              .
+              <Trans
+                i18nKey="music.disclaimer.body2"
+                values={{ email: 'jameswangjiayi@gmail.com' }}
+                components={{
+                  1: (
+                    <a
+                      href="mailto:jameswangjiayi@gmail.com"
+                      style={{ color: '#c4a265', textDecoration: 'underline', textDecorationColor: 'rgba(196,162,101,0.5)' }}
+                    />
+                  ),
+                }}
+              />
             </p>
           </motion.div>
         </div>

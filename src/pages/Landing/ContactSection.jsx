@@ -1,6 +1,8 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 function ContactSection() {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
 
   return (
@@ -29,7 +31,7 @@ function ContactSection() {
           className="text-amber-900/85"
           style={{ fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)', lineHeight: 1.45, fontWeight: 500 }}
         >
-          If anything here interests you, email me @
+          {t('contact.lead')}
         </p>
         <a
           href="mailto:jameswangjiayi@gmail.com"

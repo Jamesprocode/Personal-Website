@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import projects from '../../data/projects';
 
 const CATEGORY_COLORS = {
@@ -51,7 +52,12 @@ function SpinningReel({ cx, cy, r, duration = 4, reduceMotion }) {
 }
 
 function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
+  const { t } = useTranslation();
   const dotColor = categoryColor(project.category);
+  const shortTitle = t(`project.${project.slug}.shortTitle`, {
+    defaultValue: project.shortTitle,
+  });
+  const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
   return (
     <motion.button
       onClick={onClick}
@@ -68,7 +74,7 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
         cursor: 'pointer',
         outline: 'none',
       }}
-      aria-label={`${project.title}${isSelected ? ', selected' : ''}`}
+      aria-label={t(isSelected ? 'shelf.tapeAriaSelected' : 'shelf.tapeAria', { title })}
       aria-pressed={isSelected}
     >
       <div
@@ -129,7 +135,7 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
               flex: 1,
             }}
           >
-            {project.shortTitle}
+            {shortTitle}
           </span>
           <span
             style={{
@@ -154,11 +160,20 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
 }
 
 function CassetteFront({ project, onClose, reduceMotion }) {
+  const { t } = useTranslation();
+  const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
+  const shortTitle = t(`project.${project.slug}.shortTitle`, {
+    defaultValue: project.shortTitle,
+  });
+  const period = t(`project.${project.slug}.period`, { defaultValue: project.period });
+  const category = t(`project.${project.slug}.category`, {
+    defaultValue: project.category,
+  });
   return (
     <motion.div
       role="dialog"
       aria-modal="false"
-      aria-label={`${project.title} preview`}
+      aria-label={t('shelf.previewAria', { title })}
       initial={reduceMotion ? false : { opacity: 0, y: 12, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={reduceMotion ? undefined : { opacity: 0, y: 12, scale: 0.95 }}
@@ -198,7 +213,7 @@ function CassetteFront({ project, onClose, reduceMotion }) {
           fillOpacity="0.85"
           letterSpacing="3"
         >
-          {project.category.toUpperCase()}
+          {category.toUpperCase()}
         </text>
 
         {/* Title */}
@@ -211,7 +226,7 @@ function CassetteFront({ project, onClose, reduceMotion }) {
           fill="#451a03"
           letterSpacing="-1"
         >
-          {project.shortTitle}
+          {shortTitle}
         </text>
 
         {/* Period */}
@@ -224,7 +239,7 @@ function CassetteFront({ project, onClose, reduceMotion }) {
           fillOpacity="0.7"
           letterSpacing="2"
         >
-          {project.period.toUpperCase()}
+          {period.toUpperCase()}
         </text>
 
         {/* Project photo (right side of the label) */}
@@ -285,18 +300,18 @@ function CassetteFront({ project, onClose, reduceMotion }) {
         }}
         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#d4b76e')}
         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#c4a265')}
-        aria-label={`Open ${project.title}`}
+        aria-label={t('shelf.openProject', { title })}
       >
         <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
           <path d="M8 5v14l11-7z" />
         </svg>
-        Play
+        {t('shelf.play')}
       </Link>
 
       {/* Close × */}
       <button
         onClick={onClose}
-        aria-label="Close preview"
+        aria-label={t('shelf.closePreview')}
         className="absolute focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fde68a]"
         style={{
           right: 18,
@@ -320,6 +335,7 @@ function CassetteFront({ project, onClose, reduceMotion }) {
 
 function ProjectShelf() {
   const reduceMotion = useReducedMotion();
+  const { t } = useTranslation();
   const [selectedId, setSelectedId] = useState(null);
   const selectedProject = projects.find((p) => p.id === selectedId) || null;
 
@@ -345,7 +361,7 @@ function ProjectShelf() {
       {/* LEFT: vertical list of horizontal cassettes */}
       <div
         role="list"
-        aria-label="Project tapes"
+        aria-label={t('shelf.rackLabel')}
         style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.6rem, 1vh, 1rem)' }}
       >
         {projects.map((p) => (
@@ -400,7 +416,7 @@ function ProjectShelf() {
                   marginBottom: 12,
                 }}
               >
-                Pick a tape
+                {t('shelf.pickATape')}
               </p>
               <p
                 style={{
@@ -409,7 +425,7 @@ function ProjectShelf() {
                   lineHeight: 1.55,
                 }}
               >
-                Click any tape on the shelf to see what is on it. Press play to open the project.
+                {t('shelf.placeholder')}
               </p>
             </motion.div>
           )}

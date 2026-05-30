@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import albums from '../../data/albums';
 
 const tracks = albums.flatMap((a) => a.tracks);
@@ -103,6 +104,7 @@ function VinylDisc({ hovered, reduceMotion }) {
 }
 
 function MusicPreview() {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const [hovered, setHovered] = useState(false);
 
@@ -157,7 +159,7 @@ function MusicPreview() {
                 color: '#f4e8d1',
               }}
             >
-              Recordings, mixes,<br className="hidden sm:block" /> live performances.
+              {t('musicPreview.heading')}
             </h2>
             <p
               className="mt-[clamp(1rem,2vh,1.5rem)] leading-[1.55]"
@@ -167,9 +169,7 @@ function MusicPreview() {
                 maxWidth: '50ch',
               }}
             >
-              Audio engineering work: recording, mixing, and mastering across
-              jazz, electronic, and singer-songwriter sessions. The full crate
-              is in the next room.
+              {t('musicPreview.bio')}
             </p>
 
             <div
@@ -184,7 +184,7 @@ function MusicPreview() {
                     color: 'rgba(196, 162, 101, 0.6)',
                   }}
                 >
-                  Albums on the shelf
+                  {t('musicPreview.albumsLabel')}
                 </p>
                 <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: '#f4e8d1', fontWeight: 600 }}>
                   {albumCount}
@@ -199,7 +199,7 @@ function MusicPreview() {
                     color: 'rgba(196, 162, 101, 0.6)',
                   }}
                 >
-                  Total tracks
+                  {t('musicPreview.tracksLabel')}
                 </p>
                 <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: '#f4e8d1', fontWeight: 600 }}>
                   {trackCount}
@@ -223,7 +223,7 @@ function MusicPreview() {
                 letterSpacing: '0.04em',
               }}
             >
-              Visit the Listening Room
+              {t('musicPreview.cta')}
               <span aria-hidden>→</span>
             </Link>
           </motion.div>
@@ -244,7 +244,7 @@ function MusicPreview() {
               style={{
                 width: 'clamp(220px, 30vw, 420px)',
               }}
-              aria-label="Visit the Listening Room"
+              aria-label={t('musicPreview.cta')}
             >
               <VinylDisc hovered={hovered} reduceMotion={reduceMotion} />
             </Link>

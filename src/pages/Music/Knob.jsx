@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Skeuomorphic volume knob. Drag up to increase, down to decrease. Scroll
@@ -6,6 +7,7 @@ import { useRef, useState, useCallback } from 'react';
  * the press point so the value never jumps from delta-based math.
  */
 function Knob({ value = 70, onChange, min = 0, max = 100, size = 64 }) {
+  const { t } = useTranslation();
   const dragStartRef = useRef(null); // { y, startValue }
   const [isDragging, setIsDragging] = useState(false);
   const knobRef = useRef(null);
@@ -90,7 +92,7 @@ function Knob({ value = 70, onChange, min = 0, max = 100, size = 64 }) {
         ref={knobRef}
         role="slider"
         tabIndex={0}
-        aria-label="Volume"
+        aria-label={t('music.volume')}
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={Math.round(value)}
