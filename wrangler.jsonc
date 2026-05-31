@@ -1,0 +1,13 @@
+{
+  // Cloudflare Workers Static Assets config — serves the built Vite SPA.
+  // Deploy: `npm run build` then `npx wrangler deploy`.
+  "name": "personal-website",
+  "compatibility_date": "2026-05-31",
+  "assets": {
+    // Output of `vite build`.
+    "directory": "./dist",
+    // Serve index.html for unknown paths so client-side routing
+    // (/music, /timeline, /projects/:id) works on direct visits/refresh.
+    "not_found_handling": "single-page-application"
+  }
+}
