@@ -1,8 +1,9 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
 import CompanyIcon from '../../components/CompanyIcon';
+import useIsMobile from '../../hooks/useIsMobile';
 
 // Cream parlor palette — Timeline shares the brand surface with Landing
 // and Project pages. The "digital" touch comes from the CD disc shape +
@@ -47,9 +48,16 @@ const CD_LIT = 60;
 // ~40 px breathing room around a clamp(82, 100, 104) label.
 const MIN_LABEL_FRAC = 0.135;
 
+// Track key → color lookup, shared by the desktop bands and the mobile stack.
+const TRACK_COLOR = TRACKS.reduce((acc, tr) => {
+  acc[tr.key] = tr.color;
+  return acc;
+}, {});
+
 function ParallelTracks() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   // `pinned` is the entry whose tooltip is sticky after a click. Hover-only
   // tooltips disappear on mouseleave, but a click pins the card so the user
   // can take their cursor away to read.
@@ -128,6 +136,16 @@ function ParallelTracks() {
     });
   }, []);
 
+  // Mobile layout data: the parallel tracks rotate 90° into one vertical
+  // spine. All entries merged, sorted by year, each carrying its track color.
+  const stackItems = useMemo(
+    () =>
+      timeline
+        .map((e) => ({ ...e, color: TRACK_COLOR[e.category] || '#6b7280' }))
+        .sort((a, b) => a.year - b.year),
+    []
+  );
+
   useEffect(() => {
     if (!pinned) return undefined;
     const onKey = (e) => e.key === 'Escape' && setPinned(null);
@@ -190,7 +208,10 @@ function ParallelTracks() {
           ))}
         </div>
 
-        {/* Bands */}
+        {/* Bands (desktop) / Vertical CD stack (mobile) */}
+        {isMobile ? (
+          <VerticalStack items={stackItems} t={t} reduceMotion={reduceMotion} />
+        ) : (
         <div className="relative">
           {trackData.map((track, trackIdx) => (
             <motion.div
@@ -307,6 +328,7 @@ function ParallelTracks() {
             </div>
           </div>
         </div>
+        )}
 
         <p
           className="mt-[clamp(1.5rem,3vh,2.5rem)] text-center text-amber-700/60 italic"
@@ -316,6 +338,170 @@ function ParallelTracks() {
         </p>
       </div>
     </section>
+  );
+}
+
+// Mobile layout: the three horizontal tracks rotate 90° into a single
+// vertical spine running top-to-bottom by year. Each entry is a tappable
+// row — CD disc + year/category + title — that expands its details inline.
+// This trades the crowded parallel-tracks chart (which needs horizontal room
+// the phone doesn't have) for a scannable single column.
+function VerticalStack({ items, t, reduceMotion }) {
+  const [openId, setOpenId] = useState(null);
+  const SPINE_X = 30; // px from the left edge — disc centers sit here
+
+  return (
+    <div style={{ position: 'relative', paddingLeft: 4 }}>
+      {/* Continuous spine behind the discs */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: SPINE_X,
+          top: 16,
+          bottom: 16,
+          width: 2,
+          transform: 'translateX(-50%)',
+          background:
+            'linear-gradient(180deg, transparent 0%, rgba(108,92,59,0.28) 5%, rgba(108,92,59,0.28) 95%, transparent 100%)',
+        }}
+      />
+
+      <ul
+        style={{
+          listStyle: 'none',
+          margin: 0,
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 18,
+        }}
+      >
+        {items.map((item) => {
+          const isOpen = openId === item.id;
+          const titleTr = t(`timeline.entry.${item.id}.title`, {
+            defaultValue: item.title,
+          });
+          const displayTitleTr = t(`timeline.entry.${item.id}.displayTitle`, {
+            defaultValue: item.displayTitle || item.title,
+          });
+          const detailsTr = t(`timeline.entry.${item.id}.details`, {
+            defaultValue: item.details || item.description,
+          });
+          return (
+            <li key={item.id} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setOpenId((prev) => (prev === item.id ? null : item.id))}
+                aria-expanded={isOpen}
+                aria-label={`${titleTr}, ${item.year}`}
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1] rounded-md"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  width: '100%',
+                  textAlign: 'left',
+                  background: 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                }}
+              >
+                {/* CD disc anchored on the spine */}
+                <span
+                  style={{
+                    position: 'relative',
+                    width: CD_REST,
+                    height: CD_REST,
+                    flexShrink: 0,
+                    marginLeft: SPINE_X - CD_REST / 2 - 4,
+                  }}
+                >
+                  <CdDisc
+                    size={CD_REST}
+                    color={item.color}
+                    spinning={isOpen && !reduceMotion}
+                    isLit={isOpen}
+                    reduceMotion={reduceMotion}
+                  />
+                </span>
+
+                {/* Year/category + title */}
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    className="font-mono uppercase"
+                    style={{
+                      display: 'block',
+                      color: item.color,
+                      fontSize: '0.64rem',
+                      letterSpacing: '0.18em',
+                      marginBottom: 3,
+                    }}
+                  >
+                    {item.year} &middot; {item.category}
+                  </span>
+                  <span
+                    style={{
+                      display: 'block',
+                      color: isOpen ? '#2d2d2d' : '#4a3f35',
+                      fontSize: '0.95rem',
+                      fontWeight: isOpen ? 600 : 500,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {displayTitleTr}
+                  </span>
+                </span>
+
+                {/* Chevron affordance */}
+                <span
+                  aria-hidden
+                  style={{
+                    flexShrink: 0,
+                    color: 'rgba(108,92,59,0.6)',
+                    fontSize: '0.8rem',
+                    transform: isOpen ? 'rotate(180deg)' : 'none',
+                    transition: reduceMotion ? 'none' : 'transform 200ms ease',
+                  }}
+                >
+                  ▾
+                </span>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ overflow: 'hidden', marginLeft: SPINE_X + CD_REST / 2 - 4 }}
+                  >
+                    <p
+                      style={{
+                        color: '#4a3f35',
+                        fontSize: '0.85rem',
+                        lineHeight: 1.55,
+                        paddingTop: 8,
+                        paddingRight: 8,
+                      }}
+                    >
+                      {titleTr !== displayTitleTr && (
+                        <strong style={{ display: 'block', color: '#2d2d2d', marginBottom: 4 }}>
+                          {titleTr}
+                        </strong>
+                      )}
+                      {detailsTr}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 

@@ -32,7 +32,7 @@ function LoadingScreen({ onLoadingComplete }) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-amber-950 via-amber-900 to-orange-950 overflow-hidden"
+          className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-amber-950 via-amber-900 to-orange-950"
         >
           {/* Subtle floating notes */}
           <div className="absolute inset-0 opacity-10">
@@ -60,14 +60,18 @@ function LoadingScreen({ onLoadingComplete }) {
             ))}
           </div>
 
-          {/* Main Content */}
-          <div className="relative z-10 text-center px-6">
+          {/* Main Content — wrapper is min-h-full + centered so on tall
+              viewports it sits dead-center, and on short (mobile) ones the
+              parent scrolls with breathing room instead of clipping the top
+              and bottom (the old `items-center` + `overflow-hidden` did). */}
+          <div className="relative z-10 min-h-full flex items-center justify-center px-6 py-10">
+            <div className="text-center">
             {/* Cassette */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mb-12 relative"
+              className="mb-8 sm:mb-12 relative"
             >
               <div className="relative w-80 sm:w-96 h-56 bg-gradient-to-br from-amber-200 to-amber-300 rounded-2xl shadow-2xl mx-auto border-4 border-amber-900">
                 {/* Label Area */}
@@ -140,7 +144,7 @@ function LoadingScreen({ onLoadingComplete }) {
               </p>
 
               {/* Progress Bar */}
-              <div className="w-80 sm:w-96 mx-auto mb-12">
+              <div className="w-80 sm:w-96 mx-auto mb-8 sm:mb-12">
                 <div className="h-3 bg-amber-950 rounded-full overflow-hidden border-2 border-amber-700">
                   <motion.div
                     className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500"
@@ -179,6 +183,7 @@ function LoadingScreen({ onLoadingComplete }) {
                 ))}
               </motion.div>
             </motion.div>
+            </div>
           </div>
         </motion.div>
       )}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import projects from '../../data/projects';
+import useIsMobile from '../../hooks/useIsMobile';
 
 const CATEGORY_COLORS = {
   'Musical Interaction': '#f59e0b',          // amber — GEMS, Shimon × AMT
@@ -389,8 +390,16 @@ function CassetteFront({ project, onClose, reduceMotion }) {
 function ProjectShelf() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [selectedId, setSelectedId] = useState(null);
   const selectedProject = projects.find((p) => p.id === selectedId) || null;
+
+  // On mobile the shelf and the opened cassette swap places instead of
+  // stacking: picking a tape hides the whole rack and shows just the
+  // enlarged cassette + PLAY (no scrolling past 15 tapes to reach it);
+  // closing it brings the rack back. Desktop keeps both columns side by side.
+  const showList = !isMobile || !selectedProject;
+  const showPanel = !isMobile || !!selectedProject;
 
   // Stable click handler so memoized cassettes don't re-render on every
   // parent render just because the callback identity changed.
@@ -427,6 +436,7 @@ function ProjectShelf() {
       {/* LEFT: cassettes are slotted onto the rack as a single vertical
           column. Each tape slides in from the left with a small angular
           kick — reads as physical handling, not opacity fade. */}
+      {showList && (
       <motion.div
         role="list"
         aria-label={t('shelf.rackLabel')}
@@ -466,8 +476,10 @@ function ProjectShelf() {
           </motion.div>
         ))}
       </motion.div>
+      )}
 
       {/* RIGHT: active cassette panel — fades in alongside the cascade */}
+      {showPanel && (
       <motion.div
         variants={{
           hidden: { opacity: 0 },
@@ -531,6 +543,7 @@ function ProjectShelf() {
           )}
         </AnimatePresence>
       </motion.div>
+      )}
 
       <style>{`
         @media (max-width: 760px) {
