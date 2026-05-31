@@ -47,6 +47,9 @@ export function AudioPlayerProvider({ children }) {
   // Latest seek target that arrived while the element was still resolving a
   // previous seek. Applied on the 'seeked' event so we never thrash.
   const pendingSeekRef = useRef(null);
+  // Object URL of the fully-downloaded current track (see play()). Kept so we
+  // can revoke it when switching tracks / unmounting.
+  const blobUrlRef = useRef(null);
 
   // Web Audio analyzer chain
   const audioCtxRef = useRef(null);
@@ -150,6 +153,34 @@ export function AudioPlayerProvider({ children }) {
           }
         }
       });
+
+      // Reliable seeking workaround: Cloudflare's static-asset hosting returns
+      // HTTP 200 (not 206 Partial Content) for range requests, so the browser
+      // can't seek to un-buffered audio over the network and scrubbing stalls
+      // playback. Download the whole file once, then swap the element to a
+      // local blob URL where seeking is instant — independent of the host.
+      // Streaming the network URL first keeps playback start snappy.
+      fetch(trackFile)
+        .then((res) => res.blob())
+        .then((blob) => {
+          if (currentTrackRef.current !== trackFile) return; // track changed
+          const a = audioRef.current;
+          if (!a) return;
+          const blobUrl = URL.createObjectURL(blob);
+          if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+          blobUrlRef.current = blobUrl;
+          const resumeAt = a.currentTime;
+          const wasPlaying = !a.paused;
+          const onReady = () => {
+            a.removeEventListener('loadedmetadata', onReady);
+            try { a.currentTime = resumeAt; } catch { /* no-op */ }
+            if (wasPlaying) a.play().catch(() => {});
+          };
+          a.addEventListener('loadedmetadata', onReady);
+          a.src = blobUrl;
+          a.load();
+        })
+        .catch(() => { /* keep streaming; seeking may stall until cached */ });
     }
 
     if (audioRef.current) {
@@ -253,6 +284,10 @@ export function AudioPlayerProvider({ children }) {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+      }
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
       }
       if (audioCtxRef.current) {
         audioCtxRef.current.close().catch(() => {});
