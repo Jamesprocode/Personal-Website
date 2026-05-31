@@ -225,6 +225,40 @@ function Turntable({
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
       }}
     >
+      {/* Mobile: center the controls strip in a single stacked column so the
+          transport buttons, VU meter and instructions sit dead-center rather
+          than splitting to opposite edges. Desktop keeps the two-column
+          justify-between layout untouched. */}
+      <style>{`
+        @media (max-width: 760px) {
+          .music-controls {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .music-controls__left {
+            align-items: center;
+            width: 100%;
+          }
+          .music-controls__time {
+            text-align: center;
+          }
+          .music-controls__buttons {
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 0 !important;
+          }
+          .music-controls__right {
+            align-items: center !important;
+            width: 100%;
+          }
+          .music-controls__hint {
+            text-align: center !important;
+            white-space: normal !important;
+          }
+        }
+      `}</style>
+
       {/* Top trim hairline */}
       <div
         aria-hidden
@@ -574,7 +608,7 @@ function Turntable({
           so the time readout sits flush under the divider line — aligned
           with the first line of the instructions text on the right. */}
       <div
-        className="flex items-stretch justify-between flex-wrap"
+        className="music-controls flex items-stretch justify-between flex-wrap"
         style={{
           marginTop: 'clamp(1.5rem, 3vh, 2.5rem)',
           paddingTop: 'clamp(0.75rem, 1.5vh, 1rem)',
@@ -583,9 +617,9 @@ function Turntable({
         }}
       >
         {/* Left column */}
-        <div className="flex flex-col" style={{ justifyContent: 'space-between', gap: 'clamp(0.6rem, 1.2vh, 0.9rem)' }}>
+        <div className="music-controls__left flex flex-col" style={{ justifyContent: 'space-between', gap: 'clamp(0.6rem, 1.2vh, 0.9rem)' }}>
           <div
-            className="font-mono"
+            className="music-controls__time font-mono"
             style={{
               color: hasTrack ? '#c4a265' : 'rgba(196,162,101,0.35)',
               fontSize: 'clamp(0.82rem, 1vw, 0.95rem)',
@@ -598,7 +632,7 @@ function Turntable({
             {fmtTime(duration)}
           </div>
           <div
-            className="flex items-end"
+            className="music-controls__buttons flex items-end"
             style={{
               gap: 'clamp(0.25rem, 0.6vw, 0.5rem)',
               marginBottom: 'clamp(1rem, 2.5vh, 1.75rem)',
@@ -718,11 +752,11 @@ function Turntable({
             Column sizes to fit the longest instruction line so each line
             stays on one row; both items right-align to the same edge. */}
         <div
-          className="flex flex-col items-end"
+          className="music-controls__right flex flex-col items-end"
           style={{ gap: 'clamp(0.6rem, 1.2vh, 0.9rem)', flex: '0 0 auto', justifyContent: 'space-between' }}
         >
           <p
-            className="font-mono uppercase"
+            className="music-controls__hint font-mono uppercase"
             style={{
               color: 'rgba(244,232,209,0.55)',
               fontSize: 'clamp(0.6rem, 0.72vw, 0.68rem)',

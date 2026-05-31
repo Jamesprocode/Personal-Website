@@ -6,9 +6,14 @@ import Turntable from './Turntable';
 import AlbumBrowser from './AlbumBrowser';
 import albums from '../../data/albums';
 import useAudioPlayer from '../../hooks/useAudioPlayer';
+import useIsMobile from '../../hooks/useIsMobile';
 
 function Music() {
   const { t } = useTranslation();
+  // The album crate sits to the RIGHT on desktop but stacks BELOW the
+  // turntable once the layout collapses at 880px — so the intro's directional
+  // cue ("on the right" vs "below") has to follow suit.
+  const isStacked = useIsMobile('(max-width: 880px)');
   const {
     isPlaying,
     volume,
@@ -98,7 +103,7 @@ function Music() {
                 marginRight: 'auto',
               }}
             >
-              {t('music.intro')}
+              {t(isStacked ? 'music.introMobile' : 'music.intro')}
             </p>
           </motion.div>
 

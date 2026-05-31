@@ -401,6 +401,26 @@ function ProjectShelf() {
   const showList = !isMobile || !selectedProject;
   const showPanel = !isMobile || !!selectedProject;
 
+  // The right panel mounts on demand on mobile (only when a tape is open).
+  // Relying on the parent grid's whileInView="show" to propagate to a child
+  // that mounts AFTER the gesture already fired (viewport once:true) is
+  // unreliable — the child can stay stuck at the "hidden" opacity:0, so the
+  // enlarged tape silently never appears (the intermittent "doesn't show up"
+  // bug). On mobile, drive the panel's own fade so it always animates in;
+  // desktop keeps the inherited staggered reveal alongside the cascade.
+  const panelAnim = isMobile
+    ? {
+        initial: reduceMotion ? false : { opacity: 0 },
+        animate: { opacity: 1 },
+        transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+      }
+    : {
+        variants: {
+          hidden: { opacity: 0 },
+          show: { opacity: 1, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+        },
+      };
+
   // Stable click handler so memoized cassettes don't re-render on every
   // parent render just because the callback identity changed.
   const handleSelect = useCallback((id) => {
@@ -481,13 +501,7 @@ function ProjectShelf() {
       {/* RIGHT: active cassette panel — fades in alongside the cascade */}
       {showPanel && (
       <motion.div
-        variants={{
-          hidden: { opacity: 0 },
-          show: {
-            opacity: 1,
-            transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-          },
-        }}
+        {...panelAnim}
         style={{
           minHeight: 360,
           minWidth: 0,
