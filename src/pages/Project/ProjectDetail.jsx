@@ -494,6 +494,7 @@ function HeadingBlock({ text, eyebrow }) {
 }
 
 function TableBlock({ headers, rows, caption, footnote }) {
+  const { t } = useTranslation();
   return (
     <figure
       style={{
