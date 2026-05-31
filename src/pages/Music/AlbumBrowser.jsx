@@ -51,7 +51,7 @@ function AlbumThumb({ album, size = 56 }) {
   );
 }
 
-const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, onClick }) {
+const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBuffering, onClick }) {
   const playable = Boolean(track.file);
   return (
     <button
@@ -88,7 +88,22 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, onClick })
           marginTop: 2,
         }}
       >
-        {isActive && isPlaying ? '♪' : isActive ? '▶' : '·'}
+        {isActive && isBuffering ? (
+          <motion.span
+            aria-hidden
+            animate={{ rotate: 360 }}
+            transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }}
+            style={{
+              display: 'inline-block',
+              width: 11,
+              height: 11,
+              borderRadius: '50%',
+              border: '2px solid transparent',
+              borderTopColor: '#c4a265',
+              borderRightColor: 'rgba(196,162,101,0.35)',
+            }}
+          />
+        ) : isActive && isPlaying ? '♪' : isActive ? '▶' : '·'}
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span
@@ -143,7 +158,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, onClick })
   );
 });
 
-const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, activeTrackId, isPlaying, onToggle, onSelectTrack, onOpenSleeve, reduceMotion }) {
+const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, activeTrackId, isPlaying, isBuffering, onToggle, onSelectTrack, onOpenSleeve, reduceMotion }) {
   const { t } = useTranslation();
   return (
     <div
@@ -239,6 +254,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
                   track={track}
                   isActive={activeTrackId === track.id}
                   isPlaying={isPlaying && activeTrackId === track.id}
+                  isBuffering={isBuffering && activeTrackId === track.id}
                   onClick={() => onSelectTrack(album, track)}
                 />
               ))}
@@ -282,7 +298,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
   );
 });
 
-function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelectTrack }) {
+function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffering, onSelectTrack }) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const [expandedId, setExpandedId] = useState(activeAlbumId || albums[0]?.id || null);
@@ -347,6 +363,7 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelec
               isActiveAlbum={activeAlbumId === album.id}
               activeTrackId={activeTrackId}
               isPlaying={isPlaying}
+              isBuffering={isBuffering}
               onToggle={handleToggleExpand}
               onSelectTrack={onSelectTrack}
               onOpenSleeve={setSleeveAlbum}

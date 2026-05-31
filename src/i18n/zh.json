@@ -444,6 +444,7 @@
   "music.transport.shuffle": "随机",
   "music.transport.play": "播放",
   "music.transport.pause": "暂停",
+  "music.transport.buffering": "加载中",
   "music.transport.next": "下一首",
   "music.transport.volume": "音量",
   "music.hint.drag": "拖动唱针自由跳转",

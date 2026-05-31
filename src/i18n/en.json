@@ -80,6 +80,7 @@
   "music.transport.shuffle": "Shuffle",
   "music.transport.play": "Play",
   "music.transport.pause": "Pause",
+  "music.transport.buffering": "Loading",
   "music.transport.next": "Next",
   "music.transport.volume": "Volume",
   "music.hint.drag": "Drag the needle to skip around",

@@ -16,6 +16,7 @@ function Music() {
   const isStacked = useIsMobile('(max-width: 880px)');
   const {
     isPlaying,
+    isBuffering,
     volume,
     setVolume,
     getLevel,
@@ -132,6 +133,7 @@ function Music() {
                 album={selectedAlbum}
                 track={selectedTrack}
                 isPlaying={isPlaying}
+                isBuffering={isBuffering}
                 onPlayPause={handlePlayPause}
                 volume={volume}
                 onVolumeChange={setVolume}
@@ -164,6 +166,7 @@ function Music() {
                 activeAlbumId={selectedAlbum?.id}
                 activeTrackId={selectedTrack?.id}
                 isPlaying={isPlaying}
+                isBuffering={isBuffering}
                 onSelectTrack={handleSelectTrack}
               />
             </motion.div>

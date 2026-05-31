@@ -47,6 +47,7 @@ function MiniPlayer() {
   const {
     selectedAlbum,
     isPlaying,
+    isBuffering,
     hasEverPlayed,
     togglePlayPause,
     loopMode,
@@ -266,6 +267,27 @@ function MiniPlayer() {
                 }}
               />
             </motion.div>
+
+            {/* Buffering ring: spins around the disc while the track is
+                downloading so a slow start reads as "loading," matching the
+                turntable's play-button spinner. */}
+            {isBuffering && !reduceMotion && (
+              <motion.span
+                aria-hidden
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }}
+                style={{
+                  position: 'absolute',
+                  inset: -3,
+                  borderRadius: '50%',
+                  border: '2px solid transparent',
+                  borderTopColor: accent,
+                  borderRightColor: 'rgba(196,162,101,0.3)',
+                  pointerEvents: 'none',
+                  zIndex: 3,
+                }}
+              />
+            )}
 
             {/* Hover overlay: visual hint for play/pause state. */}
             <AnimatePresence>

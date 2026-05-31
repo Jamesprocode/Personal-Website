@@ -44,6 +44,7 @@ function Turntable({
   album,
   track,
   isPlaying,
+  isBuffering = false,
   onPlayPause,
   volume,
   onVolumeChange,
@@ -702,16 +703,18 @@ function Turntable({
                   margin: 0,
                 }}
               >
-                {t(isPlaying ? 'music.transport.pause' : 'music.transport.play')}
+                {t(isBuffering ? 'music.transport.buffering' : isPlaying ? 'music.transport.pause' : 'music.transport.play')}
               </p>
               <motion.button
                 whileHover={hasTrack ? { scale: 1.06 } : undefined}
                 whileTap={hasTrack ? { scale: 0.94 } : undefined}
                 onClick={onPlayPause}
                 disabled={!hasTrack}
-                aria-label={t(isPlaying ? 'music.transport.pause' : 'music.transport.play')}
+                aria-label={t(isBuffering ? 'music.transport.buffering' : isPlaying ? 'music.transport.pause' : 'music.transport.play')}
+                aria-busy={isBuffering || undefined}
                 className="rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
                 style={{
+                  position: 'relative',
                   width: 56,
                   height: 56,
                   backgroundColor: hasTrack ? '#c4a265' : 'rgba(196,162,101,0.25)',
@@ -722,6 +725,24 @@ function Turntable({
                     : 'none',
                 }}
               >
+                {/* Buffering ring: a thin arc that spins around the button
+                    while the track downloads, so a slow start reads as
+                    "loading" rather than a dead click. */}
+                {isBuffering && !reduceMotion && (
+                  <motion.span
+                    aria-hidden
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }}
+                    style={{
+                      position: 'absolute',
+                      inset: -4,
+                      borderRadius: '50%',
+                      border: '2px solid transparent',
+                      borderTopColor: '#1a1410',
+                      borderRightColor: 'rgba(26,20,16,0.35)',
+                    }}
+                  />
+                )}
                 {isPlaying ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                     <rect x="6" y="5" width="4" height="14" rx="1" />

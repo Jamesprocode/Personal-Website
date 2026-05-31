@@ -31,6 +31,13 @@ const pickNext = (playlist, current, mode) => {
 
 export function AudioPlayerProvider({ children }) {
   const [isPlaying, setIsPlaying] = useState(false);
+  // True while the element is fetching/buffering audio and can't yet produce
+  // sound — the gap between "user pressed play" and "audio is actually
+  // playing." Surfaced in the UI as a loading indicator. On slow / mobile
+  // connections (and especially for the largest track) this window can be
+  // several seconds, which is exactly when the user thinks "I clicked but
+  // nothing happened."
+  const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(70);
   const [duration, setDuration] = useState(0);
   // Playback position is a MotionValue, not React state, on purpose. The
@@ -54,6 +61,12 @@ export function AudioPlayerProvider({ children }) {
 
   const audioRef = useRef(null);
   const currentTrackRef = useRef(null);
+  // The user's *intent*: did they ask for playback? Media events are the
+  // source of truth for whether sound is actually coming out, but the browser
+  // can pause us for buffering ('waiting') and resume later ('playing'). We
+  // keep the intent here so a buffering pause doesn't get mistaken for the
+  // user pausing, and so we can auto-resume once enough has buffered.
+  const wantPlayingRef = useRef(false);
   // Latest seek target that arrived while the element was still resolving a
   // previous seek. Applied on the 'seeked' event so we never thrash.
   const pendingSeekRef = useRef(null);
@@ -179,34 +192,103 @@ export function AudioPlayerProvider({ children }) {
   const play = useCallback((trackFile) => {
     if (!trackFile) return;
 
+    // The user wants playback as of now. Set this BEFORE touching the old
+    // element so the soon-to-fire 'pause' on it isn't mistaken for a user
+    // pause.
+    wantPlayingRef.current = true;
+
     if (trackFile !== currentTrackRef.current) {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      // Fully retire the previous element. Just calling pause() isn't enough:
+      // if the user switches tracks while the first is still downloading, the
+      // old element keeps its in-flight network request AND its event
+      // listeners alive. Those stale listeners would fire into the now-shared
+      // isPlaying / isBuffering state (and a late 'canplay' could even resume
+      // the wrong track). Detaching src + load() aborts the old download and
+      // frees the connection — important on slow links where the two streams
+      // would otherwise compete for bandwidth.
+      const prev = audioRef.current;
+      if (prev) {
+        prev.pause();
+        prev.removeAttribute('src');
+        try { prev.load(); } catch { /* no-op */ }
       }
 
       const audio = new Audio(trackFile);
       audio.crossOrigin = 'anonymous';
+      audio.preload = 'auto';
       audio.volume = volume / 100;
       audioRef.current = audio;
       currentTrackRef.current = trackFile;
       currentTimeMV.set(0); // reset position for the new track
+      // A brand-new element has no buffer yet, so we're buffering until the
+      // first 'playing' event fires.
+      setIsBuffering(true);
       // New element streams the network URL; the full-file blob (for instant
       // seeking) is fetched lazily on the first seek, not now.
       blobFetchStartedRef.current = null;
 
+      // Every listener bails if this element is no longer the active one, so
+      // a slow track that gets superseded mid-load can never touch shared
+      // state or resume itself after the user moved on.
+      const isCurrent = () => audioRef.current === audio;
+
       audio.addEventListener('loadedmetadata', () => {
+        if (!isCurrent()) return;
         setDuration(audio.duration);
       });
       audio.addEventListener('timeupdate', () => {
+        if (!isCurrent()) return;
         currentTimeMV.set(audio.currentTime);
       });
       audio.addEventListener('ended', () => {
+        if (!isCurrent()) return;
         onEndedRef.current();
+      });
+      // --- Truth-driven playback state ---------------------------------
+      // The browser, not our optimistic setIsPlaying, decides when sound is
+      // actually playing. These listeners keep isPlaying / isBuffering honest
+      // on slow networks so the UI never claims "playing" while silent, and
+      // so a buffering stall auto-recovers instead of looking like a dead
+      // click.
+      audio.addEventListener('waiting', () => {
+        if (!isCurrent()) return;
+        if (wantPlayingRef.current) setIsBuffering(true);
+      });
+      audio.addEventListener('stalled', () => {
+        if (!isCurrent()) return;
+        if (wantPlayingRef.current) setIsBuffering(true);
+      });
+      audio.addEventListener('playing', () => {
+        if (!isCurrent()) return;
+        setIsBuffering(false);
+        setIsPlaying(true);
+      });
+      audio.addEventListener('canplay', () => {
+        if (!isCurrent()) return;
+        // Enough buffered to start. If the user still wants playback but the
+        // element is paused (e.g. it paused itself to buffer), resume.
+        if (wantPlayingRef.current && audio.paused) {
+          audio.play().catch(() => {});
+        }
+      });
+      audio.addEventListener('pause', () => {
+        if (!isCurrent()) return;
+        // Only treat as a real pause if the user actually wanted to stop.
+        // Buffering pauses keep wantPlaying true, so we ignore those here.
+        if (!wantPlayingRef.current) {
+          setIsPlaying(false);
+          setIsBuffering(false);
+        }
+      });
+      audio.addEventListener('error', () => {
+        if (!isCurrent()) return;
+        setIsBuffering(false);
       });
       // When a seek finishes, chase the most recent pending target (if any).
       // This serializes rapid scrub seeks so the element never gets stuck in
       // a perpetual "seeking" state that silences playback.
       audio.addEventListener('seeked', () => {
+        if (!isCurrent()) return;
         if (pendingSeekRef.current !== null) {
           const next = pendingSeekRef.current;
           pendingSeekRef.current = null;
@@ -219,18 +301,29 @@ export function AudioPlayerProvider({ children }) {
 
     if (audioRef.current) {
       ensureAnalyser(audioRef.current);
+      // Don't optimistically flip isPlaying here — the 'playing' event does
+      // that once sound is actually out. We do show the buffering indicator
+      // immediately so the click feels acknowledged.
+      if (audioRef.current.paused) setIsBuffering(true);
       audioRef.current.play().catch(() => {
+        // Autoplay rejection or an aborted load. Drop the intent so the UI
+        // doesn't get stuck showing a spinner forever.
+        wantPlayingRef.current = false;
+        setIsBuffering(false);
         setIsPlaying(false);
       });
-      setIsPlaying(true);
       setHasEverPlayed(true);
     }
   }, [volume, ensureAnalyser]);
 
   const pause = useCallback(() => {
+    // Record intent first so the element's 'pause' listener knows this was a
+    // deliberate stop (not a buffering hiccup) and clears state.
+    wantPlayingRef.current = false;
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
+      setIsBuffering(false);
     }
   }, []);
 
@@ -279,7 +372,9 @@ export function AudioPlayerProvider({ children }) {
     onEndedRef.current = () => {
       const playlist = getPlaylist(selectedAlbum);
       if (!playlist.length || !selectedTrack) {
+        wantPlayingRef.current = false;
         setIsPlaying(false);
+        setIsBuffering(false);
         currentTimeMV.set(0);
         return;
       }
@@ -289,7 +384,9 @@ export function AudioPlayerProvider({ children }) {
         currentTrackRef.current = null;
         play(next.file);
       } else {
+        wantPlayingRef.current = false;
         setIsPlaying(false);
+        setIsBuffering(false);
         currentTimeMV.set(0);
       }
     };
@@ -343,6 +440,7 @@ export function AudioPlayerProvider({ children }) {
   const value = useMemo(
     () => ({
       isPlaying,
+      isBuffering,
       volume,
       currentTimeMV,
       duration,
@@ -362,6 +460,7 @@ export function AudioPlayerProvider({ children }) {
     }),
     [
       isPlaying,
+      isBuffering,
       volume,
       currentTimeMV,
       duration,
