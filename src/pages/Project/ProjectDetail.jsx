@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -422,6 +422,57 @@ function AudioBlock({ src, caption }) {
 }
 
 function VideoBlock({ src, poster, caption }) {
+  const videoRef = useRef(null);
+  const blobUrlRef = useRef(null);
+
+  // Same reliable-seeking workaround as the audio player: Cloudflare's
+  // static-asset hosting answers range requests with HTTP 200 (full body),
+  // not 206 Partial Content, so the browser can't seek to un-buffered time
+  // over the network and dragging the scrub bar stalls. We stream the
+  // network URL first for a snappy start, then download the whole file once
+  // and swap the element to a local blob URL where seeking is instant —
+  // preserving the current position and play state across the swap.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !src) return undefined;
+    let cancelled = false;
+
+    fetch(src)
+      .then((res) => res.blob())
+      .then((blob) => {
+        if (cancelled || !videoRef.current) return;
+        const v = videoRef.current;
+        const blobUrl = URL.createObjectURL(blob);
+        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = blobUrl;
+        const resumeAt = v.currentTime;
+        const wasPlaying = !v.paused && !v.ended;
+        const onReady = () => {
+          v.removeEventListener('loadedmetadata', onReady);
+          try {
+            v.currentTime = resumeAt;
+          } catch {
+            /* no-op */
+          }
+          if (wasPlaying) v.play().catch(() => {});
+        };
+        v.addEventListener('loadedmetadata', onReady);
+        v.src = blobUrl;
+        v.load();
+      })
+      .catch(() => {
+        /* keep streaming; seeking may stall until cached */
+      });
+
+    return () => {
+      cancelled = true;
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
+  }, [src]);
+
   return (
     <figure
       style={{
@@ -432,6 +483,7 @@ function VideoBlock({ src, poster, caption }) {
       }}
     >
       <video
+        ref={videoRef}
         controls
         preload="metadata"
         playsInline
