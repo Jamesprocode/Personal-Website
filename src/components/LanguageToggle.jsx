@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { useTheme } from '../hooks/useTheme';
 
 /**
  * LanguageToggle
@@ -11,16 +11,16 @@ import { useLocation } from 'react-router-dom';
  * The container reserves a fixed width so the navbar never reflows when
  * the user flips languages.
  *
- * Surface-aware:
- *   - Cream Parlor (Landing / Timeline): walnut active text, aged-bronze inactive.
- *   - Espresso Lounge (Music / Project): white active text, parchment-low inactive.
+ * Theme-aware (drives off the active theme, NOT the route, so the toggle
+ * stays legible on the navbar in both modes):
+ *   - Light (cream navbar): walnut active text, aged-bronze inactive.
+ *   - Dark (espresso navbar): white active text, parchment-low inactive.
  */
 function LanguageToggle({ variant = 'desktop' }) {
   const { i18n } = useTranslation();
-  const location = useLocation();
+  const { isDark } = useTheme();
 
-  const isCream =
-    location.pathname === '/' || location.pathname === '/timeline';
+  const isCream = !isDark;
 
   const currentLang = (i18n.resolvedLanguage || i18n.language || 'en').startsWith('zh')
     ? 'zh'

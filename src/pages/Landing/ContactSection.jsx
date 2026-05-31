@@ -25,7 +25,7 @@ function ContactSection() {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#f4e8d1',
+        backgroundColor: 'var(--bg)',
         paddingTop: 'clamp(4rem, 8vh, 6.5rem)',
         paddingBottom: 'clamp(7rem, 12vh, 10rem)',
         paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
@@ -47,8 +47,7 @@ function ContactSection() {
         style={{ width: '100%', maxWidth: '52ch' }}
       >
         <motion.p
-          className="text-amber-900/85"
-          style={{ fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)', lineHeight: 1.45, fontWeight: 500 }}
+          style={{ fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)', lineHeight: 1.45, fontWeight: 500, color: 'var(--text-strong)' }}
           variants={{
             hidden: { opacity: 0, y: 16 },
             show: {
@@ -62,11 +61,15 @@ function ContactSection() {
         </motion.p>
         <motion.a
           href="mailto:jameswangjiayi@gmail.com"
-          className="inline-block mt-[clamp(0.75rem,1.5vh,1.25rem)] text-amber-900 hover:text-stone-900 transition-colors duration-200 font-medium underline-offset-[6px] decoration-amber-700/40 hover:decoration-amber-700/80"
+          className="inline-block mt-[clamp(0.75rem,1.5vh,1.25rem)] transition-colors duration-200 font-medium underline-offset-[6px]"
           style={{
             fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)',
             textDecoration: 'underline',
+            color: 'var(--accent-deep)',
+            textDecorationColor: 'var(--border-strong)',
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--accent-deep)')}
           variants={{
             hidden: { opacity: 0, y: 12 },
             show: {

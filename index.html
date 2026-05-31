@@ -6,6 +6,27 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#f4e8d1" />
 
+    <!-- Resolve the theme before first paint so there's no flash of the
+         wrong palette. Mirrors the logic in src/hooks/useTheme.jsx:
+         explicit stored choice wins, else follow the OS. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+
     <title>James Wang — Music technology researcher, jazz saxophonist, audio engineer</title>
     <meta name="description" content="Personal site of James (Jiayi) Wang. M.S. Music Technology at Georgia Tech. Projects in optical music recognition, audio ML, pitch tracking, and audio plugin development." />
     <meta name="author" content="James Wang" />

@@ -536,7 +536,7 @@ function ProjectShelf() {
               <p
                 className="font-mono uppercase"
                 style={{
-                  color: 'rgba(146, 64, 14, 0.65)',
+                  color: 'var(--accent-deep)',
                   fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)',
                   letterSpacing: '0.22em',
                   marginBottom: 12,
@@ -546,7 +546,7 @@ function ProjectShelf() {
               </p>
               <p
                 style={{
-                  color: 'rgba(74, 63, 53, 0.7)',
+                  color: 'var(--text)',
                   fontSize: 'clamp(0.92rem, 1.05vw, 1.05rem)',
                   lineHeight: 1.55,
                 }}

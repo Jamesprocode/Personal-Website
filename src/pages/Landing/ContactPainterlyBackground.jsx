@@ -31,13 +31,14 @@ function ContactPainterlyBackground({ reduceMotion, scrollYProgress }) {
     >
       <defs>
         <radialGradient id="contact-halo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f4c878" stopOpacity="0.42" />
-          <stop offset="40%" stopColor="#c4862e" stopOpacity="0.18" />
+          <stop offset="0%" stopColor="#f4c878" stopOpacity="0.28" />
+          <stop offset="45%" stopColor="#c4862e" stopOpacity="0.12" />
           <stop offset="100%" stopColor="#7a4f15" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id="contact-inner" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fff2d4" stopOpacity="0.55" />
+          <stop offset="0%" stopColor="#fff2d4" stopOpacity="0.30" />
+          <stop offset="55%" stopColor="#fff2d4" stopOpacity="0.10" />
           <stop offset="100%" stopColor="#fff2d4" stopOpacity="0" />
         </radialGradient>
       </defs>

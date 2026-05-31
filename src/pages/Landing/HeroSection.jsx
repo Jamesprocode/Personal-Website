@@ -61,6 +61,8 @@ function HeroSection() {
         justifyContent: 'center',
         paddingTop: 'clamp(7rem, 14vh, 11rem)',
         paddingBottom: 'clamp(3rem, 6vh, 5rem)',
+        // Page base — cream in light, espresso in dark (theme token).
+        background: 'var(--bg)',
       }}
     >
       <HeroPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} inView={inView} />
@@ -107,8 +109,8 @@ function HeroSection() {
             }}
           >
             <motion.h1
-              className="font-bold tracking-[-0.025em] text-amber-900 leading-[1.04]"
-              style={{ fontSize: 'clamp(2.25rem, 8vw, 7rem)', marginBottom: '0.25em' }}
+              className="font-bold tracking-[-0.025em] leading-[1.04]"
+              style={{ fontSize: 'clamp(2.25rem, 8vw, 7rem)', marginBottom: '0.25em', color: 'var(--text-strong)' }}
               variants={{
                 hidden: { opacity: 0, y: 24 },
                 show: {
@@ -121,8 +123,8 @@ function HeroSection() {
               {t('hero.titleFirst')}
               {titleMiddle && (
                 <span
-                  className="font-normal text-amber-900/55"
-                  style={{ fontSize: '0.5em', letterSpacing: '-0.01em', verticalAlign: '0.18em' }}
+                  className="font-normal"
+                  style={{ fontSize: '0.5em', letterSpacing: '-0.01em', verticalAlign: '0.18em', color: 'var(--accent)' }}
                 >
                   {' '}{titleMiddle}{' '}
                 </span>
@@ -132,11 +134,13 @@ function HeroSection() {
 
             {/* Brass hairline — sweeps in from the left like a wipe. */}
             <motion.div
-              className="bg-amber-700/40 my-[clamp(4rem,8vh,6rem)]"
+              className="my-[clamp(4rem,8vh,6rem)]"
+              data-prototype-hairline
               style={{
                 height: '1px',
                 width: 'clamp(60px, 8vw, 96px)',
                 transformOrigin: 'left center',
+                backgroundColor: 'var(--border-strong)',
               }}
               variants={{
                 hidden: { opacity: 0, scaleX: 0 },
@@ -149,13 +153,13 @@ function HeroSection() {
             />
 
             <motion.p
-              className="text-amber-900/85"
               style={{
                 fontSize: 'clamp(1rem, 1.35vw, 1.3rem)',
                 lineHeight: 2,
                 maxWidth: '52ch',
                 fontWeight: 400,
                 letterSpacing: '0.01em',
+                color: 'var(--text)',
               }}
               variants={{
                 hidden: { opacity: 0, y: 18 },
@@ -184,32 +188,33 @@ function HeroSection() {
                 href="/cv.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1]"
+                className="rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
                 style={{
-                  backgroundColor: '#4a3f35',
-                  color: '#f4e8d1',
+                  backgroundColor: 'var(--btn-bg)',
+                  color: 'var(--btn-text)',
                   padding: 'clamp(0.75rem, 1.05vw, 0.95rem) clamp(1.5rem, 2.3vw, 2rem)',
                   fontSize: 'clamp(0.88rem, 1vw, 0.95rem)',
-                  fontWeight: 500,
+                  fontWeight: 600,
                   textDecoration: 'none',
+                  boxShadow: '0 6px 16px -6px rgba(196,162,101,0.5)',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#2d2d2d')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#4a3f35')}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--btn-bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--btn-bg)')}
               >
                 {t('hero.downloadCv')}
               </a>
               <Link
                 to="/music"
-                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1]"
+                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
                 style={{
-                  color: '#4a3f35',
+                  color: 'var(--accent)',
                   padding: 'clamp(0.75rem, 1.05vw, 0.95rem) clamp(1.2rem, 1.8vw, 1.6rem)',
                   fontSize: 'clamp(0.88rem, 1vw, 0.95rem)',
                   fontWeight: 500,
                   textDecoration: 'none',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#2d2d2d')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#4a3f35')}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-bright)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--accent)')}
               >
                 {t('hero.listenToMusic')}
                 <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>

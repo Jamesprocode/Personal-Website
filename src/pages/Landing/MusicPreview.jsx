@@ -129,7 +129,7 @@ function MusicPreview() {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#1a1410',
+        backgroundColor: 'var(--bg)',
         paddingTop: 'clamp(7rem, 14vh, 12rem)',
         paddingBottom: 'clamp(7rem, 14vh, 12rem)',
       }}
@@ -164,7 +164,7 @@ function MusicPreview() {
               style={{
                 fontSize: 'clamp(1.75rem, 3.5vw, 3rem)',
                 lineHeight: 1.05,
-                color: '#f4e8d1',
+                color: 'var(--text-strong)',
               }}
               variants={{
                 hidden: { opacity: 0, y: 22 },
@@ -181,7 +181,7 @@ function MusicPreview() {
               className="mt-[clamp(1rem,2vh,1.5rem)] leading-[1.55]"
               style={{
                 fontSize: 'clamp(1rem, 1.2vw, 1.15rem)',
-                color: 'rgba(244, 232, 209, 0.7)',
+                color: 'var(--text)',
                 maxWidth: '50ch',
               }}
               variants={{
@@ -213,12 +213,12 @@ function MusicPreview() {
                   style={{
                     fontSize: 'clamp(0.6rem, 0.7vw, 0.7rem)',
                     letterSpacing: '0.18em',
-                    color: 'rgba(196, 162, 101, 0.6)',
+                    color: 'var(--accent-deep)',
                   }}
                 >
                   {t('musicPreview.albumsLabel')}
                 </p>
-                <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: '#f4e8d1', fontWeight: 600 }}>
+                <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: 'var(--text-strong)', fontWeight: 600 }}>
                   {albumCount}
                 </p>
               </div>
@@ -228,12 +228,12 @@ function MusicPreview() {
                   style={{
                     fontSize: 'clamp(0.6rem, 0.7vw, 0.7rem)',
                     letterSpacing: '0.18em',
-                    color: 'rgba(196, 162, 101, 0.6)',
+                    color: 'var(--accent-deep)',
                   }}
                 >
                   {t('musicPreview.tracksLabel')}
                 </p>
-                <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: '#f4e8d1', fontWeight: 600 }}>
+                <p style={{ fontSize: 'clamp(1.5rem, 2vw, 2rem)', color: 'var(--text-strong)', fontWeight: 600 }}>
                   {trackCount}
                 </p>
               </div>
@@ -256,10 +256,10 @@ function MusicPreview() {
                 onMouseLeave={() => setHovered(false)}
                 onFocus={() => setHovered(true)}
                 onBlur={() => setHovered(false)}
-                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
                 style={{
-                  color: '#1a1410',
-                  backgroundColor: '#c4a265',
+                  color: 'var(--btn-text)',
+                  backgroundColor: 'var(--btn-bg)',
                   padding: 'clamp(0.7rem, 1vw, 0.95rem) clamp(1.5rem, 2.4vw, 2.2rem)',
                   fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
                   fontWeight: 500,
@@ -285,7 +285,7 @@ function MusicPreview() {
               to="/music"
               onMouseEnter={() => setHovered(true)}
               onMouseLeave={() => setHovered(false)}
-              className="block relative focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#1a1410] rounded-full"
+              className="block relative focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--ring-offset)] rounded-full"
               style={{
                 width: 'clamp(220px, 30vw, 420px)',
               }}

@@ -5,9 +5,6 @@ import ProjectShelf from './ProjectShelf';
 import ProjectsPainterlyBackground from './ProjectsPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
 
-const INK_DEEP = '#2d2d2d';
-const WALNUT = '#4a3f35';
-
 function ProjectsSection() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
@@ -34,8 +31,13 @@ function ProjectsSection() {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#efe3c9',
-        borderTop: '1px solid rgba(108, 92, 59, 0.16)',
+        // Feathered edges: the alternating ground melts into the page base
+        // (var(--bg)) over the first/last ~160px instead of butting against
+        // it with a hard horizontal seam. Keeps the subtle alternation but
+        // kills the abrupt band at section boundaries (most visible in dark).
+        background:
+          'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 160px, var(--bg-alt) calc(100% - 160px), var(--bg) 100%)',
+        borderTop: '1px solid var(--border)',
         paddingTop: 'clamp(2.5rem, 5vh, 4rem)',
         paddingBottom: 'clamp(7rem, 14vh, 12rem)',
         scrollMarginTop: '4rem',
@@ -65,7 +67,7 @@ function ProjectsSection() {
           <motion.h2
             className="col-span-12 lg:col-span-7 font-bold tracking-tight"
             style={{
-              color: INK_DEEP,
+              color: 'var(--text-strong)',
               fontSize: 'clamp(1.75rem, 3.5vw, 3rem)',
               lineHeight: 1.05,
               margin: 0,
@@ -84,7 +86,7 @@ function ProjectsSection() {
           <motion.p
             className="col-span-12 lg:col-span-5"
             style={{
-              color: `${WALNUT}b3`,
+              color: 'var(--text)',
               fontSize: 'clamp(0.95rem, 1.15vw, 1.15rem)',
               lineHeight: 1.55,
               maxWidth: '42ch',

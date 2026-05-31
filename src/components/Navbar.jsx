@@ -3,15 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from './LanguageToggle';
+import ThemeToggle from './ThemeToggle';
 
 function Navbar() {
   const location = useLocation();
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isLanding = location.pathname === '/';
-  const isTimeline = location.pathname === '/timeline';
-  const isCream = isLanding || isTimeline;
+  // Only play the slide-in entrance once the tab is actually visible. The
+  // navbar's RESTING style (no `.navbar-enter` class) is the visible
+  // position, so a tab that loads in the background never gets stuck with
+  // the bar — and the theme/lang toggles — parked off-screen. When the user
+  // focuses the tab the class is added and the slide-in plays normally.
+  const [entered, setEntered] = useState(
+    () => typeof document === 'undefined' || document.visibilityState === 'visible'
+  );
+
+  useEffect(() => {
+    if (entered) return undefined;
+    const onVis = () => {
+      if (document.visibilityState === 'visible') setEntered(true);
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [entered]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -25,11 +40,13 @@ function Navbar() {
     { path: '/timeline', label: t('nav.timeline') },
   ];
 
-  const surfaceBg = isCream ? '#c4b69c' : '#1a1a1a';
-  const brandColor = isCream ? '#2d2d2d' : '#ffffff';
-  const activeColor = isCream ? '#2d2d2d' : '#ffffff';
-  const restColor = isCream ? '#6c5c3b' : 'rgba(255,255,255,0.6)';
-  const hamburgerColor = isCream ? '#2d2d2d' : '#ffffff';
+  // Colors now come from theme tokens so the navbar flips with the global
+  // light/dark toggle instead of being keyed to the route.
+  const surfaceBg = 'var(--nav-bg)';
+  const brandColor = 'var(--text-strong)';
+  const activeColor = 'var(--text-strong)';
+  const restColor = 'var(--text-muted)';
+  const hamburgerColor = 'var(--text-strong)';
 
   // Brass-gold cross-room thread — the only chrome the navbar permits.
   // Active nav item gets a small brass LED dot; the navbar's bottom edge
@@ -40,11 +57,8 @@ function Navbar() {
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 shadow-md"
+      <nav
+        className={`${entered ? 'navbar-enter ' : ''}fixed top-0 left-0 right-0 z-50 shadow-md`}
         style={{
           backgroundColor: surfaceBg,
           // Single brass hairline along the bottom — the cross-room thread
@@ -80,6 +94,7 @@ function Navbar() {
               the active link. Each slot has a fixed min-width so EN/ZH
               never shift the layout. */}
           <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <LanguageToggle />
             {navLinks.map((link) => {
               const active = isActive(link.path);
@@ -150,7 +165,7 @@ function Navbar() {
             />
           </button>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile menu */}
       <AnimatePresence>
@@ -166,7 +181,7 @@ function Navbar() {
               // tinted backdrop keeps focus on the menu without a hard
               // theme swap. Padding set inline because the universal
               // reset zeroes Tailwind padding utilities.
-              backgroundColor: 'rgba(244, 232, 209, 0.97)',
+              backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
               paddingTop: '6rem',
@@ -179,8 +194,9 @@ function Navbar() {
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                style={{ marginBottom: '1rem' }}
+                style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
+                <ThemeToggle variant="mobile" />
                 <LanguageToggle variant="mobile" />
               </motion.div>
               {navLinks.map((link, i) => (
@@ -194,19 +210,19 @@ function Navbar() {
                     to={link.path}
                     className="block text-2xl font-medium rounded-xl transition-colors"
                     style={{
-                      color: isActive(link.path) ? '#2d2d2d' : 'rgba(74, 63, 53, 0.65)',
-                      backgroundColor: isActive(link.path) ? 'rgba(160, 111, 29, 0.12)' : 'transparent',
+                      color: isActive(link.path) ? 'var(--text-strong)' : 'var(--text-muted)',
+                      backgroundColor: isActive(link.path) ? 'var(--hover-bg)' : 'transparent',
                       padding: '1rem',
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive(link.path)) {
-                        e.currentTarget.style.color = '#2d2d2d';
-                        e.currentTarget.style.backgroundColor = 'rgba(160, 111, 29, 0.08)';
+                        e.currentTarget.style.color = 'var(--text-strong)';
+                        e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive(link.path)) {
-                        e.currentTarget.style.color = 'rgba(74, 63, 53, 0.65)';
+                        e.currentTarget.style.color = 'var(--text-muted)';
                         e.currentTarget.style.backgroundColor = 'transparent';
                       }
                     }}
@@ -225,13 +241,13 @@ function Navbar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block text-2xl font-medium rounded-xl transition-colors"
-                  style={{ color: 'rgba(74, 63, 53, 0.65)', padding: '1rem' }}
+                  style={{ color: 'var(--text-muted)', padding: '1rem' }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#2d2d2d';
-                    e.currentTarget.style.backgroundColor = 'rgba(160, 111, 29, 0.08)';
+                    e.currentTarget.style.color = 'var(--text-strong)';
+                    e.currentTarget.style.backgroundColor = 'var(--hover-bg)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'rgba(74, 63, 53, 0.65)';
+                    e.currentTarget.style.color = 'var(--text-muted)';
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >

@@ -12,7 +12,7 @@ function Timeline() {
       <main
         style={{
           width: '100%',
-          backgroundColor: '#f4e8d1',
+          backgroundColor: 'var(--bg)',
           // Footer is position:fixed at the viewport bottom (~72 px tall on
           // the Cream Parlor route). Leave space so the last band's labels
           // and the year axis can scroll above it instead of slipping under.
@@ -40,20 +40,20 @@ function Timeline() {
             style={{ width: '100%', maxWidth: '68ch' }}
           >
             <p
-              className="font-mono uppercase text-amber-700/70 mb-[clamp(0.75rem,1.5vh,1.25rem)]"
-              style={{ fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)', letterSpacing: '0.22em' }}
+              className="font-mono uppercase mb-[clamp(0.75rem,1.5vh,1.25rem)]"
+              style={{ fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)', letterSpacing: '0.22em', color: 'var(--accent-deep)' }}
             >
               {t('timeline.eyebrow')}
             </p>
             <h1
-              className="font-bold tracking-tight text-amber-900"
-              style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.05 }}
+              className="font-bold tracking-tight"
+              style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: 1.05, color: 'var(--text-strong)' }}
             >
               {t('timeline.heading')}
             </h1>
             <p
-              className="mt-[clamp(0.75rem,1.5vh,1.25rem)] mx-auto text-amber-900/70"
-              style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.6 }}
+              className="mt-[clamp(0.75rem,1.5vh,1.25rem)] mx-auto"
+              style={{ fontSize: 'clamp(1rem, 1.2vw, 1.15rem)', lineHeight: 1.6, color: 'var(--text)' }}
             >
               {t('timeline.bio')}
             </p>

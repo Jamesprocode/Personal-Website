@@ -6,6 +6,8 @@
   "nav.cv": "CV",
   "nav.openMenu": "Open menu",
   "nav.closeMenu": "Close menu",
+  "theme.switchToDark": "Switch to dark mode",
+  "theme.switchToLight": "Switch to light mode",
   "footer.github": "GitHub",
   "footer.linkedin": "LinkedIn",
   "footer.scholar": "Google Scholar",

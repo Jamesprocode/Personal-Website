@@ -85,7 +85,7 @@ function TransportButton({
             <span
               className="font-mono uppercase"
               style={{
-                color: 'rgba(108, 92, 59, 0.85)',
+                color: 'var(--text-muted)',
                 fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)',
                 letterSpacing: '0.22em',
               }}
@@ -97,7 +97,7 @@ function TransportButton({
             <span
               className="font-mono"
               style={{
-                color: 'rgba(108, 92, 59, 0.55)',
+                color: 'var(--text-muted)',
                 fontSize: 'clamp(0.6rem, 0.72vw, 0.7rem)',
                 letterSpacing: '0.12em',
                 marginTop: 2,
@@ -128,7 +128,7 @@ function TransportButton({
     <Link
       to={to}
       aria-label={ariaLabel || glyph.aria}
-      className="group inline-flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#f4e8d1] rounded-full"
+      className="group inline-flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--ring-offset)] rounded-full"
       style={{ textDecoration: 'none' }}
     >
       {inner}

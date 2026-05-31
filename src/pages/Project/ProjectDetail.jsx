@@ -6,19 +6,41 @@ import { useTranslation } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import TransportButton from '../../components/TransportButton';
 import projects from '../../data/projects';
+import { useTheme } from '../../hooks/useTheme';
 
-const CREAM_BASE = '#f4e8d1';
-const CREAM_LIGHT = '#fdf7e3';
-const LINEN = '#c4b69c';
-const BRASS = '#c4a265';
-const INK_DEEP = '#2d2d2d';
-const WALNUT = '#4a3f35';
-const BRONZE = '#6c5c3b';
+// Editorial palette. The cream "parlor" in light; wood + espresso in dark.
+// Values are 6-digit hex on purpose: the blocks below append a 2-digit alpha
+// (e.g. `${BRASS}1f`) to make 8-digit hex, so every entry must stay a bare
+// hex string. BRASS is the shared brand thread — identical in both themes.
+const LIGHT_PALETTE = {
+  CREAM_BASE: '#f4e8d1',
+  CREAM_LIGHT: '#fdf7e3',
+  LINEN: '#c4b69c',
+  BRASS: '#c4a265',
+  INK_DEEP: '#2d2d2d',
+  WALNUT: '#4a3f35',
+  BRONZE: '#6c5c3b',
+};
+const DARK_PALETTE = {
+  CREAM_BASE: '#1a130c',  // page base — espresso
+  CREAM_LIGHT: '#2a1f15', // cards / table / image mats — wood
+  LINEN: '#7a6a44',       // border + faint-fill base — muted brass-tan
+  BRASS: '#c4a265',       // shared accent
+  INK_DEEP: '#f4e8d1',    // headings — cream
+  WALNUT: '#e7dcc4',      // body — warm off-white
+  BRONZE: '#b8a47a',      // muted / captions — dim brass
+};
+
+function usePalette() {
+  const { isDark } = useTheme();
+  return isDark ? DARK_PALETTE : LIGHT_PALETTE;
+}
 
 const MEASURE_TEXT = 'min(82rem, 92vw)';
 const MEASURE_MEDIA = 'min(82rem, 92vw)';
 
 function Caption({ children }) {
+  const { BRONZE } = usePalette();
   return (
     <figcaption
       className="mt-3 font-mono"
@@ -35,7 +57,8 @@ function Caption({ children }) {
   );
 }
 
-function renderCitations(text) {
+function renderCitations(text, P = LIGHT_PALETTE) {
+  const { BRASS, BRONZE } = P;
   if (text == null || typeof text !== 'string') return text;
   // Tokenize on numeric citations like [1] and markdown-style links like [label](url).
   const parts = text.split(/(\[\d+\]|\[[^\]]+\]\([^)]+\))/g);
@@ -102,6 +125,8 @@ function renderCitations(text) {
 }
 
 function TextBlock({ content }) {
+  const P = usePalette();
+  const { WALNUT } = P;
   return (
     <div
       style={{
@@ -118,7 +143,7 @@ function TextBlock({ content }) {
           lineHeight: 1.75,
         }}
       >
-        {renderCitations(content)}
+        {renderCitations(content, P)}
       </p>
     </div>
   );
@@ -126,6 +151,7 @@ function TextBlock({ content }) {
 
 function ImageBlock({ src, alt, caption, onOpen, inline = false }) {
   const { t } = useTranslation();
+  const { LINEN, CREAM_LIGHT } = usePalette();
   const wrapperStyle = inline
     ? { width: '100%' }
     : {
@@ -191,6 +217,8 @@ function ImageBlock({ src, alt, caption, onOpen, inline = false }) {
 }
 
 function SideBySideBlock({ text, image, imageSide = 'right', onOpen }) {
+  const P = usePalette();
+  const { WALNUT } = P;
   const imageEl = (
     <div className="w-full md:flex-1" style={{ minWidth: 0 }}>
       <ImageBlock
@@ -212,7 +240,7 @@ function SideBySideBlock({ text, image, imageSide = 'right', onOpen }) {
           margin: 0,
         }}
       >
-        {renderCitations(text)}
+        {renderCitations(text, P)}
       </p>
     </div>
   );
@@ -237,6 +265,7 @@ function SideBySideBlock({ text, image, imageSide = 'right', onOpen }) {
 }
 
 function ListBlock({ intro, items, variant = 'default' }) {
+  const { WALNUT, BRASS, LINEN, INK_DEEP } = usePalette();
   const highlight = variant === 'highlight';
   return (
     <div
@@ -367,7 +396,7 @@ function Lightbox({ image, onClose }) {
           right: 'clamp(1rem, 2.5vw, 1.75rem)',
           backgroundColor: 'rgba(255, 240, 200, 0.08)',
           border: '1px solid rgba(255, 240, 200, 0.25)',
-          color: CREAM_BASE,
+          color: '#f4e8d1',
           borderRadius: 9999,
           padding: '0.45rem 1rem',
           fontSize: '0.7rem',
@@ -518,6 +547,7 @@ function VideoBlock({ src, poster, caption }) {
 }
 
 function HeadingBlock({ text, eyebrow }) {
+  const { BRONZE, INK_DEEP, BRASS } = usePalette();
   return (
     <div
       style={{
@@ -567,6 +597,7 @@ function HeadingBlock({ text, eyebrow }) {
 
 function TableBlock({ headers, rows, caption, footnote }) {
   const { t } = useTranslation();
+  const { LINEN, CREAM_LIGHT, BRONZE, BRASS, INK_DEEP, WALNUT } = usePalette();
   return (
     <figure
       style={{
@@ -670,6 +701,7 @@ function TableBlock({ headers, rows, caption, footnote }) {
 }
 
 function ReferenceBlock({ items }) {
+  const { WALNUT, INK_DEEP, BRONZE, BRASS } = usePalette();
   return (
     <div
       style={{
@@ -786,6 +818,8 @@ function ReferenceBlock({ items }) {
 }
 
 function CtaBlock({ text, label, url }) {
+  const P = usePalette();
+  const { WALNUT, BRASS } = P;
   return (
     <div
       style={{
@@ -804,7 +838,7 @@ function CtaBlock({ text, label, url }) {
             marginBottom: '1rem',
           }}
         >
-          {renderCitations(text)}
+          {renderCitations(text, P)}
         </p>
       )}
       {url && (
@@ -832,6 +866,8 @@ function CtaBlock({ text, label, url }) {
 }
 
 function AbstractBlock({ content, label = 'Abstract' }) {
+  const P = usePalette();
+  const { LINEN, BRASS, BRONZE, WALNUT } = P;
   return (
     <div
       style={{
@@ -869,7 +905,7 @@ function AbstractBlock({ content, label = 'Abstract' }) {
             margin: 0,
           }}
         >
-          {renderCitations(content)}
+          {renderCitations(content, P)}
         </p>
       </div>
     </div>
@@ -1052,6 +1088,7 @@ function BodyBlock({ block, onOpenImage }) {
 
 function NotFound() {
   const { t } = useTranslation();
+  const { CREAM_BASE, BRONZE, INK_DEEP } = usePalette();
   return (
     <PageTransition scene="project">
       <main
@@ -1101,6 +1138,8 @@ function ProjectDetail() {
   const { id } = useParams();
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
+  const P = usePalette();
+  const { CREAM_BASE, LINEN, BRONZE, INK_DEEP, BRASS, WALNUT } = P;
   // All hooks must run before any early return so the hook order stays
   // stable when navigating between a valid project and a missing id.
   const [lightbox, setLightbox] = useState(null);
@@ -1163,7 +1202,7 @@ function ProjectDetail() {
             top: 'clamp(3.5rem, 5vw, 4.25rem)',
             zIndex: 30,
             width: '100%',
-            backgroundColor: 'rgba(244, 232, 209, 0.85)',
+            backgroundColor: 'var(--overlay-bg)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             borderBottom: `1px solid ${LINEN}44`,
@@ -1253,7 +1292,7 @@ function ProjectDetail() {
                   : 'clamp(1.25rem, 2.5vh, 1.75rem)',
               }}
             >
-              {renderCitations(description)}
+              {renderCitations(description, P)}
             </p>
 
             {/* Brass hairline — the cross-room thread */}
@@ -1409,7 +1448,7 @@ function ProjectDetail() {
             right: 0,
             zIndex: 49,
             width: '100%',
-            backgroundColor: 'rgba(244, 232, 209, 0.92)',
+            backgroundColor: 'var(--overlay-bg)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             borderTop: `1px solid ${LINEN}66`,

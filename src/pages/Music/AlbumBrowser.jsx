@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../hooks/useTheme';
 import SleeveBack from './SleeveBack';
 
 function AlbumThumb({ album, size = 56 }) {
@@ -81,7 +82,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
           width: 18,
           flexShrink: 0,
           textAlign: 'center',
-          color: isActive ? '#c4a265' : 'rgba(196,162,101,0.45)',
+          color: isActive ? '#c4a265' : 'var(--text-muted)',
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 12,
           alignSelf: 'flex-start',
@@ -111,7 +112,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
             display: 'block',
             fontFamily: 'Space Grotesk, system-ui, sans-serif',
             fontSize: '0.92rem',
-            color: isActive ? '#f4e8d1' : 'rgba(244,232,209,0.85)',
+            color: isActive ? 'var(--text-strong)' : 'var(--text)',
             fontWeight: isActive ? 500 : 400,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -126,7 +127,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
               display: 'block',
               fontFamily: 'JetBrains Mono, monospace',
               fontSize: '0.65rem',
-              color: 'rgba(196,162,101,0.55)',
+              color: 'var(--text-muted)',
               letterSpacing: '0.05em',
               marginTop: 1,
               overflow: 'hidden',
@@ -143,7 +144,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
           style={{
             fontFamily: 'JetBrains Mono, monospace',
             fontSize: '0.6rem',
-            color: 'rgba(196,162,101,0.5)',
+            color: 'var(--text-muted)',
             letterSpacing: '0.16em',
             textTransform: 'uppercase',
             flexShrink: 0,
@@ -163,7 +164,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
   return (
     <div
       style={{
-        borderBottom: '1px solid rgba(196,162,101,0.12)',
+        borderBottom: '1px solid var(--border)',
       }}
     >
       <button
@@ -190,7 +191,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
               fontFamily: 'Space Grotesk, system-ui, sans-serif',
               fontWeight: 600,
               fontSize: '0.98rem',
-              color: '#f4e8d1',
+              color: 'var(--text-strong)',
               lineHeight: 1.3,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -203,7 +204,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
             style={{
               fontFamily: 'JetBrains Mono, monospace',
               fontSize: '0.7rem',
-              color: 'rgba(196, 162, 101, 0.65)',
+              color: 'var(--text-muted)',
               letterSpacing: '0.14em',
               marginTop: 2,
               overflow: 'hidden',
@@ -217,7 +218,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
         <span
           aria-hidden
           style={{
-            color: 'rgba(196,162,101,0.6)',
+            color: 'var(--text-muted)',
             fontFamily: 'JetBrains Mono, monospace',
             fontSize: 14,
             transform: `rotate(${isExpanded ? 90 : 0}deg)`,
@@ -271,7 +272,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
                     border: '1px solid rgba(196,162,101,0.35)',
                     borderRadius: 4,
                     cursor: 'pointer',
-                    color: 'rgba(196,162,101,0.85)',
+                    color: 'var(--accent-deep)',
                     fontFamily: 'JetBrains Mono, monospace',
                     fontSize: '0.65rem',
                     letterSpacing: '0.2em',
@@ -301,8 +302,23 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
 function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffering, onSelectTrack }) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
-  const [expandedId, setExpandedId] = useState(activeAlbumId || albums[0]?.id || null);
+  const { isDark } = useTheme();
+  // Start with every album collapsed by default. The one exception: if a
+  // track is already playing when this view (re)mounts — e.g. the visitor
+  // navigated away with the floating record still spinning and came back —
+  // open the album that track belongs to so they land on what's playing.
+  const [expandedId, setExpandedId] = useState(activeAlbumId || null);
   const [sleeveAlbum, setSleeveAlbum] = useState(null);
+
+  // Crate body matches the turntable deck: light cream-wood in light mode,
+  // espresso in dark. They sit side by side, so they stay a matched pair.
+  const crateBg = isDark
+    ? 'linear-gradient(135deg, #2a1f15 0%, #1a130c 100%)'
+    : 'linear-gradient(135deg, #efe3c9 0%, #ddc9a0 100%)';
+  const crateBorder = isDark ? 'rgba(196, 162, 101, 0.18)' : 'rgba(160, 111, 29, 0.3)';
+  const crateShadow = isDark
+    ? '0 15px 40px -12px rgba(0, 0, 0, 0.5)'
+    : '0 15px 40px -12px rgba(80, 55, 15, 0.28)';
 
   // Stable handlers so memoized AlbumRow children don't re-render every tick.
   const handleToggleExpand = useCallback((id) => {
@@ -314,17 +330,17 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffe
     <>
       <div
         style={{
-          background: 'linear-gradient(135deg, #2a1f15 0%, #1a130c 100%)',
+          background: crateBg,
           borderRadius: 16,
-          border: '1px solid rgba(196, 162, 101, 0.18)',
-          boxShadow: '0 15px 40px -12px rgba(0, 0, 0, 0.5)',
+          border: `1px solid ${crateBorder}`,
+          boxShadow: crateShadow,
           overflow: 'hidden',
         }}
       >
         <div
           style={{
             padding: '14px 18px',
-            borderBottom: '1px solid rgba(196,162,101,0.15)',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'baseline',
             justifyContent: 'space-between',
@@ -335,7 +351,7 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffe
               fontFamily: 'Space Grotesk, system-ui, sans-serif',
               fontWeight: 600,
               fontSize: '1rem',
-              color: '#f4e8d1',
+              color: 'var(--text-strong)',
               letterSpacing: '-0.005em',
             }}
           >
@@ -345,7 +361,7 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffe
             style={{
               fontFamily: 'JetBrains Mono, monospace',
               fontSize: '0.65rem',
-              color: 'rgba(196,162,101,0.65)',
+              color: 'var(--text-muted)',
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
             }}

@@ -197,7 +197,7 @@ function ParallelTracks() {
               <span
                 className="font-mono uppercase"
                 style={{
-                  color: 'rgba(108, 92, 59, 0.85)',
+                  color: 'var(--text-muted)',
                   fontSize: 'clamp(0.65rem, 0.78vw, 0.74rem)',
                   letterSpacing: '0.18em',
                 }}
@@ -226,8 +226,8 @@ function ParallelTracks() {
                 gap: 'clamp(1rem, 2.5vw, 2.5rem)',
                 paddingTop: 'clamp(0.5rem, 1vh, 0.75rem)',
                 paddingBottom: 'clamp(0.5rem, 1vh, 0.75rem)',
-                borderTop: trackIdx === 0 ? '1px solid rgba(108, 92, 59, 0.18)' : 'none',
-                borderBottom: '1px solid rgba(108, 92, 59, 0.18)',
+                borderTop: trackIdx === 0 ? '1px solid var(--border)' : 'none',
+                borderBottom: '1px solid var(--border)',
                 alignItems: 'center',
               }}
             >
@@ -313,12 +313,13 @@ function ParallelTracks() {
                 return (
                   <span
                     key={year}
-                    className="absolute top-0 font-mono text-amber-700/75"
+                    className="absolute top-0 font-mono"
                     style={{
                       left: `${xFrac * 100}%`,
                       transform: 'translateX(-50%)',
                       fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)',
                       letterSpacing: '0.05em',
+                      color: 'var(--text-muted)',
                     }}
                   >
                     {year}
@@ -331,8 +332,8 @@ function ParallelTracks() {
         )}
 
         <p
-          className="mt-[clamp(1.5rem,3vh,2.5rem)] text-center text-amber-700/60 italic"
-          style={{ fontSize: 'clamp(0.9rem, 1.1vw, 1rem)' }}
+          className="mt-[clamp(1.5rem,3vh,2.5rem)] text-center italic"
+          style={{ fontSize: 'clamp(0.9rem, 1.1vw, 1rem)', color: 'var(--text-muted)' }}
         >
           {t('timeline.hint')}
         </p>
@@ -363,7 +364,7 @@ function VerticalStack({ items, t, reduceMotion }) {
           width: 2,
           transform: 'translateX(-50%)',
           background:
-            'linear-gradient(180deg, transparent 0%, rgba(108,92,59,0.28) 5%, rgba(108,92,59,0.28) 95%, transparent 100%)',
+            'linear-gradient(180deg, transparent 0%, var(--border-strong) 5%, var(--border-strong) 95%, transparent 100%)',
         }}
       />
 
@@ -395,7 +396,7 @@ function VerticalStack({ items, t, reduceMotion }) {
                 onClick={() => setOpenId((prev) => (prev === item.id ? null : item.id))}
                 aria-expanded={isOpen}
                 aria-label={`${titleTr}, ${item.year}`}
-                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1] rounded-md"
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] rounded-md"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -444,7 +445,7 @@ function VerticalStack({ items, t, reduceMotion }) {
                   <span
                     style={{
                       display: 'block',
-                      color: isOpen ? '#2d2d2d' : '#4a3f35',
+                      color: isOpen ? 'var(--text-strong)' : 'var(--text)',
                       fontSize: '0.95rem',
                       fontWeight: isOpen ? 600 : 500,
                       lineHeight: 1.3,
@@ -459,7 +460,7 @@ function VerticalStack({ items, t, reduceMotion }) {
                   aria-hidden
                   style={{
                     flexShrink: 0,
-                    color: 'rgba(108,92,59,0.6)',
+                    color: 'var(--text-muted)',
                     fontSize: '0.8rem',
                     transform: isOpen ? 'rotate(180deg)' : 'none',
                     transition: reduceMotion ? 'none' : 'transform 200ms ease',
@@ -480,7 +481,7 @@ function VerticalStack({ items, t, reduceMotion }) {
                   >
                     <p
                       style={{
-                        color: '#4a3f35',
+                        color: 'var(--text)',
                         fontSize: '0.85rem',
                         lineHeight: 1.55,
                         paddingTop: 8,
@@ -488,7 +489,7 @@ function VerticalStack({ items, t, reduceMotion }) {
                       }}
                     >
                       {titleTr !== displayTitleTr && (
-                        <strong style={{ display: 'block', color: '#2d2d2d', marginBottom: 4 }}>
+                        <strong style={{ display: 'block', color: 'var(--text-strong)', marginBottom: 4 }}>
                           {titleTr}
                         </strong>
                       )}
@@ -568,7 +569,7 @@ function Entry({
         onBlur={() => onHoverChange(false)}
         aria-label={`${titleTr}, ${item.year}`}
         aria-pressed={isPinned ? 'true' : 'false'}
-        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4e8d1] rounded-sm"
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] rounded-sm"
         style={{
           position: 'absolute',
           top: SPINE_Y - CD_LIT / 2,
@@ -593,7 +594,7 @@ function Entry({
           top: above ? SPINE_Y - stem - LABEL_HEIGHT : SPINE_Y + stem + 4,
           width: '100%',
           height: LABEL_HEIGHT,
-          color: lit ? '#2d2d2d' : '#4a3f35',
+          color: lit ? 'var(--text-strong)' : 'var(--text)',
           fontSize: 'clamp(0.7rem, 0.8vw, 0.78rem)',
           lineHeight: `${LABEL_HEIGHT}px`,
           fontWeight: lit ? 600 : 500,
@@ -662,8 +663,8 @@ function EntryTooltip({ item, color, isPinned, t }) {
         ...sideStyle,
         transform: 'translateY(-50%)',
         width: 'clamp(240px, 22vw, 300px)',
-        backgroundColor: '#fdf7e3',
-        border: '1px solid rgba(196, 182, 156, 0.55)',
+        backgroundColor: 'var(--surface)',
+        border: '1px solid var(--border)',
         borderLeft: `3px solid ${color}`,
         borderRadius: 8,
         padding: '12px 14px 14px',
@@ -703,7 +704,7 @@ function EntryTooltip({ item, color, isPinned, t }) {
             }}
           />
         ) : (
-          <CompanyIcon iconKey={item.iconKey} size={36} color="#2d2d2d" />
+          <CompanyIcon iconKey={item.iconKey} size={36} color="#8c6e3b" />
         )}
       </div>
 
@@ -712,7 +713,7 @@ function EntryTooltip({ item, color, isPinned, t }) {
         <p
           className="font-mono uppercase"
           style={{
-            color: 'rgba(108, 92, 59, 0.82)',
+            color: 'var(--text-muted)',
             fontSize: '0.66rem',
             letterSpacing: '0.2em',
             marginBottom: 5,
@@ -723,7 +724,7 @@ function EntryTooltip({ item, color, isPinned, t }) {
         </p>
         <h3
           style={{
-            color: '#2d2d2d',
+            color: 'var(--text-strong)',
             fontSize: '1rem',
             fontWeight: 600,
             lineHeight: 1.25,
@@ -734,7 +735,7 @@ function EntryTooltip({ item, color, isPinned, t }) {
         </h3>
         <p
           style={{
-            color: '#4a3f35',
+            color: 'var(--text)',
             fontSize: '0.85rem',
             lineHeight: 1.55,
           }}

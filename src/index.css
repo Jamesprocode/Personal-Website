@@ -27,6 +27,58 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/* ============================================================
+   THEME TOKENS — semantic colors that flip light ↔ dark.
+   Light = the cream "parlor"; dark = the wood + espresso "lounge"
+   borrowed from the Music page. The brass/gold accent is shared by
+   both so the brand thread is continuous across the toggle.
+   Components reference var(--xxx); the active values are swapped by
+   [data-theme="dark"] on <html> (set by ThemeProvider).
+   ============================================================ */
+:root,
+[data-theme='light'] {
+  --bg: #f4e8d1;          /* page base — cream */
+  --bg-alt: #efe3c9;      /* alternating section ground */
+  --surface: #fdf4dc;     /* cards / panels */
+  --surface-2: #f3e7c8;   /* nested panels */
+  --text-strong: #5a3410; /* headings — deep amber-brown */
+  --text: #6b4a1e;        /* body */
+  --text-muted: rgba(107, 74, 30, 0.7);
+  --border: rgba(160, 111, 29, 0.25);
+  --border-strong: rgba(160, 111, 29, 0.4);
+  --btn-bg: #4a3f35;      /* primary button — dark brown pill on cream */
+  --btn-bg-hover: #2d2d2d;
+  --btn-text: #f4e8d1;
+  --ring-offset: #f4e8d1;
+  --nav-bg: #c4b69c;      /* navbar bar — muted tan */
+  --overlay-bg: rgba(244, 232, 209, 0.97); /* mobile menu scrim */
+  --hover-bg: rgba(160, 111, 29, 0.1);
+
+  /* Shared brass/gold accent (identical in both themes). */
+  --accent: #c4a265;
+  --accent-bright: #d8b677;
+  --accent-deep: #8c6e3b;
+}
+
+[data-theme='dark'] {
+  --bg: #1a130c;          /* page base — espresso */
+  --bg-alt: #221912;      /* alternating section ground */
+  --surface: #2a1f15;     /* cards / panels — wood */
+  --surface-2: #342718;   /* nested panels */
+  --text-strong: #f4e8d1; /* headings — cream */
+  --text: rgba(244, 232, 209, 0.88);
+  --text-muted: rgba(244, 232, 209, 0.6);
+  --border: rgba(196, 162, 101, 0.18);
+  --border-strong: rgba(196, 162, 101, 0.35);
+  --btn-bg: #c4a265;      /* primary button — gold on espresso */
+  --btn-bg-hover: #d8b677;
+  --btn-text: #1a1410;
+  --ring-offset: #1a130c;
+  --nav-bg: #1d1611;      /* navbar bar — near-black warm */
+  --overlay-bg: rgba(20, 15, 10, 0.97); /* mobile menu scrim */
+  --hover-bg: rgba(196, 162, 101, 0.12);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -63,6 +115,8 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-snap-type: none; }
+  /* Skip the slide-in; the navbar simply renders in place. */
+  .navbar-enter { animation: none; }
 }
 
 /* Vinyl spin animation — driven via plain CSS so it can't be reset by
@@ -80,6 +134,20 @@ html {
 @keyframes reel-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+/* Navbar entrance. Driven by CSS rather than framer-motion's rAF loop on
+   purpose: rAF is paused for background tabs, so a framer y:-100→0 entrance
+   would leave the fixed navbar (and the theme/lang toggles inside it) stuck
+   off-screen until the user scrolled. With a CSS animation the element's
+   RESTING state is the visible position — worst case it's already in place,
+   never hidden. */
+@keyframes navbar-drop {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+.navbar-enter {
+  animation: navbar-drop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* OFFSCREEN SECTION PAUSE — every <section> on Landing flagged by
@@ -132,12 +200,14 @@ section[data-isolate] {
 
 body {
   font-family: var(--font-sans);
-  /* Cream body — what the user sees during the brief gap between a page
-     exit and the next page's mount. Black flashed badly when going from
-     Landing (cream) → Music (dark). Cream is closer to most pages and
-     much less jarring as a transitional color than black. */
-  background: #f4e8d1;
-  color: #1a1410;
+  /* Drive the body from theme tokens so it flips with the global light/dark
+     toggle. Without this the page base stayed cream in dark mode — any time
+     content was shorter than the scroll area (or during overscroll rubber-
+     banding) a cream band showed through behind the dark content. The
+     anti-flash script in index.html sets data-theme before first paint, so
+     --bg resolves to the right value with no flash. */
+  background: var(--bg);
+  color: var(--text);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

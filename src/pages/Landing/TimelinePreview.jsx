@@ -67,7 +67,12 @@ function TimelinePreview() {
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#efe3c9',
+        // Alternating section ground — cream in light, espresso in dark.
+        // Feathered top/bottom: the ground melts into the page base over the
+        // first/last ~160px so the section boundary is a soft ramp, not an
+        // abrupt horizontal band (most visible in dark mode).
+        background:
+          'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 160px, var(--bg-alt) calc(100% - 160px), var(--bg) 100%)',
         paddingTop: 'clamp(8rem, 18vh, 14rem)',
         paddingBottom: 'clamp(8rem, 18vh, 14rem)',
       }}
@@ -101,8 +106,8 @@ function TimelinePreview() {
             }}
           >
             <motion.h2
-              className="font-bold tracking-tight text-amber-900"
-              style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', lineHeight: 1.05 }}
+              className="font-bold tracking-tight"
+              style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', lineHeight: 1.05, color: 'var(--text-strong)' }}
               variants={{
                 hidden: { opacity: 0, y: 22 },
                 show: {
@@ -115,8 +120,8 @@ function TimelinePreview() {
               {t('timelinePreview.heading')}
             </motion.h2>
             <motion.p
-              className="mt-[clamp(1rem,2vh,1.5rem)] text-amber-900/70"
-              style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55 }}
+              className="mt-[clamp(1rem,2vh,1.5rem)]"
+              style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55, color: 'var(--text)' }}
               variants={{
                 hidden: { opacity: 0, y: 16 },
                 show: {
@@ -141,13 +146,18 @@ function TimelinePreview() {
             >
               <Link
                 to="/timeline"
-                className="inline-flex items-center gap-2 bg-amber-900 hover:bg-stone-900 text-amber-50 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#efe3c9]"
+                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/80 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--ring-offset)]"
                 style={{
                   padding: 'clamp(0.65rem, 1vw, 0.9rem) clamp(1.4rem, 2.2vw, 2rem)',
                   fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
-                  fontWeight: 500,
+                  fontWeight: 600,
                   letterSpacing: '0.02em',
+                  backgroundColor: 'var(--btn-bg)',
+                  color: 'var(--btn-text)',
+                  boxShadow: '0 6px 16px -6px rgba(196,162,101,0.5)',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--btn-bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--btn-bg)')}
               >
                 {t('timelinePreview.cta')}
                 <span aria-hidden>&rarr;</span>
@@ -181,8 +191,8 @@ function TimelinePreview() {
                   className="relative"
                   style={{
                     height: 'clamp(32px, 5vh, 44px)',
-                    borderTop: trackIdx === 0 ? '1px solid rgba(108, 92, 59, 0.16)' : 'none',
-                    borderBottom: '1px solid rgba(108, 92, 59, 0.16)',
+                    borderTop: trackIdx === 0 ? '1px solid var(--border)' : 'none',
+                    borderBottom: '1px solid var(--border)',
                   }}
                   variants={{
                     hidden: {},
@@ -194,7 +204,7 @@ function TimelinePreview() {
                     className="absolute left-0 right-0 top-1/2 -translate-y-1/2"
                     style={{
                       height: '1px',
-                      background: 'rgba(108, 92, 59, 0.18)',
+                      background: 'var(--border-strong)',
                       transformOrigin: 'left center',
                     }}
                     variants={{
@@ -232,7 +242,7 @@ function TimelinePreview() {
                         variants={{
                           hidden: { opacity: 0, scale: 0.35, x: '-50%', y: 'calc(-50% - 3px)' },
                           show: {
-                            opacity: 0.62,
+                            opacity: 0.9,
                             scale: 1,
                             x: '-50%',
                             y: '-50%',
@@ -267,12 +277,14 @@ function TimelinePreview() {
                   return (
                     <span
                       key={year}
-                      className="absolute top-0 font-mono text-amber-700/60"
+                      className="absolute top-0 font-mono"
+                      data-prototype-year
                       style={{
                         left: `${xFrac * 100}%`,
                         transform: `translateX(${tx})`,
                         fontSize: 'clamp(0.7rem, 0.78vw, 0.85rem)',
                         letterSpacing: '0.05em',
+                        color: 'var(--text-muted)',
                       }}
                     >
                       {year}

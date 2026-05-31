@@ -12,6 +12,7 @@ import Music from './pages/Music/Music';
 import Timeline from './pages/Timeline/Timeline';
 import ProjectDetail from './pages/Project/ProjectDetail';
 import { AudioPlayerProvider } from './hooks/useAudioPlayer';
+import { ThemeProvider } from './hooks/useTheme';
 import './App.css';
 
 // Inner component lives below <Router> so it can call useLocation. Keying
@@ -56,6 +57,7 @@ function App() {
       {showContent && (
         <Router>
           <ScrollToTop />
+          <ThemeProvider>
           <AudioPlayerProvider>
             <div className="app">
               <Navbar />
@@ -66,6 +68,7 @@ function App() {
               <CursorMusicTrail />
             </div>
           </AudioPlayerProvider>
+          </ThemeProvider>
         </Router>
       )}
     </>

@@ -162,16 +162,17 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
 
           {/* Label halo — the warm bright "center of the record". */}
           <radialGradient id="pj-halo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fff2c8" stopOpacity="0.95" />
-            <stop offset="14%" stopColor="#f0c474" stopOpacity="0.75" />
-            <stop offset="40%" stopColor="#c98b2c" stopOpacity="0.4" />
-            <stop offset="75%" stopColor="#7a4f15" stopOpacity="0.12" />
+            <stop offset="0%" stopColor="#fff2c8" stopOpacity="0.40" />
+            <stop offset="22%" stopColor="#f0c474" stopOpacity="0.28" />
+            <stop offset="55%" stopColor="#c98b2c" stopOpacity="0.16" />
+            <stop offset="82%" stopColor="#7a4f15" stopOpacity="0.06" />
             <stop offset="100%" stopColor="#7a4f15" stopOpacity="0" />
           </radialGradient>
 
           {/* Inner hot spot inside the halo — the brightest single point. */}
           <radialGradient id="pj-hotspot" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fff8de" stopOpacity="0.85" />
+            <stop offset="0%" stopColor="#fff8de" stopOpacity="0.28" />
+            <stop offset="55%" stopColor="#fff8de" stopOpacity="0.10" />
             <stop offset="100%" stopColor="#fff8de" stopOpacity="0" />
           </radialGradient>
 

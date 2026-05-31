@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useMotionValueEvent, useAnimationFrame, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../hooks/useTheme';
 import AnalogVUMeter from './AnalogVUMeter';
 import Knob from './Knob';
 import { LoopButton, NextButton } from './TransportButtons';
@@ -58,8 +59,25 @@ function Turntable({
 }) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
+  const { isDark } = useTheme();
   const accent = album?.accentColor || '#c4a265';
   const hasTrack = Boolean(track && track.file);
+
+  // The deck (plinth) flips with the theme: a light cream-wood chassis in
+  // light mode, espresso in dark. The black vinyl platter, metal tonearm and
+  // album label disc stay physical — a real turntable is a light-wood plinth
+  // carrying a black platter, which reads correctly on either background.
+  const deckBg = isDark
+    ? 'linear-gradient(135deg, #2a1f15 0%, #1a130c 100%)'
+    : 'linear-gradient(135deg, #efe3c9 0%, #ddc9a0 100%)';
+  const deckBorder = isDark ? 'rgba(196, 162, 101, 0.18)' : 'rgba(160, 111, 29, 0.3)';
+  const deckShadow = isDark
+    ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+    : '0 25px 50px -12px rgba(80, 55, 15, 0.28)';
+  // Time readout: glowing brass on espresso, deeper walnut on cream.
+  const timeColor = hasTrack
+    ? (isDark ? '#c4a265' : '#6b4a1e')
+    : (isDark ? 'rgba(196,162,101,0.35)' : 'rgba(107,74,30,0.4)');
 
   const platterRef = useRef(null);
   const pivotRef = useRef(null);
@@ -249,11 +267,11 @@ function Turntable({
     <div
       className="relative"
       style={{
-        background: 'linear-gradient(135deg, #2a1f15 0%, #1a130c 100%)',
+        background: deckBg,
         borderRadius: 24,
         padding: 'clamp(1.5rem, 3vw, 2.5rem)',
-        border: '1px solid rgba(196, 162, 101, 0.18)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        border: `1px solid ${deckBorder}`,
+        boxShadow: deckShadow,
       }}
     >
       {/* Mobile: center the controls strip in a single stacked column so the
@@ -619,13 +637,15 @@ function Turntable({
               left: '50%',
               bottom: -8,
               transform: 'translateX(-50%)',
-              color: '#c4a265',
+              color: isDark ? '#c4a265' : '#5a3410',
               fontSize: '0.65rem',
               letterSpacing: '0.22em',
-              background: 'rgba(26,20,16,0.85)',
+              background: isDark ? 'rgba(26,20,16,0.85)' : 'rgba(253,244,220,0.9)',
               padding: '4px 10px',
               borderRadius: 9999,
-              border: '1px solid rgba(196,162,101,0.4)',
+              border: isDark
+                ? '1px solid rgba(196,162,101,0.4)'
+                : '1px solid rgba(160,111,29,0.4)',
             }}
           >
             Scrub
@@ -644,7 +664,7 @@ function Turntable({
         style={{
           marginTop: 'clamp(1.5rem, 3vh, 2.5rem)',
           paddingTop: 'clamp(0.75rem, 1.5vh, 1rem)',
-          borderTop: '1px solid rgba(196,162,101,0.12)',
+          borderTop: '1px solid var(--border)',
           gap: 'clamp(1rem, 3vw, 2rem)',
         }}
       >
@@ -653,7 +673,7 @@ function Turntable({
           <div
             className="music-controls__time font-mono"
             style={{
-              color: hasTrack ? '#c4a265' : 'rgba(196,162,101,0.35)',
+              color: timeColor,
               fontSize: 'clamp(0.82rem, 1vw, 0.95rem)',
               letterSpacing: '0.08em',
               fontVariantNumeric: 'tabular-nums',
@@ -676,7 +696,7 @@ function Turntable({
               <p
                 className="font-mono uppercase"
                 style={{
-                  color: 'rgba(244,232,209,0.55)',
+                  color: 'var(--text-muted)',
                   fontSize: '0.65rem',
                   letterSpacing: '0.22em',
                   margin: 0,
@@ -697,7 +717,7 @@ function Turntable({
               <p
                 className="font-mono uppercase"
                 style={{
-                  color: 'rgba(244,232,209,0.55)',
+                  color: 'var(--text-muted)',
                   fontSize: '0.65rem',
                   letterSpacing: '0.22em',
                   margin: 0,
@@ -712,14 +732,17 @@ function Turntable({
                 disabled={!hasTrack}
                 aria-label={t(isBuffering ? 'music.transport.buffering' : isPlaying ? 'music.transport.pause' : 'music.transport.play')}
                 aria-busy={isBuffering || undefined}
-                className="rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+                className="rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
                 style={{
                   position: 'relative',
                   width: 56,
                   height: 56,
-                  backgroundColor: hasTrack ? '#c4a265' : 'rgba(196,162,101,0.25)',
-                  color: hasTrack ? '#1a1410' : 'rgba(244,232,209,0.4)',
+                  backgroundColor: hasTrack
+                    ? '#c4a265'
+                    : (isDark ? 'rgba(196,162,101,0.25)' : 'rgba(140,110,59,0.22)'),
+                  color: hasTrack ? '#1a1410' : 'var(--text-muted)',
                   cursor: hasTrack ? 'pointer' : 'not-allowed',
+                  border: hasTrack || isDark ? 'none' : '1px solid rgba(160,111,29,0.3)',
                   boxShadow: hasTrack
                     ? '0 6px 14px -4px rgba(196,162,101,0.45), inset 0 1px 2px rgba(255,235,170,0.45)'
                     : 'none',
@@ -764,7 +787,7 @@ function Turntable({
               <p
                 className="font-mono uppercase"
                 style={{
-                  color: 'rgba(244,232,209,0.55)',
+                  color: 'var(--text-muted)',
                   fontSize: '0.65rem',
                   letterSpacing: '0.22em',
                   margin: 0,
@@ -785,7 +808,7 @@ function Turntable({
               <p
                 className="font-mono uppercase"
                 style={{
-                  color: 'rgba(244,232,209,0.55)',
+                  color: 'var(--text-muted)',
                   fontSize: '0.65rem',
                   letterSpacing: '0.22em',
                   margin: 0,
@@ -808,7 +831,7 @@ function Turntable({
           <p
             className="music-controls__hint font-mono uppercase"
             style={{
-              color: 'rgba(244,232,209,0.55)',
+              color: 'var(--text-muted)',
               fontSize: 'clamp(0.6rem, 0.72vw, 0.68rem)',
               letterSpacing: '0.14em',
               lineHeight: 1.7,
@@ -826,12 +849,14 @@ function Turntable({
                 display: 'inline-block',
                 padding: '1px 6px',
                 margin: '0 2px',
-                backgroundColor: 'rgba(0,0,0,0.35)',
+                backgroundColor: isDark ? 'rgba(0,0,0,0.35)' : 'rgba(160,111,29,0.12)',
                 borderRadius: 3,
-                border: '1px solid rgba(196,162,101,0.3)',
+                border: isDark
+                  ? '1px solid rgba(196,162,101,0.3)'
+                  : '1px solid rgba(160,111,29,0.35)',
                 fontFamily: 'JetBrains Mono, monospace',
                 fontSize: '0.85em',
-                color: 'rgba(196,162,101,0.85)',
+                color: isDark ? 'rgba(196,162,101,0.85)' : '#5a3410',
                 letterSpacing: '0.05em',
               }}
             >

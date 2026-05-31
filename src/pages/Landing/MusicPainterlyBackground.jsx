@@ -46,14 +46,15 @@ function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
     >
       <defs>
         <radialGradient id="music-stage-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#f4c878" stopOpacity="0.55" />
-          <stop offset="35%" stopColor="#c4862e" stopOpacity="0.32" />
-          <stop offset="70%" stopColor="#7a4f15" stopOpacity="0.12" />
+          <stop offset="0%" stopColor="#f4c878" stopOpacity="0.34" />
+          <stop offset="40%" stopColor="#c4862e" stopOpacity="0.18" />
+          <stop offset="75%" stopColor="#7a4f15" stopOpacity="0.07" />
           <stop offset="100%" stopColor="#7a4f15" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id="music-stage-hot" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fff0c0" stopOpacity="0.45" />
+          <stop offset="0%" stopColor="#fff0c0" stopOpacity="0.22" />
+          <stop offset="55%" stopColor="#fff0c0" stopOpacity="0.08" />
           <stop offset="100%" stopColor="#fff0c0" stopOpacity="0" />
         </radialGradient>
 

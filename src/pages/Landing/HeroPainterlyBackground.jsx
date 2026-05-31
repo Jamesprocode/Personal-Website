@@ -52,27 +52,28 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
       }}
     >
       <defs>
-        <radialGradient id="hero-pour-body" cx="65%" cy="35%" r="60%">
-          <stop offset="0%" stopColor="#d4a13d" stopOpacity="0.62" />
-          <stop offset="40%" stopColor="#a06f1d" stopOpacity="0.48" />
-          <stop offset="80%" stopColor="#754d12" stopOpacity="0.22" />
+        <radialGradient id="hero-pour-body" cx="68%" cy="32%" r="72%">
+          <stop offset="0%" stopColor="#d4a13d" stopOpacity="0.34" />
+          <stop offset="45%" stopColor="#a06f1d" stopOpacity="0.22" />
+          <stop offset="85%" stopColor="#754d12" stopOpacity="0.08" />
           <stop offset="100%" stopColor="#754d12" stopOpacity="0" />
         </radialGradient>
 
-        <radialGradient id="hero-pour-core" cx="55%" cy="50%" r="55%">
-          <stop offset="0%" stopColor="#c98b2c" stopOpacity="0.72" />
-          <stop offset="55%" stopColor="#7a4f15" stopOpacity="0.34" />
+        <radialGradient id="hero-pour-core" cx="58%" cy="48%" r="68%">
+          <stop offset="0%" stopColor="#c98b2c" stopOpacity="0.34" />
+          <stop offset="60%" stopColor="#7a4f15" stopOpacity="0.16" />
           <stop offset="100%" stopColor="#7a4f15" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id="hero-cream-bloom" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fff2d4" stopOpacity="0.72" />
+          <stop offset="0%" stopColor="#fff2d4" stopOpacity="0.30" />
+          <stop offset="60%" stopColor="#fff2d4" stopOpacity="0.10" />
           <stop offset="100%" stopColor="#fff2d4" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id="hero-amber-hot" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#e8a843" stopOpacity="0.85" />
-          <stop offset="45%" stopColor="#b8862e" stopOpacity="0.48" />
+          <stop offset="0%" stopColor="#e8a843" stopOpacity="0.26" />
+          <stop offset="55%" stopColor="#b8862e" stopOpacity="0.12" />
           <stop offset="100%" stopColor="#b8862e" stopOpacity="0" />
         </radialGradient>
 
@@ -147,8 +148,8 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
         }
         style={{ transformOrigin: '1200px 450px' }}
       >
-        <ellipse cx="1260" cy="180" rx="240" ry="170" fill="url(#hero-cream-bloom)" />
-        <ellipse cx="1100" cy="780" rx="140" ry="90" fill="url(#hero-cream-bloom)" opacity="0.7" />
+        <ellipse cx="1260" cy="180" rx="340" ry="240" fill="url(#hero-cream-bloom)" />
+        <ellipse cx="1100" cy="780" rx="190" ry="130" fill="url(#hero-cream-bloom)" opacity="0.6" />
       </motion.g>
 
       {/* Amber hot spot — its own continuous breath at a different
@@ -170,7 +171,7 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
         }
         style={{ transformOrigin: '1180px 450px' }}
       >
-        <ellipse cx="1180" cy="450" rx="200" ry="240" fill="url(#hero-amber-hot)" />
+        <ellipse cx="1200" cy="420" rx="360" ry="400" fill="url(#hero-amber-hot)" />
       </motion.g>
 
       {/* Thin tendrils reaching toward the text column on the left. They

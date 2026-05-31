@@ -48,9 +48,10 @@ function Music() {
   return (
     <PageTransition scene="music">
       <div
-        className="min-h-screen bg-music-bg relative overflow-hidden"
+        className="min-h-screen relative overflow-hidden"
         style={{
           width: '100%',
+          backgroundColor: 'var(--bg)',
           display: 'flex',
           justifyContent: 'center',
           paddingTop: 'clamp(6rem, 12vh, 9rem)',
@@ -75,10 +76,11 @@ function Music() {
             }}
           >
             <h1
-              className="font-bold tracking-tight text-music-cream"
+              className="font-bold tracking-tight"
               style={{
                 fontSize: 'clamp(2rem, 4.5vw, 3.5rem)',
                 lineHeight: 1.05,
+                color: 'var(--text-strong)',
               }}
             >
               {t('music.heading')}
@@ -96,7 +98,7 @@ function Music() {
             />
             <p
               style={{
-                color: 'rgba(196,162,101,0.7)',
+                color: 'var(--text-muted)',
                 fontSize: 'clamp(0.95rem, 1.1vw, 1.1rem)',
                 lineHeight: 1.55,
                 maxWidth: '64ch',
@@ -195,13 +197,13 @@ function Music() {
             style={{
               marginTop: 'clamp(3rem, 6vh, 5rem)',
               paddingTop: 'clamp(1.5rem, 3vh, 2.25rem)',
-              borderTop: '1px solid rgba(196, 162, 101, 0.2)',
+              borderTop: '1px solid var(--border)',
             }}
           >
             <p
               className="font-mono uppercase"
               style={{
-                color: 'rgba(196,162,101,0.7)',
+                color: 'var(--accent-deep)',
                 fontSize: '0.7rem',
                 letterSpacing: '0.22em',
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.25rem)',
@@ -223,7 +225,7 @@ function Music() {
                     fontFamily: 'Space Grotesk, system-ui, sans-serif',
                     fontWeight: 600,
                     fontSize: 'clamp(1.15rem, 1.6vw, 1.4rem)',
-                    color: '#f4e8d1',
+                    color: 'var(--text-strong)',
                     margin: 0,
                   }}
                 >
@@ -231,7 +233,7 @@ function Music() {
                 </p>
                 <p
                   style={{
-                    color: 'rgba(244,232,209,0.6)',
+                    color: 'var(--text-muted)',
                     fontSize: 'clamp(0.88rem, 1vw, 0.98rem)',
                     lineHeight: 1.55,
                     marginTop: 6,
@@ -251,7 +253,7 @@ function Music() {
                   href="https://open.spotify.com/album/31sDZcw3rrgHrUB6Ylad5Q?si=6vjebhBbQcqVKMPdL1kHng"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -260,7 +262,7 @@ function Music() {
                     borderRadius: 9999,
                     border: '1px solid rgba(196,162,101,0.4)',
                     background: 'rgba(196,162,101,0.06)',
-                    color: '#f4e8d1',
+                    color: 'var(--text-strong)',
                     fontFamily: 'JetBrains Mono, monospace',
                     fontSize: '0.78rem',
                     letterSpacing: '0.14em',
@@ -286,7 +288,7 @@ function Music() {
                   href="https://music.apple.com/us/album/oxy-jazz-23/1817646373"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -295,7 +297,7 @@ function Music() {
                     borderRadius: 9999,
                     border: '1px solid rgba(196,162,101,0.4)',
                     background: 'rgba(196,162,101,0.06)',
-                    color: '#f4e8d1',
+                    color: 'var(--text-strong)',
                     fontFamily: 'JetBrains Mono, monospace',
                     fontSize: '0.78rem',
                     letterSpacing: '0.14em',
@@ -330,13 +332,13 @@ function Music() {
             style={{
               marginTop: 'clamp(3rem, 6vh, 5rem)',
               paddingTop: 'clamp(1.5rem, 3vh, 2.25rem)',
-              borderTop: '1px solid rgba(196, 162, 101, 0.2)',
+              borderTop: '1px solid var(--border)',
             }}
           >
             <p
               className="font-mono uppercase"
               style={{
-                color: 'rgba(196,162,101,0.7)',
+                color: 'var(--accent-deep)',
                 fontSize: '0.7rem',
                 letterSpacing: '0.22em',
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.25rem)',
@@ -346,7 +348,7 @@ function Music() {
             </p>
             <p
               style={{
-                color: 'rgba(244, 232, 209, 0.7)',
+                color: 'var(--text)',
                 fontSize: 'clamp(0.88rem, 1vw, 0.98rem)',
                 lineHeight: 1.65,
                 marginBottom: 'clamp(0.75rem, 1.5vh, 1.2rem)',
@@ -356,7 +358,7 @@ function Music() {
             </p>
             <p
               style={{
-                color: 'rgba(244, 232, 209, 0.6)',
+                color: 'var(--text-muted)',
                 fontSize: 'clamp(0.82rem, 0.95vw, 0.92rem)',
                 lineHeight: 1.6,
               }}
@@ -368,7 +370,7 @@ function Music() {
                   1: (
                     <a
                       href="mailto:jameswangjiayi@gmail.com"
-                      style={{ color: '#c4a265', textDecoration: 'underline', textDecorationColor: 'rgba(196,162,101,0.5)' }}
+                      style={{ color: 'var(--accent)', textDecoration: 'underline', textDecorationColor: 'rgba(196,162,101,0.5)' }}
                     />
                   ),
                 }}

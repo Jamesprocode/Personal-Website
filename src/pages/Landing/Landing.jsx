@@ -30,7 +30,7 @@ function Landing() {
 
   return (
     <PageTransition scene="landing">
-      <main className="landing-snap" style={{ width: '100%', backgroundColor: '#f4e8d1' }}>
+      <main className="landing-snap" style={{ width: '100%', backgroundColor: 'var(--bg)' }}>
         <HeroSection />
         <ProjectsSection />
         <MusicPreview />
