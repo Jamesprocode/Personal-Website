@@ -17,9 +17,9 @@ i18n
     defaultNS: 'translation',
     ns: ['translation'],
     detection: {
-      // Only honor a previously saved choice; do NOT auto-detect the
-      // browser language. New visitors fall back to English (fallbackLng).
-      order: ['localStorage'],
+      // Honor a saved choice first, then auto-detect the visitor's
+      // browser language; fall back to English when unsupported.
+      order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'lang',
       caches: ['localStorage'],
     },
