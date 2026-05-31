@@ -44,6 +44,9 @@ export function AudioPlayerProvider({ children }) {
 
   const audioRef = useRef(null);
   const currentTrackRef = useRef(null);
+  // Latest seek target that arrived while the element was still resolving a
+  // previous seek. Applied on the 'seeked' event so we never thrash.
+  const pendingSeekRef = useRef(null);
 
   // Web Audio analyzer chain
   const audioCtxRef = useRef(null);
@@ -135,6 +138,18 @@ export function AudioPlayerProvider({ children }) {
       audio.addEventListener('ended', () => {
         onEndedRef.current();
       });
+      // When a seek finishes, chase the most recent pending target (if any).
+      // This serializes rapid scrub seeks so the element never gets stuck in
+      // a perpetual "seeking" state that silences playback.
+      audio.addEventListener('seeked', () => {
+        if (pendingSeekRef.current !== null) {
+          const next = pendingSeekRef.current;
+          pendingSeekRef.current = null;
+          if (Math.abs(audio.currentTime - next) > 0.05) {
+            audio.currentTime = next;
+          }
+        }
+      });
     }
 
     if (audioRef.current) {
@@ -215,31 +230,22 @@ export function AudioPlayerProvider({ children }) {
     };
   }, [selectedAlbum, selectedTrack, loopMode, play]);
 
-  // Throttle the entire seek (audio + state) at ~20Hz with leading+trailing.
-  const lastSeekAtRef = useRef(0);
-  const trailingSeekRef = useRef(null);
+  // Serialize seeks instead of time-throttling them. Setting currentTime
+  // again while the element is still resolving the previous seek (common
+  // when streaming MP3s over the network, and slower for VBR files) thrashes
+  // it into a perpetual "seeking" state and silences playback — which feels
+  // like scrubbing "stops" the track. We apply one seek at a time and stash
+  // the latest target; the 'seeked' listener flushes it when ready.
   const seek = useCallback((time) => {
-    if (!audioRef.current) return;
-    const now = performance.now();
-    if (now - lastSeekAtRef.current >= 50) {
-      lastSeekAtRef.current = now;
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
-      if (trailingSeekRef.current) {
-        clearTimeout(trailingSeekRef.current);
-        trailingSeekRef.current = null;
-      }
-    } else {
-      if (trailingSeekRef.current) clearTimeout(trailingSeekRef.current);
-      trailingSeekRef.current = setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.currentTime = time;
-          setCurrentTime(time);
-          lastSeekAtRef.current = performance.now();
-        }
-        trailingSeekRef.current = null;
-      }, 50);
+    const audio = audioRef.current;
+    if (!audio) return;
+    // Immediate UI feedback; 'timeupdate' reconciles the exact value.
+    setCurrentTime(time);
+    if (audio.seeking) {
+      pendingSeekRef.current = time;
+      return;
     }
+    audio.currentTime = time;
   }, []);
 
   // Clean up the audio context on unmount of the provider (i.e., app unload)
