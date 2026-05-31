@@ -34,13 +34,110 @@
 }
 
 html {
+  /* `scroll-behavior: smooth` lets the browser batch multiple scroll
+     updates into fewer paint operations. Removing it regressed
+     throttled scroll perf significantly (5% drops at 10× throttle
+     vs 0% with smooth). Keep it on. */
   scroll-behavior: smooth;
+  /* Snap-to-section: `proximity` (not mandatory) so taller sections
+     don't fight the user mid-read; the browser only snaps when scroll
+     velocity drops near a section boundary. Scroll-padding accounts
+     for the fixed navbar so the section heading isn't tucked under it.
+     Snap targets are the `[data-isolate]` Landing sections below;
+     other routes have no snap-align children and behave normally. */
+  scroll-snap-type: y proximity;
+  /* Both navbar (top) and footer (bottom) are position:fixed overlays
+     ~4.5rem tall. Snap targets must clear both so section content
+     doesn't slide under either bar. */
+  scroll-padding-top: 4.5rem;
+  scroll-padding-bottom: 4.5rem;
+}
+
+/* Only sections explicitly marked with data-snap-section get a snap
+   target. Currently that's just the Hero — the rest of the page
+   scrolls freely. */
+.landing-snap > section[data-snap-section] {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; }
+}
+
+/* Vinyl spin animation — driven via plain CSS so it can't be reset by
+   nested motion.div re-renders. Used in MusicPreview. */
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Cassette reel rotation — used by ProjectShelf SpinningReel. There are
+   ~32 reels on the projects section and running them through framer-motion
+   was the dominant scroll-jank source on low-end CPUs (32 simultaneous
+   JS rAF callbacks). CSS keyframes are compositor-only and auto-pause
+   when the section is `data-offscreen`. */
+@keyframes reel-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* OFFSCREEN SECTION PAUSE — every <section> on Landing flagged by
+   `useOffscreenPause` carries `data-offscreen` when not visible. Pausing
+   the descendant CSS animations (vinyl-spin, pj-halo-breath,
+   pj-corner-breath, pj-track-pulse) is the single biggest perf win on
+   low-end CPUs — under 6× CPU throttle this drops Layerize from 132 ms
+   to 79 ms over a 4 s scroll burst, and at 10× cuts Paint by ~84%.
+   The browser does NOT pause off-screen CSS animations on its own; they
+   continue to recompose their layer every frame. */
+section[data-offscreen] *,
+section[data-offscreen] *::before,
+section[data-offscreen] *::after {
+  animation-play-state: paused !important;
+}
+
+/* RELEASE GPU LAYERS WHEN OFFSCREEN — `will-change: transform` promotes
+   each motion.g to its own compositor layer, which helps weak iGPUs
+   when the user is reading the section. Off-screen, those layers
+   should go back to `auto` so VRAM isn't held hostage by 7+ idle
+   layers across the page. Combined with the pause rule above, this
+   gives the browser permission to discard the layer entirely. */
+section[data-offscreen] [style*='will-change'] {
+  will-change: auto !important;
+}
+
+/* OFFSCREEN SECTION RENDER SKIP — only on landing sections that follow
+   the hero. `content-visibility: auto` lets the browser skip painting +
+   styling them while they're scrolled out of view, then resume when
+   they approach the viewport. We provide an intrinsic-size hint so the
+   scrollbar doesn't twitch when sections "unhydrate". The hero opts out
+   so its FCP behavior stays unchanged. */
+section[data-offscreen-skip] {
+  content-visibility: auto;
+  contain-intrinsic-size: 100% 900px;
+}
+
+/* SECTION-LEVEL LAYOUT/PAINT CONTAINMENT — tells the browser that
+   changes inside one landing section (a motion.g transforming, a CSS
+   keyframe playing, a `will-change` layer promotion) cannot affect
+   layout or paint of sibling sections. This is the single cheapest
+   isolation directive in CSS; it lets the renderer skip whole subtree
+   work during scroll. `style` containment isolates counter-style and
+   quote contexts too. Applied via data attribute so we don't break the
+   hero (which uses min-height: 100svh and shouldn't get layout-isolated
+   from the document root). */
+section[data-isolate] {
+  contain: layout paint style;
 }
 
 body {
   font-family: var(--font-sans);
-  background: #0a0a0a;
-  color: #ffffff;
+  /* Cream body — what the user sees during the brief gap between a page
+     exit and the next page's mount. Black flashed badly when going from
+     Landing (cream) → Music (dark). Cream is closer to most pages and
+     much less jarring as a transitional color than black. */
+  background: #f4e8d1;
+  color: #1a1410;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

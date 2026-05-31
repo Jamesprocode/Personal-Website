@@ -29,8 +29,8 @@ function Landing() {
   }, [hash]);
 
   return (
-    <PageTransition>
-      <main style={{ width: '100%', backgroundColor: '#f4e8d1' }}>
+    <PageTransition scene="landing">
+      <main className="landing-snap" style={{ width: '100%', backgroundColor: '#f4e8d1' }}>
         <HeroSection />
         <ProjectsSection />
         <MusicPreview />

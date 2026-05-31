@@ -340,8 +340,8 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelec
 
         <div role="list" aria-label={t('music.albumsList')}>
           {albums.map((album) => (
+            <div role="listitem" key={album.id}>
             <AlbumRow
-              key={album.id}
               album={album}
               isExpanded={expandedId === album.id}
               isActiveAlbum={activeAlbumId === album.id}
@@ -352,6 +352,7 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, onSelec
               onOpenSleeve={setSleeveAlbum}
               reduceMotion={reduceMotion}
             />
+            </div>
           ))}
         </div>
       </div>

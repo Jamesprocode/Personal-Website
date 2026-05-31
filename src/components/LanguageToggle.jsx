@@ -73,6 +73,8 @@ function LanguageToggle({ variant = 'desktop' }) {
   });
 
   if (variant === 'mobile') {
+    // Mobile drawer is cream-themed now; tint the toggle's surface to
+    // match instead of the dark espresso it inherited.
     return (
       <button
         type="button"
@@ -80,14 +82,14 @@ function LanguageToggle({ variant = 'desktop' }) {
         aria-label={ariaLabel}
         className="flex items-center justify-center gap-4 w-full py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/70"
         style={{
-          backgroundColor: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          backgroundColor: 'rgba(160, 111, 29, 0.06)',
+          border: '1px solid rgba(160, 111, 29, 0.18)',
         }}
       >
-        <span style={labelStyle(currentLang === 'en', false)}>EN</span>
+        <span style={labelStyle(currentLang === 'en', true)}>EN</span>
         <span
           aria-hidden="true"
-          style={{ color: dividerColor, fontFamily: monoFamily, fontSize: '0.72rem' }}
+          style={{ color: 'rgba(108,92,59,0.6)', fontFamily: monoFamily, fontSize: '0.72rem' }}
         >
           /
         </span>

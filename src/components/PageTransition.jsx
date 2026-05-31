@@ -1,24 +1,14 @@
 import { motion } from 'framer-motion';
 
 const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 20,
-  },
+  initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut',
-    },
+    transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
   },
   exit: {
     opacity: 0,
-    y: -20,
-    transition: {
-      duration: 0.3,
-    },
+    transition: { duration: 0.18, ease: [0.5, 0, 0.75, 0] },
   },
 };
 

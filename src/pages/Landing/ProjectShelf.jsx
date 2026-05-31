@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useCallback, useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +22,53 @@ const extractYear = (period) => {
   return match ? match[1] : '';
 };
 
-function SpinningReel({ cx, cy, r, duration = 4, reduceMotion }) {
+// Cassette reel — wraps the SVG in a CSS-driven rotating div so the
+// rotation runs on the compositor and is paused automatically when the
+// cassette's parent section is `data-offscreen`. Previously this used
+// framer-motion's `animate` prop on a `<motion.g>`; with 16 cassettes ×
+// 2 reels = 32 simultaneous JS rAF callbacks, that was the dominant
+// scroll-jank source on the projects shelf under CPU throttle (a 4 s
+// scroll burst at 6× lost ~22% of compositor time to the reels; at 10×,
+// ~27%). The div wrapper avoids the SVG `transform-box: fill-box` layout
+// thrash that pure-SVG CSS rotation triggers in Blink.
+function SpinningReel({ size, reduceMotion, duration = 4 }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        animation: reduceMotion ? undefined : `reel-spin ${duration}s linear infinite`,
+      }}
+    >
+      <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden>
+        <circle cx={20} cy={20} r={14} fill="#7c2d12" />
+        <circle cx={20} cy={20} r={14} fill="none" stroke="#451a03" strokeWidth={3.1} />
+        <circle cx={20} cy={20} r={4.5} fill="#451a03" />
+        {Array.from({ length: 6 }).map((_, i) => {
+          const a = (i * 60 * Math.PI) / 180;
+          return (
+            <line
+              key={i}
+              x1={20}
+              y1={20}
+              x2={20 + Math.cos(a) * 11.2}
+              y2={20 + Math.sin(a) * 11.2}
+              stroke="#92400e"
+              strokeWidth={2}
+              strokeLinecap="round"
+            />
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// SVG inline variant — used inside the opened cassette preview where the
+// reel has to live inside a parent SVG coordinate system. Only ~2 of these
+// exist at a time (the preview opens for one selected project) so the
+// framer-motion JS cost is negligible. Keeps the original API.
+function SpinningReelSvg({ cx, cy, r, duration = 4, reduceMotion }) {
   return (
     <motion.g
       animate={reduceMotion ? undefined : { rotate: 360 }}
@@ -60,7 +106,7 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
   const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
   return (
     <motion.button
-      onClick={onClick}
+      onClick={() => onClick(project.id)}
       whileHover={{ x: 4, transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
       animate={{ x: isSelected ? 6 : 0 }}
@@ -93,9 +139,9 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
         }}
       >
         {/* Left reel */}
-        <svg width="36" height="36" viewBox="0 0 40 40" style={{ flexShrink: 0 }}>
-          <SpinningReel cx={20} cy={20} r={14} duration={5} reduceMotion={reduceMotion} />
-        </svg>
+        <div style={{ flexShrink: 0 }}>
+          <SpinningReel size={36} duration={5} reduceMotion={reduceMotion} />
+        </div>
 
         {/* Label area */}
         <div
@@ -151,13 +197,20 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
         </div>
 
         {/* Right reel */}
-        <svg width="36" height="36" viewBox="0 0 40 40" style={{ flexShrink: 0 }}>
-          <SpinningReel cx={20} cy={20} r={14} duration={5} reduceMotion={reduceMotion} />
-        </svg>
+        <div style={{ flexShrink: 0 }}>
+          <SpinningReel size={36} duration={5} reduceMotion={reduceMotion} />
+        </div>
       </div>
     </motion.button>
   );
 }
+
+// Memoize: when one cassette is selected, only that cassette's row +
+// the previously-selected row need to re-render (their `isSelected`
+// changed). The other 14 don't — but without memo they all re-render
+// on every parent state change, recomputing motion variants + animate
+// targets each time. Memo cuts that.
+const MemoCassetteRow = memo(CassetteRow);
 
 function CassetteFront({ project, onClose, reduceMotion }) {
   const { t } = useTranslation();
@@ -269,8 +322,8 @@ function CassetteFront({ project, onClose, reduceMotion }) {
         )}
 
         {/* Reels */}
-        <SpinningReel cx={220} cy={360} r={62} duration={2.5} reduceMotion={reduceMotion} />
-        <SpinningReel cx={580} cy={360} r={62} duration={2.5} reduceMotion={reduceMotion} />
+        <SpinningReelSvg cx={220} cy={360} r={62} duration={2.5} reduceMotion={reduceMotion} />
+        <SpinningReelSvg cx={580} cy={360} r={62} duration={2.5} reduceMotion={reduceMotion} />
 
         {/* Tape window */}
         <rect x="320" y="425" width="160" height="6" rx="3" fill="#92400e" fillOpacity="0.5" />
@@ -339,6 +392,12 @@ function ProjectShelf() {
   const [selectedId, setSelectedId] = useState(null);
   const selectedProject = projects.find((p) => p.id === selectedId) || null;
 
+  // Stable click handler so memoized cassettes don't re-render on every
+  // parent render just because the callback identity changed.
+  const handleSelect = useCallback((id) => {
+    setSelectedId((prev) => (prev === id ? null : id));
+  }, []);
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') setSelectedId(null);
@@ -348,7 +407,14 @@ function ProjectShelf() {
   }, []);
 
   return (
-    <div
+    <motion.div
+      initial={reduceMotion ? false : 'hidden'}
+      whileInView="show"
+      viewport={{ once: true, margin: '-80px' }}
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+      }}
       style={{
         display: 'grid',
         gridTemplateColumns: 'minmax(280px, 1fr) minmax(0, 1.4fr)',
@@ -358,27 +424,61 @@ function ProjectShelf() {
       }}
       className="project-shelf-grid"
     >
-      {/* LEFT: vertical list of horizontal cassettes */}
-      <div
+      {/* LEFT: cassettes are slotted onto the rack as a single vertical
+          column. Each tape slides in from the left with a small angular
+          kick — reads as physical handling, not opacity fade. */}
+      <motion.div
         role="list"
         aria-label={t('shelf.rackLabel')}
-        style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.6rem, 1vh, 1rem)' }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'clamp(0.5rem, 1vh, 0.85rem)',
+          minWidth: 0,
+        }}
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.06 } },
+        }}
       >
         {projects.map((p) => (
-          <CassetteRow
+          <motion.div
             key={p.id}
-            project={p}
-            isSelected={selectedId === p.id}
-            onClick={() => setSelectedId(p.id === selectedId ? null : p.id)}
-            reduceMotion={reduceMotion}
-          />
+            role="listitem"
+            style={{ minWidth: 0, transformOrigin: 'left center' }}
+            variants={{
+              hidden: { opacity: 0, x: -22, y: -6, rotate: -1.4 },
+              show: {
+                opacity: 1,
+                x: 0,
+                y: 0,
+                rotate: 0,
+                transition: { duration: 0.62, ease: [0.16, 1, 0.3, 1] },
+              },
+            }}
+          >
+            <MemoCassetteRow
+              project={p}
+              isSelected={selectedId === p.id}
+              onClick={handleSelect}
+              reduceMotion={reduceMotion}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* RIGHT: active cassette panel */}
-      <div
+      {/* RIGHT: active cassette panel — fades in alongside the cascade */}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+          },
+        }}
         style={{
           minHeight: 360,
+          minWidth: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -430,7 +530,7 @@ function ProjectShelf() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       <style>{`
         @media (max-width: 760px) {
@@ -444,7 +544,7 @@ function ProjectShelf() {
           }
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 }
 

@@ -504,6 +504,9 @@ function TableBlock({ headers, rows, caption, footnote }) {
       }}
     >
       <div
+        tabIndex={0}
+        role="region"
+        aria-label={t('project.tableLabel', { defaultValue: 'Data table' })}
         style={{
           overflowX: 'auto',
           border: `1px solid ${LINEN}66`,
@@ -977,7 +980,7 @@ function BodyBlock({ block, onOpenImage }) {
 function NotFound() {
   const { t } = useTranslation();
   return (
-    <PageTransition>
+    <PageTransition scene="project">
       <main
         style={{
           minHeight: '100vh',
@@ -1025,6 +1028,9 @@ function ProjectDetail() {
   const { id } = useParams();
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
+  // All hooks must run before any early return so the hook order stays
+  // stable when navigating between a valid project and a missing id.
+  const [lightbox, setLightbox] = useState(null);
   const project = projects.find((p) => p.id === parseInt(id, 10));
 
   if (!project) return <NotFound />;
@@ -1035,7 +1041,6 @@ function ProjectDetail() {
   const body = project.body || [];
   const links = project.links || [];
   const comingSoon = project.comingSoon || [];
-  const [lightbox, setLightbox] = useState(null);
 
   // Localized meta — defaultValue falls through to the English source when no zh key exists.
   const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
@@ -1069,7 +1074,7 @@ function ProjectDetail() {
     : null;
 
   return (
-    <PageTransition>
+    <PageTransition scene="project">
       <main
         style={{
           width: '100%',

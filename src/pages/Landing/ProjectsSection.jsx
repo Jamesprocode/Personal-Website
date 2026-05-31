@@ -1,6 +1,9 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useReducedMotion, useScroll } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import ProjectShelf from './ProjectShelf';
+import ProjectsPainterlyBackground from './ProjectsPainterlyBackground';
+import useOffscreenPause from '../../hooks/useOffscreenPause';
 
 const INK_DEEP = '#2d2d2d';
 const WALNUT = '#4a3f35';
@@ -8,11 +11,25 @@ const WALNUT = '#4a3f35';
 function ProjectsSection() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
+  // Pauses the halo / corner / track-pulse CSS animations the moment the
+  // section scrolls off screen, and gates whether the painterly bg even
+  // mounts. The painterly SVG carries ~40 elements; not rendering it
+  // while offscreen drops idle DOM weight and lets the React tree go
+  // smaller for offscreen sections.
+  const inView = useOffscreenPause(sectionRef);
 
   return (
     <section
+      ref={sectionRef}
       id="research-projects-top"
-      className="relative"
+      data-offscreen-skip
+      data-isolate
+      className="relative overflow-hidden"
       style={{
         width: '100%',
         display: 'flex',
@@ -24,7 +41,10 @@ function ProjectsSection() {
         scrollMarginTop: '4rem',
       }}
     >
-      <div
+      {inView && (
+        <ProjectsPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
+      )}
+      <div className="relative z-10"
         style={{
           width: '100%',
           maxWidth: 'min(82rem, 92vw)',
@@ -33,13 +53,16 @@ function ProjectsSection() {
         }}
       >
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          initial={reduceMotion ? false : 'hidden'}
+          whileInView="show"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.18 } },
+          }}
           className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-4 items-center"
         >
-          <h2
+          <motion.h2
             className="col-span-12 lg:col-span-7 font-bold tracking-tight"
             style={{
               color: INK_DEEP,
@@ -47,10 +70,18 @@ function ProjectsSection() {
               lineHeight: 1.05,
               margin: 0,
             }}
+            variants={{
+              hidden: { opacity: 0, y: 22 },
+              show: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+              },
+            }}
           >
             {t('projects.heading')}
-          </h2>
-          <p
+          </motion.h2>
+          <motion.p
             className="col-span-12 lg:col-span-5"
             style={{
               color: `${WALNUT}b3`,
@@ -59,9 +90,17 @@ function ProjectsSection() {
               maxWidth: '42ch',
               margin: 0,
             }}
+            variants={{
+              hidden: { opacity: 0, y: 16 },
+              show: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
+              },
+            }}
           >
             {t('projects.subtitle')}
-          </p>
+          </motion.p>
         </motion.div>
 
         <ProjectShelf />

@@ -40,7 +40,7 @@ function Music() {
   }, [handlePlayPause]);
 
   return (
-    <PageTransition>
+    <PageTransition scene="music">
       <div
         className="min-h-screen bg-music-bg relative overflow-hidden"
         style={{

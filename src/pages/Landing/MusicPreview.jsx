@@ -1,27 +1,26 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, useScroll } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import albums from '../../data/albums';
+import MusicPainterlyBackground from './MusicPainterlyBackground';
+import useOffscreenPause from '../../hooks/useOffscreenPause';
 
 const tracks = albums.flatMap((a) => a.tracks);
 
 function VinylDisc({ hovered, reduceMotion }) {
+  // Using CSS animation directly instead of framer-motion's animate prop —
+  // a nested motion.div inside the section's whileInView parent was
+  // having its transform reset to identity. Pure CSS keyframes are
+  // reliable here, and `prefers-reduced-motion` plus the inline
+  // condition both gate the spin off appropriately.
+  const spinDuration = hovered ? '6s' : '10s';
   return (
-    <motion.div
-      animate={reduceMotion ? undefined : { rotate: 360 }}
-      transition={
-        reduceMotion
-          ? undefined
-          : {
-              duration: hovered ? 6 : 14,
-              repeat: Infinity,
-              ease: 'linear',
-            }
-      }
+    <div
       style={{
         width: '100%',
         aspectRatio: '1 / 1',
+        animation: reduceMotion ? 'none' : `vinyl-spin ${spinDuration} linear infinite`,
       }}
     >
       <svg viewBox="0 0 200 200" className="w-full h-full" aria-hidden>
@@ -99,7 +98,7 @@ function VinylDisc({ hovered, reduceMotion }) {
 
         <circle cx="100" cy="100" r="2.2" fill="#0a0806" />
       </svg>
-    </motion.div>
+    </div>
   );
 }
 
@@ -107,12 +106,24 @@ function MusicPreview() {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const [hovered, setHovered] = useState(false);
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
+  // Pauses the vinyl-spin keyframe when the music section scrolls off
+  // screen. The 10 s linear rotation was racking up Layerize cost during
+  // Projects scrolling because the disc was still composited every frame.
+  const inView = useOffscreenPause(sectionRef);
 
   const albumCount = albums.length;
   const trackCount = tracks.length;
 
   return (
     <section
+      ref={sectionRef}
+      data-offscreen-skip
+      data-isolate
       className="relative overflow-hidden"
       style={{
         width: '100%',
@@ -123,15 +134,9 @@ function MusicPreview() {
         paddingBottom: 'clamp(7rem, 14vh, 12rem)',
       }}
     >
-      <div
-        aria-hidden
-        className="absolute right-[8vw] top-1/2 -translate-y-1/2 rounded-full blur-3xl pointer-events-none"
-        style={{
-          width: 'clamp(280px, 36vw, 560px)',
-          aspectRatio: '1 / 1',
-          backgroundColor: 'rgba(196, 162, 101, 0.10)',
-        }}
-      />
+      {inView && (
+        <MusicPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
+      )}
 
       <div
         className="relative z-10"
@@ -143,37 +148,64 @@ function MusicPreview() {
         }}
       >
         <div className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(3rem,6vh,5rem)] items-center">
-          {/* LEFT: framing copy + CTA */}
+          {/* LEFT: framing copy + CTA cascade in */}
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduceMotion ? false : 'hidden'}
+            whileInView="show"
             viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.16, delayChildren: 0.05 } },
+            }}
             className="col-span-12 lg:col-span-6 order-2 lg:order-1"
           >
-            <h2
+            <motion.h2
               className="font-bold tracking-tight"
               style={{
                 fontSize: 'clamp(1.75rem, 3.5vw, 3rem)',
                 lineHeight: 1.05,
                 color: '#f4e8d1',
               }}
+              variants={{
+                hidden: { opacity: 0, y: 22 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
             >
               {t('musicPreview.heading')}
-            </h2>
-            <p
+            </motion.h2>
+            <motion.p
               className="mt-[clamp(1rem,2vh,1.5rem)] leading-[1.55]"
               style={{
                 fontSize: 'clamp(1rem, 1.2vw, 1.15rem)',
                 color: 'rgba(244, 232, 209, 0.7)',
                 maxWidth: '50ch',
               }}
+              variants={{
+                hidden: { opacity: 0, y: 18 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
             >
               {t('musicPreview.bio')}
-            </p>
+            </motion.p>
 
-            <div
+            <motion.div
               className="mt-[clamp(1.5rem,3vh,2rem)] flex items-baseline gap-[clamp(1.5rem,3vw,2.5rem)] flex-wrap"
+              variants={{
+                hidden: { opacity: 0, y: 14 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
             >
               <div>
                 <p
@@ -205,35 +237,48 @@ function MusicPreview() {
                   {trackCount}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
-            <Link
-              to="/music"
-              onMouseEnter={() => setHovered(true)}
-              onMouseLeave={() => setHovered(false)}
-              onFocus={() => setHovered(true)}
-              onBlur={() => setHovered(false)}
-              className="inline-flex items-center gap-2 mt-[clamp(2rem,4vh,2.5rem)] rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
-              style={{
-                color: '#1a1410',
-                backgroundColor: '#c4a265',
-                padding: 'clamp(0.7rem, 1vw, 0.95rem) clamp(1.5rem, 2.4vw, 2.2rem)',
-                fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
-                fontWeight: 500,
-                letterSpacing: '0.04em',
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+                },
               }}
+              style={{ marginTop: 'clamp(2rem,4vh,2.5rem)' }}
             >
-              {t('musicPreview.cta')}
-              <span aria-hidden>→</span>
-            </Link>
+              <Link
+                to="/music"
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                onFocus={() => setHovered(true)}
+                onBlur={() => setHovered(false)}
+                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+                style={{
+                  color: '#1a1410',
+                  backgroundColor: '#c4a265',
+                  padding: 'clamp(0.7rem, 1vw, 0.95rem) clamp(1.5rem, 2.4vw, 2.2rem)',
+                  fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {t('musicPreview.cta')}
+                <span aria-hidden>→</span>
+              </Link>
+            </motion.div>
           </motion.div>
 
-          {/* RIGHT: spinning vinyl */}
+          {/* RIGHT: vinyl materializes on its own beat — slower, like film
+              coming into focus, paired with the heading reveal. */}
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1.1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="col-span-12 lg:col-span-6 order-1 lg:order-2 flex justify-center lg:justify-end"
           >
             <Link

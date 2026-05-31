@@ -8,7 +8,7 @@ function Timeline() {
   const { t } = useTranslation();
 
   return (
-    <PageTransition>
+    <PageTransition scene="timeline">
       <main
         style={{
           width: '100%',

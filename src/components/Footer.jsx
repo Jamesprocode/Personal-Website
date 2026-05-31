@@ -8,14 +8,25 @@ function Footer() {
   const isTimeline = location.pathname === '/timeline';
   const isCream = isLanding || isTimeline;
 
-  const iconColor = isCream ? '#2d2d2d' : 'rgba(255,255,255,0.6)';
-  const iconHover = isCream ? '#6c5c3b' : '#ffffff';
-  const copyColor = isCream ? '#6c5c3b' : 'rgba(255,255,255,0.4)';
+  // Soften icon contrast on cream so the footer doesn't shout under the
+  // contact section's centered halo. Cream pages get a near-transparent
+  // band that blends into the parlor instead of a hard horizontal break.
+  const iconColor = isCream ? 'rgba(74, 63, 53, 0.55)' : 'rgba(255,255,255,0.6)';
+  const iconHover = isCream ? '#4a3f35' : '#ffffff';
+  const copyColor = isCream ? 'rgba(108, 92, 59, 0.65)' : 'rgba(255,255,255,0.4)';
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-50 shadow-[0_-4px_8px_rgba(0,0,0,0.1)]"
-      style={{ backgroundColor: isCream ? '#c4b69c' : '#1a1a1a' }}
+      className="fixed bottom-0 left-0 right-0 z-50"
+      style={{
+        backgroundColor: isCream ? 'rgba(244, 232, 209, 0.85)' : '#1a1a1a',
+        backdropFilter: isCream ? 'blur(6px)' : undefined,
+        WebkitBackdropFilter: isCream ? 'blur(6px)' : undefined,
+        borderTop: isCream
+          ? '1px solid rgba(160, 111, 29, 0.16)'
+          : undefined,
+        boxShadow: isCream ? 'none' : '0 -4px 8px rgba(0,0,0,0.1)',
+      }}
     >
       <div
         className="flex items-center justify-center gap-8"

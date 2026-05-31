@@ -1,8 +1,10 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, useScroll } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
+import TimelinePainterlyBackground from './TimelinePainterlyBackground';
+import useOffscreenPause from '../../hooks/useOffscreenPause';
 
 const TRACKS = [
   { key: 'Academic', color: '#3b82f6' },
@@ -17,6 +19,17 @@ const YEAR_SPAN = END_YEAR - START_YEAR;
 function TimelinePreview() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
+  const sectionRef = useRef(null);
+  // Active range: from when the section first appears at the bottom of
+  // the viewport (playhead at 2020) to when it leaves the top (playhead
+  // at 2026). Matches the other section painterlies.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
+  // Skip painting + pause descendant animations while off-screen so the
+  // section doesn't compete with whichever section the user is reading.
+  const inView = useOffscreenPause(sectionRef);
 
   const trackData = useMemo(() => {
     return TRACKS.map((track) => {
@@ -46,21 +59,31 @@ function TimelinePreview() {
 
   return (
     <section
-      className="relative"
+      ref={sectionRef}
+      data-offscreen-skip
+      data-isolate
+      className="relative overflow-hidden"
       style={{
         width: '100%',
         display: 'flex',
         justifyContent: 'center',
         backgroundColor: '#efe3c9',
-        paddingTop: 'clamp(6rem, 12vh, 10rem)',
-        paddingBottom: 'clamp(6rem, 12vh, 10rem)',
+        paddingTop: 'clamp(8rem, 18vh, 14rem)',
+        paddingBottom: 'clamp(8rem, 18vh, 14rem)',
       }}
     >
+      {inView && (
+        <TimelinePainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
+      )}
       <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={reduceMotion ? false : 'hidden'}
+        whileInView="show"
         viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+        }}
         style={{
           width: '100%',
           maxWidth: 'min(72rem, 92vw)',
@@ -69,43 +92,91 @@ function TimelinePreview() {
         }}
       >
         <div className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(2rem,4vh,3rem)] items-center">
-          {/* LEFT: framing copy + CTA */}
-          <div className="col-span-12 lg:col-span-5">
-            <h2
+          {/* LEFT: framing copy + CTA cascade */}
+          <motion.div
+            className="col-span-12 lg:col-span-5"
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.16 } },
+            }}
+          >
+            <motion.h2
               className="font-bold tracking-tight text-amber-900"
               style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', lineHeight: 1.05 }}
-            >
-              {t('timelinePreview.heading')}
-            </h2>
-            <p
-              className="mt-[clamp(1rem,2vh,1.5rem)] text-amber-900/70"
-              style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55 }}
-            >
-              {t('timelinePreview.bio')}
-            </p>
-            <Link
-              to="/timeline"
-              className="inline-flex items-center gap-2 mt-[clamp(1.5rem,3vh,2.25rem)] bg-amber-900 hover:bg-stone-900 text-amber-50 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#efe3c9]"
-              style={{
-                padding: 'clamp(0.65rem, 1vw, 0.9rem) clamp(1.4rem, 2.2vw, 2rem)',
-                fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
-                fontWeight: 500,
-                letterSpacing: '0.02em',
+              variants={{
+                hidden: { opacity: 0, y: 22 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                },
               }}
             >
-              {t('timelinePreview.cta')}
-              <span aria-hidden>&rarr;</span>
-            </Link>
-          </div>
+              {t('timelinePreview.heading')}
+            </motion.h2>
+            <motion.p
+              className="mt-[clamp(1rem,2vh,1.5rem)] text-amber-900/70"
+              style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55 }}
+              variants={{
+                hidden: { opacity: 0, y: 16 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+            >
+              {t('timelinePreview.bio')}
+            </motion.p>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              style={{ marginTop: 'clamp(1.5rem,3vh,2.25rem)' }}
+            >
+              <Link
+                to="/timeline"
+                className="inline-flex items-center gap-2 bg-amber-900 hover:bg-stone-900 text-amber-50 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/70 focus-visible:ring-offset-4 focus-visible:ring-offset-[#efe3c9]"
+                style={{
+                  padding: 'clamp(0.65rem, 1vw, 0.9rem) clamp(1.4rem, 2.2vw, 2rem)',
+                  fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
+                  fontWeight: 500,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {t('timelinePreview.cta')}
+                <span aria-hidden>&rarr;</span>
+              </Link>
+            </motion.div>
+          </motion.div>
 
-          {/* RIGHT: faint preview of the four tracks */}
-          <div
+          {/* RIGHT: tracks draw left→right as one phrase. Tighter parent
+              stagger (0.22 s) means the lines overlap their wipes rather
+              than waiting their turn — reads as one continuous gesture
+              instead of three sequential ones. Each line's wipe duration
+              varies by track depth (deeper brass = slower/heavier). */}
+          <motion.div
             className="col-span-12 lg:col-span-7"
             aria-hidden
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.22, delayChildren: 0.08 } },
+            }}
           >
             <div className="relative">
-              {trackData.map((track, trackIdx) => (
-                <div
+              {trackData.map((track, trackIdx) => {
+                // Track-indexed timing: index 0 is heavier brass (drawn
+                // slower) and indexes 1/2 are lighter (drawn quicker), so
+                // the three lines sweep in a rounded crescendo.
+                const lineDuration = [1.05, 0.9, 0.78][trackIdx] ?? 0.9;
+                const dotsDelay = [0.62, 0.5, 0.42][trackIdx] ?? 0.5;
+                return (
+                <motion.div
                   key={track.key}
                   className="relative"
                   style={{
@@ -113,41 +184,94 @@ function TimelinePreview() {
                     borderTop: trackIdx === 0 ? '1px solid rgba(108, 92, 59, 0.16)' : 'none',
                     borderBottom: '1px solid rgba(108, 92, 59, 0.16)',
                   }}
+                  variants={{
+                    hidden: {},
+                    show: {},
+                  }}
                 >
-                  <div
+                  {/* Horizontal track line — wipes left to right */}
+                  <motion.div
                     className="absolute left-0 right-0 top-1/2 -translate-y-1/2"
-                    style={{ height: '1px', background: 'rgba(108, 92, 59, 0.18)' }}
+                    style={{
+                      height: '1px',
+                      background: 'rgba(108, 92, 59, 0.18)',
+                      transformOrigin: 'left center',
+                    }}
+                    variants={{
+                      hidden: { scaleX: 0, opacity: 0 },
+                      show: {
+                        scaleX: 1,
+                        opacity: 1,
+                        transition: { duration: lineDuration, ease: [0.16, 1, 0.3, 1] },
+                      },
+                    }}
                   />
-                  {track.dots.map((dot, dotIdx) => (
-                    <span
-                      key={`${track.key}-${dot.id}-${dotIdx}`}
-                      className="absolute top-1/2 rounded-full"
-                      style={{
-                        left: `${dot.xFrac * 100}%`,
-                        transform: 'translate(-50%, -50%)',
-                        width: 'clamp(8px, 0.85vw, 11px)',
-                        height: 'clamp(8px, 0.85vw, 11px)',
-                        backgroundColor: track.color,
-                        opacity: 0.55,
-                      }}
-                    />
-                  ))}
-                </div>
-              ))}
+                  {/* Dots cluster — cascades in after the line wipes.
+                      A small y-bloom (3 px → 0) makes each dot feel like
+                      it lands on the line rather than fading in flat. */}
+                  <motion.div
+                    style={{ position: 'absolute', inset: 0 }}
+                    variants={{
+                      hidden: {},
+                      show: {
+                        transition: { staggerChildren: 0.045, delayChildren: dotsDelay },
+                      },
+                    }}
+                  >
+                    {track.dots.map((dot, dotIdx) => (
+                      <motion.span
+                        key={`${track.key}-${dot.id}-${dotIdx}`}
+                        className="absolute top-1/2 rounded-full"
+                        style={{
+                          left: `${dot.xFrac * 100}%`,
+                          width: 'clamp(10px, 1.5vw, 14px)',
+                          height: 'clamp(10px, 1.5vw, 14px)',
+                          backgroundColor: track.color,
+                          boxShadow: '0 1px 2px rgba(74, 46, 10, 0.18)',
+                        }}
+                        variants={{
+                          hidden: { opacity: 0, scale: 0.35, x: '-50%', y: 'calc(-50% - 3px)' },
+                          show: {
+                            opacity: 0.62,
+                            scale: 1,
+                            x: '-50%',
+                            y: '-50%',
+                            transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] },
+                          },
+                        }}
+                      />
+                    ))}
+                  </motion.div>
+                </motion.div>
+                );
+              })}
 
-              {/* Year axis */}
-              <div className="relative mt-[clamp(0.5rem,1vh,0.85rem)]" style={{ height: '1.4em' }}>
+              {/* Year axis — fades in last, after the tracks have drawn */}
+              <motion.div
+                className="relative mt-[clamp(0.5rem,1vh,0.85rem)]"
+                style={{ height: '1.4em' }}
+                variants={{
+                  hidden: { opacity: 0 },
+                  show: {
+                    opacity: 1,
+                    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+                  },
+                }}
+              >
                 {Array.from({ length: YEAR_SPAN + 1 }).map((_, i) => {
                   const year = START_YEAR + i;
                   const xFrac = i / YEAR_SPAN;
+                  // Anchor the first label to its left edge and the last to
+                  // its right edge so they don't overflow the track horizontally.
+                  const tx = i === 0 ? '0%' : i === YEAR_SPAN ? '-100%' : '-50%';
                   return (
                     <span
                       key={year}
                       className="absolute top-0 font-mono text-amber-700/60"
                       style={{
                         left: `${xFrac * 100}%`,
-                        transform: 'translateX(-50%)',
-                        fontSize: 'clamp(0.65rem, 0.78vw, 0.78rem)',
+                        transform: `translateX(${tx})`,
+                        fontSize: 'clamp(0.7rem, 0.78vw, 0.85rem)',
                         letterSpacing: '0.05em',
                       }}
                     >
@@ -155,9 +279,9 @@ function TimelinePreview() {
                     </span>
                   );
                 })}
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
     </section>

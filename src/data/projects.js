@@ -12,7 +12,7 @@ const projects = [
     category: 'Computer Vision',
     github: null,
     comingSoon: ['GitHub', 'Paper'],
-    tileImage: '/projects/omr/pipeline-output.jpg',
+    tileImage: '/projects/omr/pipeline-output.webp',
     body: [
       // ---------- 1. Dataset ----------
       {
@@ -26,7 +26,7 @@ const projects = [
         text:
           'JazzMus [1]: 163 unique jazz standards, 326 synthetic pages (MuseScore Classical + MuseJazz fonts) and 293 handwritten copies, with Humdrum/MusicXML annotations and per-staff bounding boxes. We contributed two annotation fixes back to the corpus via pull requests on Hugging Face.',
         image: {
-          src: '/projects/omr/sample-clean.jpg',
+          src: '/projects/omr/sample-clean.webp',
           alt: 'A clean handwritten lead sheet from the JazzMus corpus — "Embraceable You".',
           caption: 'Clean handwritten sample from JazzMus — "Embraceable You", 6 staves, evenly spaced chord symbols.',
         },
@@ -44,7 +44,7 @@ const projects = [
         text:
           'Sheet Music Transformer (SMT) [2]: ConvNeXt encoder + autoregressive Transformer decoder, output Humdrum **kern. To support multi-staff output, we extend the vocabulary by one token — <linebreak> — and reuse the staff-level pretrained weights [1] unchanged. The methodological work is in the training curriculum, not the architecture.',
         image: {
-          src: '/projects/omr/architecture.jpg',
+          src: '/projects/omr/architecture.webp',
           alt: 'Sheet Music Transformer encoder-decoder architecture.',
           caption: 'SMT — ConvNeXt encoder + autoregressive Transformer decoder.',
         },
@@ -69,7 +69,7 @@ const projects = [
       },
       {
         kind: 'image',
-        src: '/projects/omr/pipeline-output.jpg',
+        src: '/projects/omr/pipeline-output.webp',
         alt: 'Detect-and-concatenate baseline output overlaid on input lead sheet.',
         caption: 'Detect-and-concatenate baseline output — predictions (right) re-laid against the input lead sheet (left).',
       },
@@ -86,7 +86,7 @@ const projects = [
         text:
           '9 stages of vertical masking: at stage k, only the top k staves are visible (input and ground truth both truncated). The schedule advances when validation error stays below 20% for 3 consecutive checks. Experience replay (r ∈ {0, 0.25, 0.5, 1.0}) controls how many earlier-stage samples are retained as the curriculum progresses, preventing the model from forgetting shorter-input behavior.',
         image: {
-          src: '/projects/omr/masking-example.png',
+          src: '/projects/omr/masking-example.webp',
           alt: 'Masking curriculum example — top-N staves visible per stage.',
           caption: 'Masking curriculum — each stage k reveals the top k staves of a real page.',
         },
@@ -104,7 +104,7 @@ const projects = [
         text:
           'Alternative curriculum: synthesize multi-staff inputs by stacking individual staff crops from different pages. Produces ~19× more training samples (32,563 vs 1,688), but introduces layout artifacts — inconsistent staff lengths, mismatched bar counts, broken progressions across stacked staves.',
         image: {
-          src: '/projects/omr/stacking-example.png',
+          src: '/projects/omr/stacking-example.webp',
           alt: 'Stacking curriculum example — staves from different pages stacked into a synthetic page.',
           caption: 'Stacking curriculum — stage-k samples synthesized by stacking k individual staff crops.',
         },
@@ -216,7 +216,7 @@ const projects = [
       },
       {
         kind: 'image',
-        src: '/projects/omr/poster.jpg',
+        src: '/projects/omr/poster.webp',
         alt: 'Project poster summarizing the system and results.',
         caption: 'Poster — one-page summary of architecture, training, and results.',
       },
@@ -235,7 +235,7 @@ const projects = [
     period: 'Oct 2025 – present',
     category: 'Musical Interaction',
     github: 'https://github.com/Jamesprocode/AMT',
-    tileImage: '/projects/amt/shimon-detail.jpg',
+    tileImage: '/projects/amt/shimon-detail.webp',
     body: [
       // ---------- Demo video ----------
       {
@@ -256,7 +256,7 @@ const projects = [
         text:
           'Shimon is a four-armed robotic marimba player at Georgia Tech\'s Center for Music Technology. The arms share a single horizontal rail and cannot cross, each arm is wider than a single marimba bar, and rail movement is bounded by a ~130 ms/half-step speed limit. Any musical line the robot plays must be physically feasible under those constraints.',
         image: {
-          src: '/projects/amt/shimon-detail.jpg',
+          src: '/projects/amt/shimon-detail.webp',
           alt: 'Shimon, the four-armed robotic marimba player at Georgia Tech.',
           caption: 'Shimon — four arms, one shared rail, ~36 marimba bars.',
         },
@@ -267,7 +267,7 @@ const projects = [
         text:
           'Each arm carries a single mallet. The hard physical constraints — non-crossing, finite arm width, capped rail speed — turn any generative system\'s output into a feasibility problem before it can ever be performed. Naive rejection sampling on top of an unconstrained generator wastes most of the candidate space.',
         image: {
-          src: '/projects/amt/shimon-icon.jpg',
+          src: '/projects/amt/shimon-icon.webp',
           alt: 'Close-up of Shimon\'s arm and mallet over the marimba bars.',
           caption: 'Each arm carries a single mallet; arms cannot cross, rail movement is speed-capped.',
         },
@@ -372,7 +372,7 @@ const projects = [
     period: '2025',
     category: 'Musical Interaction',
     github: 'https://github.com/Jamesprocode/GEMS',
-    tileImage: '/projects/gems/bass-engine.png',
+    tileImage: '/projects/gems/bass-engine.webp',
     body: [
       // ---------- Demo video ----------
       {
@@ -403,7 +403,7 @@ const projects = [
         text:
           'The chord engine reads symbolic chord labels and emits voiced MIDI stacks that account for chord quality, inversion, and extensions, scheduled against a per-bar rhythmic template. The bass engine reduces each chord to a monophonic line of chord tones (root, third, fifth, seventh) in a low-register MIDI range. The drum engine runs independently of harmony from its own rhythm template, with probabilistic fills layered over a stable kick/snare/hi-hat groove.',
         image: {
-          src: '/projects/gems/bass-engine.png',
+          src: '/projects/gems/bass-engine.webp',
           alt: 'Bass engine player patch in Max/MSP.',
           caption: 'Bass engine in Max — chord-tone sequencer over a per-bar rhythmic template, with gesture-triggered probabilistic variation.',
         },
@@ -421,7 +421,7 @@ const projects = [
         text:
           'A Python module reads the performer in real time via Google\'s MediaPipe pose-estimation, which tracks 32 skeletal landmarks from a standard webcam. GEMS subscribes to nine of them — the upper-body ring shown above — with the nose and the two wrists doing most of the work. Position data is streamed to Max/MSP over UDP. No wearables; a single webcam captures the gesture vocabulary, which keeps the system playable while the performer\'s hands remain mostly on their instrument.',
         image: {
-          src: '/projects/gems/python-tracking.png',
+          src: '/projects/gems/python-tracking.webp',
           alt: 'Performer with MediaPipe skeletal landmarks overlaid during play.',
           caption: 'MediaPipe landmark tracking — single webcam, no wearables, performer mid-play.',
         },
@@ -464,7 +464,7 @@ const projects = [
     period: 'Sep – Dec 2025',
     category: 'Music Information Retrieval',
     github: 'https://github.com/Jamesprocode/Deep-Salient-Detection-for-F0-Estimation',
-    tileImage: '/projects/f0/icon.png',
+    tileImage: '/projects/f0/icon.webp',
     body: [
 
       // ---------- Methodology / Input ----------
@@ -479,7 +479,7 @@ const projects = [
         text:
           'The input representation is a Harmonic Constant-Q Transform (HCQT). Audio is resampled to 44.1 kHz; six CQTs are computed at harmonic scalings h ∈ {0.5, 1, 2, 3, 4, 5}, with fmin = C1 (~32.7 Hz), 6 octaves, 60 bins/octave, hop = 512. The CQTs are stacked into a 6 × 360 × T tensor — harmonics × frequency bins × time frames. Targets are binary salience maps Gaussian-blurred around the ground-truth F0 to stabilize training.',
         image: {
-          src: '/projects/f0/icon.png',
+          src: '/projects/f0/icon.webp',
           alt: 'HCQT input and Gaussian-blurred F0 salience target.',
           caption: 'HCQT input (top) + Gaussian-blurred F0 salience target (bottom).',
         },
@@ -562,7 +562,7 @@ const projects = [
         text:
           'SimpleNet produces a noisier-looking salience map but the right peaks land at the correct F0 bins, giving robust pitch accuracy after thresholding. The autocorrelation baseline detects voicing well (VR 99.85%) but has no mechanism to reject unvoiced frames — a 70% false-alarm rate that wrecks its overall accuracy.',
         image: {
-          src: '/projects/f0/salience-simplenet.png',
+          src: '/projects/f0/salience-simplenet.webp',
           alt: 'F0 salience map from the SimpleNet model.',
           caption: 'SimpleNet salience — noisier visually, correct peaks at the true F0.',
         },
@@ -573,7 +573,7 @@ const projects = [
         text:
           'The ResNet18 transfer-learning variant predicts a near-empty salience map. The pretrained vision filters are tuned for translation-invariant features (an object looks the same anywhere in the image), but in a time–frequency plane the vertical axis is pitch — shifting a harmonic stack vertically changes the note. The architectural prior fights the task.',
         image: {
-          src: '/projects/f0/salience-resnet.png',
+          src: '/projects/f0/salience-resnet.webp',
           alt: 'F0 salience map from the ResNet18 transfer-learning model.',
           caption: 'ResNet18 salience — much weaker activation; pretrained filters do not transfer to spectral salience detection.',
         },
@@ -631,7 +631,7 @@ const projects = [
     period: 'Sep – Dec 2025',
     category: 'Music Information Retrieval',
     github: 'https://github.com/Jamesprocode/Pattern-for-Prediction-audio-to-audio',
-    tileImage: '/projects/hmm-patterns/icon.png',
+    tileImage: '/projects/hmm-patterns/icon.webp',
     body: [
       // ---------- §1 Data ----------
       {
@@ -658,7 +658,7 @@ const projects = [
       },
       {
         kind: 'image',
-        src: '/projects/hmm-patterns/pipeline.png',
+        src: '/projects/hmm-patterns/pipeline.webp',
         alt: 'Full audio-to-audio HMM pipeline with the three modeling attempts marked A, B, C.',
         caption: 'Full pipeline. Pre-processing (tempo-normalize, slice at 16th notes) feeds three branches: (A) raw spectrograms → first-order Gaussian HMM; (B) clustered spectrograms → first-order Categorical HMM; (C, best) clustered musical features → variable-order HMM, decoded by sampling an exemplar slice per cluster.',
       },
@@ -746,7 +746,7 @@ const projects = [
     period: 'Aug – Dec 2025',
     category: 'Music Software',
     github: 'https://github.com/Jamesprocode/Super-Awesome-Final-Project',
-    tileImage: '/projects/super-awesome/ui-screenshot.png',
+    tileImage: '/projects/super-awesome/ui-screenshot.webp',
     body: [
       {
         kind: 'cta',
@@ -768,7 +768,7 @@ const projects = [
     tags: ['Music Theory', 'Music Cognition', 'Popular Music'],
     period: 'Published 2025',
     category: 'Music Theory',
-    tileImage: '/projects/harmonic-divorce/hudson_wang_ex10.png',
+    tileImage: '/projects/harmonic-divorce/hudson_wang_ex10.webp',
     body: [
       {
         kind: 'cta',
@@ -797,7 +797,7 @@ const projects = [
     period: 'Jun – Dec 2024',
     category: 'Music Theory',
     github: 'https://github.com/Jamesprocode/Tracing-the-Evolution-of-Rock-and-Popular-Music-Harmony--A-Computational-Study-Using-Shannon-Entropy',
-    tileImage: '/projects/rock-harmony/entropy-by-year.png',
+    tileImage: '/projects/rock-harmony/entropy-by-year.webp',
     body: [
       // ---------- §1 Dataset ----------
       {
@@ -811,7 +811,7 @@ const projects = [
         text:
           'The McGill Billboard Project [1]: expert chord annotations for 890 Billboard-charting songs across five decades, with chord progressions, section labels (verse / chorus / bridge / outro), meter, and key. Each song is stored as plain text with timestamps; sections and chords are extracted directly from those files. Earlier corpus work — most notably De Clercq & Temperley [2] — used this kind of data to characterize chord-to-chord relationships; we use it to ask a different question.',
         image: {
-          src: '/projects/rock-harmony/dataset-sample.png',
+          src: '/projects/rock-harmony/dataset-sample.webp',
           alt: 'Sample annotation from the McGill Billboard dataset — "You\'ve Got a Friend".',
           caption: 'Sample annotation — timestamps, section labels, and chord progressions per line.',
         },
@@ -841,7 +841,7 @@ const projects = [
         text:
           'Mean entropy by year shows a 1950s–60s baseline, a 1970s climb as modal and extended harmony entered the popular vocabulary, a peak around the 1980s, and a decline through the 1990s–2000s. Not a monotonic "harmonic divorce" from common-practice tonality — an oscillation tied to genre cycles.',
         image: {
-          src: '/projects/rock-harmony/entropy-by-year.png',
+          src: '/projects/rock-harmony/entropy-by-year.webp',
           alt: 'Mean harmonic entropy by year, 1950s–2000s.',
           caption: 'Mean harmonic entropy by year — peak in the 1980s, decline through 2000s.',
         },
@@ -852,7 +852,7 @@ const projects = [
         text:
           'By section, verses and choruses sit at low entropy — a tight palette holds the song\'s identity — and bridges spike. This pattern is stable across decades, so the harmonic role of each formal section appears robust to stylistic change.',
         image: {
-          src: '/projects/rock-harmony/entropy-by-section.png',
+          src: '/projects/rock-harmony/entropy-by-section.webp',
           alt: 'Mean entropy by song section.',
           caption: 'Mean entropy by song section — verses and choruses tight, bridges spike.',
         },
@@ -920,7 +920,7 @@ const projects = [
     period: 'Jun – Dec 2024',
     category: 'Music Information Retrieval',
     github: 'https://github.com/Jamesprocode/A-Reference-Free-Framework-for-Stem-Separation-Evaluation',
-    tileImage: '/projects/stem-separation/poster.jpg',
+    tileImage: '/projects/stem-separation/poster.webp',
     body: [
 
       // ---------- Introduction ----------
@@ -980,7 +980,7 @@ const projects = [
         text:
           'Pearson correlation between SAR and the proposed metrics is weak: SAR vs. FIS r = −0.17, SAR vs. DSS r = +0.18. The weakness is the point — SAR primarily measures artifact suppression, FIS measures frequency-domain isolation, DSS measures temporal stability. They are not redundant proxies for one another; they capture different dimensions of separation quality.',
         image: {
-          src: '/projects/stem-separation/pearson-correlation.png',
+          src: '/projects/stem-separation/pearson-correlation.webp',
           alt: 'Pearson correlation matrix between SAR, FIS, and DSS.',
           caption: 'Pearson correlation — SAR vs. FIS (r = −0.17), SAR vs. DSS (r = +0.18). The three metrics measure distinct aspects of separation quality.',
         },
@@ -1019,7 +1019,7 @@ const projects = [
       },
       {
         kind: 'image',
-        src: '/projects/stem-separation/poster.jpg',
+        src: '/projects/stem-separation/poster.webp',
         alt: 'Project poster summarizing the framework and results.',
         caption: 'Poster — one-page summary of the framework, metrics, and results.',
       },

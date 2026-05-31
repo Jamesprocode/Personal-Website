@@ -160,14 +160,26 @@ function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-[#0f0f0f]/95 backdrop-blur-xl pt-24 px-8 md:hidden"
+            className="fixed inset-0 z-40 md:hidden"
+            style={{
+              // Match the cream parlor instead of the dark espresso. The
+              // tinted backdrop keeps focus on the menu without a hard
+              // theme swap. Padding set inline because the universal
+              // reset zeroes Tailwind padding utilities.
+              backgroundColor: 'rgba(244, 232, 209, 0.97)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              paddingTop: '6rem',
+              paddingLeft: '2rem',
+              paddingRight: '2rem',
+            }}
           >
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col" style={{ gap: '0.5rem' }}>
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="mb-4"
+                style={{ marginBottom: '1rem' }}
               >
                 <LanguageToggle variant="mobile" />
               </motion.div>
@@ -180,11 +192,24 @@ function Navbar() {
                 >
                   <Link
                     to={link.path}
-                    className={`block px-4 py-4 text-2xl font-medium rounded-xl transition-colors ${
-                      isActive(link.path)
-                        ? 'text-white bg-white/10'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
+                    className="block text-2xl font-medium rounded-xl transition-colors"
+                    style={{
+                      color: isActive(link.path) ? '#2d2d2d' : 'rgba(74, 63, 53, 0.65)',
+                      backgroundColor: isActive(link.path) ? 'rgba(160, 111, 29, 0.12)' : 'transparent',
+                      padding: '1rem',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive(link.path)) {
+                        e.currentTarget.style.color = '#2d2d2d';
+                        e.currentTarget.style.backgroundColor = 'rgba(160, 111, 29, 0.08)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive(link.path)) {
+                        e.currentTarget.style.color = 'rgba(74, 63, 53, 0.65)';
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -199,8 +224,16 @@ function Navbar() {
                   href="/cv.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block px-4 py-4 text-2xl font-medium text-gray-400
-                    hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                  className="block text-2xl font-medium rounded-xl transition-colors"
+                  style={{ color: 'rgba(74, 63, 53, 0.65)', padding: '1rem' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#2d2d2d';
+                    e.currentTarget.style.backgroundColor = 'rgba(160, 111, 29, 0.08)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'rgba(74, 63, 53, 0.65)';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
                   {t('nav.cv')}
                 </a>
