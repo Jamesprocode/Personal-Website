@@ -1,9 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useMotionValue, useAnimationFrame, useReducedMotion } from 'framer-motion';
+import { motion, useMotionValue, useMotionValueEvent, useAnimationFrame, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import AnalogVUMeter from './AnalogVUMeter';
 import Knob from './Knob';
 import { LoopButton, NextButton } from './TransportButtons';
+
+const fmtTime = (s) => {
+  if (!Number.isFinite(s) || s < 0) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+};
+
+// Time readout isolated into its own leaf so the live playback position only
+// re-renders this tiny "m:ss / m:ss" node — and only when the whole-second
+// changes — instead of the entire Turntable tree on every 'timeupdate'.
+function TimeReadout({ currentTimeMV, duration }) {
+  const [sec, setSec] = useState(0);
+  useMotionValueEvent(currentTimeMV, 'change', (v) => {
+    const s = Math.floor(v);
+    setSec((prev) => (prev === s ? prev : s));
+  });
+  return (
+    <>
+      {fmtTime(sec)}
+      <span style={{ color: 'rgba(196,162,101,0.3)', margin: '0 0.4em' }}>/</span>
+      {fmtTime(duration)}
+    </>
+  );
+}
 
 // Tonearm sweeps along an arc that maps 1:1 to playback progress, matching
 // a real turntable: the stylus drops on the outer groove at the start and
@@ -23,7 +48,7 @@ function Turntable({
   volume,
   onVolumeChange,
   getLevel,
-  currentTime = 0,
+  currentTimeMV,
   duration = 0,
   onSeek,
   loopMode = 'album',
@@ -34,10 +59,11 @@ function Turntable({
   const reduceMotion = useReducedMotion();
   const accent = album?.accentColor || '#c4a265';
   const hasTrack = Boolean(track && track.file);
-  const onDisc = hasTrack && (isPlaying || currentTime > 0);
 
   const platterRef = useRef(null);
   const pivotRef = useRef(null);
+  const scrubRef = useRef(null);       // tonearm slider, for live aria-valuenow
+  const lastAriaSecRef = useRef(-1);
   const rotation = useMotionValue(0);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [isScrubbingArm, setIsScrubbingArm] = useState(false);
@@ -77,18 +103,11 @@ function Turntable({
   const armRotation = useMotionValue(ARM_OUTER);
   const armTargetRef = useRef(ARM_OUTER);
 
-  useEffect(() => {
-    if (isScrubbingArm) return; // handled by pointer move directly
-    if (onDisc && duration > 0) {
-      const p = Math.min(1, Math.max(0, currentTime / duration));
-      armTargetRef.current = ARM_OUTER + ARM_SWEEP * p;
-    } else {
-      // Idle: needle sits at the outer groove, ready to play.
-      armTargetRef.current = ARM_OUTER;
-    }
-  }, [onDisc, currentTime, duration, isScrubbingArm]);
-
-  // Drive both the platter spin and the arm sweep from one animation frame.
+  // Drive the platter spin and the arm sweep from one animation frame. The
+  // arm target is derived from the live playback position by READING the
+  // MotionValue here (currentTimeMV.get()) rather than from a React state
+  // prop — that's what keeps the 4x/sec 'timeupdate' from re-rendering this
+  // whole component and starving this very loop on slow devices.
   useAnimationFrame((_, deltaMs) => {
     // Platter spin
     if (!isScrubbing && isPlaying && !reduceMotion) {
@@ -100,6 +119,24 @@ function Turntable({
       armRotation.set(armTargetRef.current);
       return;
     }
+
+    // Recompute the arm target from the current playback position each frame.
+    const ct = currentTimeMV.get();
+    const engaged = hasTrack && (isPlaying || ct > 0);
+    armTargetRef.current = engaged && duration > 0
+      ? ARM_OUTER + ARM_SWEEP * Math.min(1, Math.max(0, ct / duration))
+      : ARM_OUTER;
+
+    // Keep the slider's aria-valuenow live without a render (whole-second granularity).
+    const slider = scrubRef.current;
+    if (slider) {
+      const s = Math.floor(ct);
+      if (s !== lastAriaSecRef.current) {
+        lastAriaSecRef.current = s;
+        slider.setAttribute('aria-valuenow', String(s));
+      }
+    }
+
     const cur = armRotation.get();
     const target = armTargetRef.current;
     const diff = target - cur;
@@ -131,7 +168,7 @@ function Turntable({
       startAngle,
       lastAngle: startAngle,
       startRotation: rotation.get(),
-      startTime: currentTime,
+      startTime: currentTimeMV.get(),
     };
     accumulatedDeltaRef.current = 0;
     setIsScrubbing(true);
@@ -206,13 +243,6 @@ function Turntable({
     rotation.set(0);
     accumulatedDeltaRef.current = 0;
   }, [track?.id, rotation]);
-
-  const fmtTime = (s) => {
-    if (!Number.isFinite(s) || s < 0) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
 
   return (
     <div
@@ -555,11 +585,12 @@ function Turntable({
                 pointer events that the assembly disabled, so users can grab
                 the needle to seek. */}
             <div
+              ref={scrubRef}
               role="slider"
               aria-label={t('music.tonearm')}
               aria-valuemin={0}
               aria-valuemax={duration || 0}
-              aria-valuenow={currentTime}
+              aria-valuenow={0}
               onPointerDown={onArmPointerDown}
               onPointerMove={onArmPointerMove}
               onPointerUp={onArmPointerUp}
@@ -627,9 +658,7 @@ function Turntable({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {fmtTime(currentTime)}
-            <span style={{ color: 'rgba(196,162,101,0.3)', margin: '0 0.4em' }}>/</span>
-            {fmtTime(duration)}
+            <TimeReadout currentTimeMV={currentTimeMV} duration={duration} />
           </div>
           <div
             className="music-controls__buttons flex items-end"

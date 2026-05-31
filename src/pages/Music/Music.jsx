@@ -19,7 +19,7 @@ function Music() {
     volume,
     setVolume,
     getLevel,
-    currentTime,
+    currentTimeMV,
     duration,
     seek,
     selectedAlbum,
@@ -136,7 +136,7 @@ function Music() {
                 volume={volume}
                 onVolumeChange={setVolume}
                 getLevel={getLevel}
-                currentTime={currentTime}
+                currentTimeMV={currentTimeMV}
                 duration={duration}
                 onSeek={seek}
                 loopMode={loopMode}

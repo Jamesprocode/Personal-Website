@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { motionValue } from 'framer-motion';
 
 const AudioPlayerContext = createContext(null);
 const LOOP_MODES = ['album', 'one', 'shuffle'];
@@ -31,8 +32,17 @@ const pickNext = (playlist, current, mode) => {
 export function AudioPlayerProvider({ children }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(70);
-  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  // Playback position is a MotionValue, not React state, on purpose. The
+  // <audio> element fires 'timeupdate' ~4x/sec; pushing that through useState
+  // re-rendered the entire (heavy) Turntable tree 4x/sec, and on low-end /
+  // mobile CPUs each reconciliation was long enough to starve the platter &
+  // VU rAF loops — the disc visibly stuttered or froze. A MotionValue updates
+  // subscribers without a React render, so the animation loop keeps a clean
+  // frame budget. Stable across re-renders via a ref.
+  const currentTimeRef = useRef(null);
+  if (currentTimeRef.current === null) currentTimeRef.current = motionValue(0);
+  const currentTimeMV = currentTimeRef.current;
   // Track + album live in the provider so the mini-player and the main
   // turntable share the same source of truth.
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -179,6 +189,7 @@ export function AudioPlayerProvider({ children }) {
       audio.volume = volume / 100;
       audioRef.current = audio;
       currentTrackRef.current = trackFile;
+      currentTimeMV.set(0); // reset position for the new track
       // New element streams the network URL; the full-file blob (for instant
       // seeking) is fetched lazily on the first seek, not now.
       blobFetchStartedRef.current = null;
@@ -187,7 +198,7 @@ export function AudioPlayerProvider({ children }) {
         setDuration(audio.duration);
       });
       audio.addEventListener('timeupdate', () => {
-        setCurrentTime(audio.currentTime);
+        currentTimeMV.set(audio.currentTime);
       });
       audio.addEventListener('ended', () => {
         onEndedRef.current();
@@ -269,7 +280,7 @@ export function AudioPlayerProvider({ children }) {
       const playlist = getPlaylist(selectedAlbum);
       if (!playlist.length || !selectedTrack) {
         setIsPlaying(false);
-        setCurrentTime(0);
+        currentTimeMV.set(0);
         return;
       }
       const next = pickNext(playlist, selectedTrack, loopMode);
@@ -279,7 +290,7 @@ export function AudioPlayerProvider({ children }) {
         play(next.file);
       } else {
         setIsPlaying(false);
-        setCurrentTime(0);
+        currentTimeMV.set(0);
       }
     };
   }, [selectedAlbum, selectedTrack, loopMode, play]);
@@ -299,7 +310,7 @@ export function AudioPlayerProvider({ children }) {
     // streaming element and may briefly stall on un-buffered regions.
     ensureFullDownload(currentTrackRef.current);
     // Immediate UI feedback; 'timeupdate' reconciles the exact value.
-    setCurrentTime(time);
+    currentTimeMV.set(time);
     if (audio.seeking) {
       pendingSeekRef.current = time;
       return;
@@ -323,25 +334,51 @@ export function AudioPlayerProvider({ children }) {
     };
   }, []);
 
-  const value = {
-    isPlaying,
-    volume,
-    currentTime,
-    duration,
-    selectedAlbum,
-    selectedTrack,
-    hasEverPlayed,
-    loopMode,
-    setVolume,
-    play,
-    pause,
-    togglePlayPause,
-    selectTrack,
-    playNext,
-    cycleLoopMode,
-    seek,
-    getLevel,
-  };
+  // Memoized so the context value identity only changes when real control
+  // state does (play state, track, volume, duration…), NOT on every playback
+  // tick — position now flows through the `currentTimeMV` MotionValue, which
+  // never triggers a re-render. currentTimeMV / setVolume / the callbacks are
+  // all referentially stable, so they don't need to be in the dep list, but
+  // including them keeps lint happy and is harmless.
+  const value = useMemo(
+    () => ({
+      isPlaying,
+      volume,
+      currentTimeMV,
+      duration,
+      selectedAlbum,
+      selectedTrack,
+      hasEverPlayed,
+      loopMode,
+      setVolume,
+      play,
+      pause,
+      togglePlayPause,
+      selectTrack,
+      playNext,
+      cycleLoopMode,
+      seek,
+      getLevel,
+    }),
+    [
+      isPlaying,
+      volume,
+      currentTimeMV,
+      duration,
+      selectedAlbum,
+      selectedTrack,
+      hasEverPlayed,
+      loopMode,
+      play,
+      pause,
+      togglePlayPause,
+      selectTrack,
+      playNext,
+      cycleLoopMode,
+      seek,
+      getLevel,
+    ]
+  );
 
   return <AudioPlayerContext.Provider value={value}>{children}</AudioPlayerContext.Provider>;
 }
