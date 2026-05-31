@@ -1,7 +1,7 @@
 {
   // Cloudflare Workers Static Assets config — serves the built Vite SPA.
   // Deploy: `npm run build` then `npx wrangler deploy`.
-  "name": "jamesjiayiwang",
+  "name": "jiayiwang",
   "compatibility_date": "2026-05-31",
   "assets": {
     // Output of `vite build`.
