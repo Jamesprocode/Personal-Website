@@ -47,9 +47,12 @@ export function AudioPlayerProvider({ children }) {
   // Latest seek target that arrived while the element was still resolving a
   // previous seek. Applied on the 'seeked' event so we never thrash.
   const pendingSeekRef = useRef(null);
-  // Object URL of the fully-downloaded current track (see play()). Kept so we
-  // can revoke it when switching tracks / unmounting.
+  // Object URL of the fully-downloaded current track (see ensureFullDownload).
+  // Kept so we can revoke it when switching tracks / unmounting.
   const blobUrlRef = useRef(null);
+  // The trackFile we've already kicked off a full-file download for. Used to
+  // run the download at most once per track, and only on demand (first seek).
+  const blobFetchStartedRef = useRef(null);
 
   // Web Audio analyzer chain
   const audioCtxRef = useRef(null);
@@ -113,6 +116,51 @@ export function AudioPlayerProvider({ children }) {
     return Math.min(1, rms * 2.2);
   }, [isPlaying]);
 
+  // Reliable seeking workaround, run ON DEMAND (first seek) rather than at
+  // play() time. Cloudflare's static-asset hosting answers range requests with
+  // HTTP 200 (not 206 Partial Content), so the browser can't seek to
+  // un-buffered audio over the network and scrubbing stalls playback. The fix
+  // is to download the whole file once and swap the element to a local blob
+  // URL where seeking is instant.
+  //
+  // Crucially this is deferred: while the user is just listening, only the
+  // <audio> element's own progressive stream is in flight. Kicking off a second
+  // full-file fetch in parallel (the old behavior) doubled bandwidth use on the
+  // same asset and starved the streaming download on slow / mobile connections,
+  // so playback kept stalling — the platter and VU meter went unresponsive
+  // "waiting for the song to download." We only pay that cost if/when the user
+  // actually seeks, which is the only moment the blob buys us anything.
+  const ensureFullDownload = useCallback((trackFile) => {
+    if (!trackFile) return;
+    if (blobFetchStartedRef.current === trackFile) return; // already fetching / done
+    blobFetchStartedRef.current = trackFile;
+
+    fetch(trackFile)
+      .then((res) => res.blob())
+      .then((blob) => {
+        if (currentTrackRef.current !== trackFile) return; // track changed mid-download
+        const a = audioRef.current;
+        if (!a) return;
+        const blobUrl = URL.createObjectURL(blob);
+        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = blobUrl;
+        const resumeAt = a.currentTime;
+        const wasPlaying = !a.paused;
+        const onReady = () => {
+          a.removeEventListener('loadedmetadata', onReady);
+          try { a.currentTime = resumeAt; } catch { /* no-op */ }
+          if (wasPlaying) a.play().catch(() => {});
+        };
+        a.addEventListener('loadedmetadata', onReady);
+        a.src = blobUrl;
+        a.load();
+      })
+      .catch(() => {
+        // Allow a later retry; keep streaming in the meantime.
+        if (blobFetchStartedRef.current === trackFile) blobFetchStartedRef.current = null;
+      });
+  }, []);
+
   // The `ended` listener is attached when the audio element is created and
   // can't see updated state directly. Route it through a ref that the latest
   // effect keeps in sync so loopMode / shuffle decisions stay fresh.
@@ -131,6 +179,9 @@ export function AudioPlayerProvider({ children }) {
       audio.volume = volume / 100;
       audioRef.current = audio;
       currentTrackRef.current = trackFile;
+      // New element streams the network URL; the full-file blob (for instant
+      // seeking) is fetched lazily on the first seek, not now.
+      blobFetchStartedRef.current = null;
 
       audio.addEventListener('loadedmetadata', () => {
         setDuration(audio.duration);
@@ -153,34 +204,6 @@ export function AudioPlayerProvider({ children }) {
           }
         }
       });
-
-      // Reliable seeking workaround: Cloudflare's static-asset hosting returns
-      // HTTP 200 (not 206 Partial Content) for range requests, so the browser
-      // can't seek to un-buffered audio over the network and scrubbing stalls
-      // playback. Download the whole file once, then swap the element to a
-      // local blob URL where seeking is instant — independent of the host.
-      // Streaming the network URL first keeps playback start snappy.
-      fetch(trackFile)
-        .then((res) => res.blob())
-        .then((blob) => {
-          if (currentTrackRef.current !== trackFile) return; // track changed
-          const a = audioRef.current;
-          if (!a) return;
-          const blobUrl = URL.createObjectURL(blob);
-          if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-          blobUrlRef.current = blobUrl;
-          const resumeAt = a.currentTime;
-          const wasPlaying = !a.paused;
-          const onReady = () => {
-            a.removeEventListener('loadedmetadata', onReady);
-            try { a.currentTime = resumeAt; } catch { /* no-op */ }
-            if (wasPlaying) a.play().catch(() => {});
-          };
-          a.addEventListener('loadedmetadata', onReady);
-          a.src = blobUrl;
-          a.load();
-        })
-        .catch(() => { /* keep streaming; seeking may stall until cached */ });
     }
 
     if (audioRef.current) {
@@ -270,6 +293,11 @@ export function AudioPlayerProvider({ children }) {
   const seek = useCallback((time) => {
     const audio = audioRef.current;
     if (!audio) return;
+    // The user is scrubbing — now it's worth downloading the whole file so
+    // seeks land instantly (and future seeks never stall). No-ops after the
+    // first call per track. Until the blob is ready, seeks run against the
+    // streaming element and may briefly stall on un-buffered regions.
+    ensureFullDownload(currentTrackRef.current);
     // Immediate UI feedback; 'timeupdate' reconciles the exact value.
     setCurrentTime(time);
     if (audio.seeking) {
@@ -277,7 +305,7 @@ export function AudioPlayerProvider({ children }) {
       return;
     }
     audio.currentTime = time;
-  }, []);
+  }, [ensureFullDownload]);
 
   // Clean up the audio context on unmount of the provider (i.e., app unload)
   useEffect(() => {

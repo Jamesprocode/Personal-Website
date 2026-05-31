@@ -424,48 +424,68 @@ function AudioBlock({ src, caption }) {
 function VideoBlock({ src, poster, caption }) {
   const videoRef = useRef(null);
   const blobUrlRef = useRef(null);
+  // True once we've kicked off the full-file download for this src. Guards
+  // against duplicate fetches across repeated seeks.
+  const blobFetchStartedRef = useRef(false);
 
-  // Same reliable-seeking workaround as the audio player: Cloudflare's
-  // static-asset hosting answers range requests with HTTP 200 (full body),
-  // not 206 Partial Content, so the browser can't seek to un-buffered time
-  // over the network and dragging the scrub bar stalls. We stream the
-  // network URL first for a snappy start, then download the whole file once
-  // and swap the element to a local blob URL where seeking is instant —
-  // preserving the current position and play state across the swap.
+  // Same reliable-seeking workaround as the audio player (see
+  // useAudioPlayer's ensureFullDownload): Cloudflare's static-asset hosting
+  // answers range requests with HTTP 200 (full body), not 206 Partial
+  // Content, so the browser can't seek to un-buffered time over the network
+  // and dragging the scrub bar stalls. The fix is to download the whole file
+  // once and swap the element to a local blob URL where seeking is instant.
+  //
+  // Crucially this is deferred until the user actually SEEKS (not on mount,
+  // and not on play). The old behavior fetched the whole 18-22MB file on
+  // mount, in parallel with the <video> element's own streaming request for
+  // the SAME asset — so every project page with a video downloaded it twice,
+  // competing for bandwidth and stalling playback on slow / mobile
+  // connections even when the user never pressed play. Triggering on play
+  // would have the same effect during playback (stream + blob fetch racing),
+  // so we wait for a scrub — the only moment the instant-seek blob helps.
+  // Now scrolling past, or playing straight through, costs a single stream.
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !src) return undefined;
-    let cancelled = false;
+    blobFetchStartedRef.current = false;
 
-    fetch(src)
-      .then((res) => res.blob())
-      .then((blob) => {
-        if (cancelled || !videoRef.current) return;
-        const v = videoRef.current;
-        const blobUrl = URL.createObjectURL(blob);
-        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = blobUrl;
-        const resumeAt = v.currentTime;
-        const wasPlaying = !v.paused && !v.ended;
-        const onReady = () => {
-          v.removeEventListener('loadedmetadata', onReady);
-          try {
-            v.currentTime = resumeAt;
-          } catch {
-            /* no-op */
-          }
-          if (wasPlaying) v.play().catch(() => {});
-        };
-        v.addEventListener('loadedmetadata', onReady);
-        v.src = blobUrl;
-        v.load();
-      })
-      .catch(() => {
-        /* keep streaming; seeking may stall until cached */
-      });
+    const ensureFullDownload = () => {
+      if (blobFetchStartedRef.current) return; // already fetching / done
+      blobFetchStartedRef.current = true;
+
+      fetch(src)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const v = videoRef.current;
+          if (!v) return;
+          const blobUrl = URL.createObjectURL(blob);
+          if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+          blobUrlRef.current = blobUrl;
+          const resumeAt = v.currentTime;
+          const wasPlaying = !v.paused && !v.ended;
+          const onReady = () => {
+            v.removeEventListener('loadedmetadata', onReady);
+            try {
+              v.currentTime = resumeAt;
+            } catch {
+              /* no-op */
+            }
+            if (wasPlaying) v.play().catch(() => {});
+          };
+          v.addEventListener('loadedmetadata', onReady);
+          v.src = blobUrl;
+          v.load();
+        })
+        .catch(() => {
+          // Allow a later retry; keep streaming in the meantime.
+          blobFetchStartedRef.current = false;
+        });
+    };
+
+    video.addEventListener('seeking', ensureFullDownload);
 
     return () => {
-      cancelled = true;
+      video.removeEventListener('seeking', ensureFullDownload);
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
