@@ -32,12 +32,13 @@ function ProjectsSection() {
         display: 'flex',
         justifyContent: 'center',
         // Feathered edges: the alternating ground melts into the page base
-        // (var(--bg)) over the first/last ~160px instead of butting against
-        // it with a hard horizontal seam. Keeps the subtle alternation but
-        // kills the abrupt band at section boundaries (most visible in dark).
+        // (var(--bg)) over the first/last ~260px instead of butting against
+        // it with a hard horizontal seam. Combined with the now-barely-there
+        // --bg/--bg-alt contrast, the boundary reads as a slow tonal swell
+        // rather than a divider. No hairline border — the feather alone is
+        // the transition, so there's no hard line to mark the seam.
         background:
-          'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 160px, var(--bg-alt) calc(100% - 160px), var(--bg) 100%)',
-        borderTop: '1px solid var(--border)',
+          'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 260px, var(--bg-alt) calc(100% - 260px), var(--bg) 100%)',
         paddingTop: 'clamp(2.5rem, 5vh, 4rem)',
         paddingBottom: 'clamp(7rem, 14vh, 12rem)',
         scrollMarginTop: '4rem',

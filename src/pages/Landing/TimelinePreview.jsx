@@ -69,10 +69,10 @@ function TimelinePreview() {
         justifyContent: 'center',
         // Alternating section ground — cream in light, espresso in dark.
         // Feathered top/bottom: the ground melts into the page base over the
-        // first/last ~160px so the section boundary is a soft ramp, not an
-        // abrupt horizontal band (most visible in dark mode).
+        // first/last ~260px so the section boundary is a slow tonal swell,
+        // not an abrupt horizontal band (most visible in dark mode).
         background:
-          'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 160px, var(--bg-alt) calc(100% - 160px), var(--bg) 100%)',
+          'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 260px, var(--bg-alt) calc(100% - 260px), var(--bg) 100%)',
         paddingTop: 'clamp(8rem, 18vh, 14rem)',
         paddingBottom: 'clamp(8rem, 18vh, 14rem)',
       }}

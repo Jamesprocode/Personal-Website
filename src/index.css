@@ -38,7 +38,9 @@
 :root,
 [data-theme='light'] {
   --bg: #f4e8d1;          /* page base — cream */
-  --bg-alt: #efe3c9;      /* alternating section ground */
+  --bg-alt: #f1e5cd;      /* alternating section ground — barely a shade off
+                             --bg so section boundaries read as a gentle
+                             tonal shift, not a distinct band */
   --surface: #fdf4dc;     /* cards / panels */
   --surface-2: #f3e7c8;   /* nested panels */
   --text-strong: #5a3410; /* headings — deep amber-brown */
@@ -62,7 +64,9 @@
 
 [data-theme='dark'] {
   --bg: #1a130c;          /* page base — espresso */
-  --bg-alt: #221912;      /* alternating section ground */
+  --bg-alt: #1e160e;      /* alternating section ground — only a few levels
+                             above --bg so the section shift is a soft warmth,
+                             not the hard band the old #221912 produced */
   --surface: #2a1f15;     /* cards / panels — wood */
   --surface-2: #342718;   /* nested panels */
   --text-strong: #f4e8d1; /* headings — cream */
