@@ -25,6 +25,7 @@ const DOUBLE_TAP_MS = 280;
  *   - Single click → toggle play / pause
  *   - Drag        → reposition the whole card anywhere on screen
  *   - Double click → open the full music page
+ *   - X button    → close the floating card and stop playback
  *
  * Loop and Next buttons stop event propagation so they don't trigger the
  * disc's tap/drag handlers.
@@ -50,6 +51,7 @@ function MiniPlayer() {
     isBuffering,
     hasEverPlayed,
     togglePlayPause,
+    stop,
     loopMode,
     cycleLoopMode,
     playNext,
@@ -105,6 +107,17 @@ function MiniPlayer() {
 
   // Distinguish single vs double tap on the disc area.
   const tapTimerRef = useRef(null);
+  const handleClose = (e) => {
+    e.stopPropagation();
+    if (tapTimerRef.current) {
+      clearTimeout(tapTimerRef.current);
+      tapTimerRef.current = null;
+    }
+    setNotes([]);
+    setHovered(false);
+    stop();
+  };
+
   const handleDiscTap = () => {
     if (isDragging) return;
     if (tapTimerRef.current !== null) {
@@ -165,6 +178,53 @@ function MiniPlayer() {
           }}
           className="focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
         >
+          <button
+            type="button"
+            aria-label="Close floating music player and stop audio"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={handleClose}
+            style={{
+              position: 'absolute',
+              top: -9,
+              right: -9,
+              width: 26,
+              height: 26,
+              borderRadius: '50%',
+              border: '1px solid rgba(196,162,101,0.45)',
+              background: 'rgba(20,15,12,0.96)',
+              color: '#f4e8d1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 8px 18px -10px rgba(0,0,0,0.8), inset 0 1px 0 rgba(244,232,209,0.08)',
+              zIndex: 4,
+            }}
+          >
+            <span
+              aria-hidden
+              style={{
+                position: 'absolute',
+                width: 13,
+                height: 1.7,
+                borderRadius: 9999,
+                backgroundColor: 'currentColor',
+                transform: 'rotate(45deg)',
+              }}
+            />
+            <span
+              aria-hidden
+              style={{
+                position: 'absolute',
+                width: 13,
+                height: 1.7,
+                borderRadius: 9999,
+                backgroundColor: 'currentColor',
+                transform: 'rotate(-45deg)',
+              }}
+            />
+          </button>
+
           {/* Disc + tap handler — onTap fires only when not dragging.
               We wrap the disc in its own motion element so it carries its
               own gestures separate from the parent card's drag. */}

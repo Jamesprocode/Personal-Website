@@ -326,6 +326,38 @@ export function AudioPlayerProvider({ children }) {
     }
   }, []);
 
+  const stop = useCallback(() => {
+    wantPlayingRef.current = false;
+    pendingSeekRef.current = null;
+
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.removeAttribute('src');
+      try { audio.load(); } catch { /* no-op */ }
+    }
+
+    audioRef.current = null;
+    currentTrackRef.current = null;
+    blobFetchStartedRef.current = null;
+
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+
+    if (sourceRef.current) {
+      try { sourceRef.current.disconnect(); } catch { /* no-op */ }
+      sourceRef.current = null;
+    }
+
+    setIsPlaying(false);
+    setIsBuffering(false);
+    setDuration(0);
+    setHasEverPlayed(false);
+    currentTimeMV.set(0);
+  }, [currentTimeMV]);
+
   const selectTrack = useCallback((album, track) => {
     setSelectedAlbum(album);
     setSelectedTrack(track);
@@ -450,6 +482,7 @@ export function AudioPlayerProvider({ children }) {
       setVolume,
       play,
       pause,
+      stop,
       togglePlayPause,
       selectTrack,
       playNext,
@@ -469,6 +502,7 @@ export function AudioPlayerProvider({ children }) {
       loopMode,
       play,
       pause,
+      stop,
       togglePlayPause,
       selectTrack,
       playNext,
