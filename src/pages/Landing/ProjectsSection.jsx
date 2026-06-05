@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { motion, useReducedMotion, useScroll } from 'framer-motion';
+import { motion as Motion, useReducedMotion, useScroll } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import ProjectShelf from './ProjectShelf';
 import ProjectsPainterlyBackground from './ProjectsPainterlyBackground';
@@ -58,7 +58,7 @@ function ProjectsSection() {
           paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
         }}
       >
-        <motion.div
+        <Motion.div
           initial={reduceMotion ? false : 'hidden'}
           whileInView="show"
           viewport={{ once: true, margin: '-80px' }}
@@ -68,7 +68,7 @@ function ProjectsSection() {
           }}
           className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-4 items-center"
         >
-          <motion.h2
+          <Motion.h2
             className="col-span-12 lg:col-span-7 font-bold tracking-tight"
             style={{
               color: 'var(--text-strong)',
@@ -86,8 +86,8 @@ function ProjectsSection() {
             }}
           >
             {t('projects.heading')}
-          </motion.h2>
-          <motion.p
+          </Motion.h2>
+          <Motion.p
             className="col-span-12 lg:col-span-5"
             style={{
               color: 'var(--text)',
@@ -106,8 +106,8 @@ function ProjectsSection() {
             }}
           >
             {t('projects.subtitle')}
-          </motion.p>
-        </motion.div>
+          </Motion.p>
+        </Motion.div>
 
         <ProjectShelf />
         <div id="research-projects-bottom" aria-hidden style={{ scrollMarginBottom: '4rem' }} />

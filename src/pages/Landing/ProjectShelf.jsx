@@ -1,5 +1,5 @@
 import { memo, useCallback, useState, useEffect } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import projects from '../../data/projects';
@@ -26,7 +26,7 @@ const extractYear = (period) => {
 // Cassette reel — wraps the SVG in a CSS-driven rotating div so the
 // rotation runs on the compositor and is paused automatically when the
 // cassette's parent section is `data-offscreen`. Previously this used
-// framer-motion's `animate` prop on a `<motion.g>`; with 16 cassettes ×
+// framer-motion's `animate` prop on a `<Motion.g>`; with 16 cassettes ×
 // 2 reels = 32 simultaneous JS rAF callbacks, that was the dominant
 // scroll-jank source on the projects shelf under CPU throttle (a 4 s
 // scroll burst at 6× lost ~22% of compositor time to the reels; at 10×,
@@ -71,7 +71,7 @@ function SpinningReel({ size, reduceMotion, duration = 4 }) {
 // framer-motion JS cost is negligible. Keeps the original API.
 function SpinningReelSvg({ cx, cy, r, duration = 4, reduceMotion }) {
   return (
-    <motion.g
+    <Motion.g
       animate={reduceMotion ? undefined : { rotate: 360 }}
       transition={reduceMotion ? undefined : { duration, repeat: Infinity, ease: 'linear' }}
       style={{ transformBox: 'fill-box', transformOrigin: `${cx}px ${cy}px` }}
@@ -94,7 +94,7 @@ function SpinningReelSvg({ cx, cy, r, duration = 4, reduceMotion }) {
           />
         );
       })}
-    </motion.g>
+    </Motion.g>
   );
 }
 
@@ -106,7 +106,7 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
   });
   const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
   return (
-    <motion.button
+    <Motion.button
       onClick={() => onClick(project.id)}
       whileHover={{ x: 4, transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
@@ -202,7 +202,7 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
           <SpinningReel size={36} duration={5} reduceMotion={reduceMotion} />
         </div>
       </div>
-    </motion.button>
+    </Motion.button>
   );
 }
 
@@ -224,7 +224,7 @@ function CassetteFront({ project, onClose, reduceMotion }) {
     defaultValue: project.category,
   });
   return (
-    <motion.div
+    <Motion.div
       role="dialog"
       aria-modal="false"
       aria-label={t('shelf.previewAria', { title })}
@@ -383,7 +383,7 @@ function CassetteFront({ project, onClose, reduceMotion }) {
       >
         ×
       </button>
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -436,7 +436,7 @@ function ProjectShelf() {
   }, []);
 
   return (
-    <motion.div
+    <Motion.div
       initial={reduceMotion ? false : 'hidden'}
       whileInView="show"
       viewport={{ once: true, margin: '-80px' }}
@@ -457,7 +457,7 @@ function ProjectShelf() {
           column. Each tape slides in from the left with a small angular
           kick — reads as physical handling, not opacity fade. */}
       {showList && (
-      <motion.div
+      <Motion.div
         role="list"
         aria-label={t('shelf.rackLabel')}
         style={{
@@ -472,7 +472,7 @@ function ProjectShelf() {
         }}
       >
         {projects.map((p) => (
-          <motion.div
+          <Motion.div
             key={p.id}
             role="listitem"
             style={{ minWidth: 0, transformOrigin: 'left center' }}
@@ -493,14 +493,14 @@ function ProjectShelf() {
               onClick={handleSelect}
               reduceMotion={reduceMotion}
             />
-          </motion.div>
+          </Motion.div>
         ))}
-      </motion.div>
+      </Motion.div>
       )}
 
       {/* RIGHT: active cassette panel — fades in alongside the cascade */}
       {showPanel && (
-      <motion.div
+      <Motion.div
         {...panelAnim}
         style={{
           minHeight: 360,
@@ -521,7 +521,7 @@ function ProjectShelf() {
               reduceMotion={reduceMotion}
             />
           ) : (
-            <motion.div
+            <Motion.div
               key="placeholder"
               initial={reduceMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -553,10 +553,10 @@ function ProjectShelf() {
               >
                 {t('shelf.placeholder')}
               </p>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </Motion.div>
       )}
 
       <style>{`
@@ -571,7 +571,7 @@ function ProjectShelf() {
           }
         }
       `}</style>
-    </motion.div>
+    </Motion.div>
   );
 }
 

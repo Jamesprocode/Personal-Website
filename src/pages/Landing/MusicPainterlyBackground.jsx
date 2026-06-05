@@ -1,4 +1,4 @@
-import { motion, useTransform } from 'framer-motion';
+import { motion as Motion, useTransform } from 'framer-motion';
 
 // 3-point input/output keyframes (e.g. pulse: 0 → 0.9 → 0). Honors reduced-motion.
 function useKeyframe(progress, inputs, outputs, reduceMotion) {
@@ -12,27 +12,28 @@ function useKeyframe(progress, inputs, outputs, reduceMotion) {
 // gently with scroll, and a soft horizontal "needle of light" sweeps
 // across as you move past.
 function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
-  const r = (range) => useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
+  const useScrollRange = (range) =>
+    useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
 
   // Scroll-driven motion is stronger now: the stage glow swings wider,
   // the moon answers with its own drift, and the dust motes drift the
   // length of the section. The needle remains the section's signature
   // gesture, sweeping the full width of the scroll range.
-  const stageX = r([60, -80]);
-  const stageY = r([-20, 30]);
-  const stageScale = r([0.88, 1.18]);
-  const stageOpacity = r([0.55, 1]);
-  const moonX = r([-30, 60]);
-  const moonY = r([20, -40]);
-  const moonScale = r([0.85, 1.12]);
-  const moonOpacity = r([0.25, 0.95]);
-  const needleX = r([-80, 1560]);
+  const stageX = useScrollRange([60, -80]);
+  const stageY = useScrollRange([-20, 30]);
+  const stageScale = useScrollRange([0.88, 1.18]);
+  const stageOpacity = useScrollRange([0.55, 1]);
+  const moonX = useScrollRange([-30, 60]);
+  const moonY = useScrollRange([20, -40]);
+  const moonScale = useScrollRange([0.85, 1.12]);
+  const moonOpacity = useScrollRange([0.25, 0.95]);
+  const needleX = useScrollRange([-80, 1560]);
   const needleOpacity = useKeyframe(scrollYProgress, [0, 0.5, 1], [0, 0.95, 0], reduceMotion);
-  const dustY = r([40, -120]);
-  const dustOpacity = r([0.6, 0.15]);
+  const dustY = useScrollRange([40, -120]);
+  const dustOpacity = useScrollRange([0.6, 0.15]);
 
   return (
-    <motion.svg
+    <Motion.svg
       aria-hidden
       viewBox="0 0 1440 900"
       preserveAspectRatio="xMidYMid slice"
@@ -75,7 +76,7 @@ function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
           Swings + scales noticeably as you scroll — the stage lamp panning.
           `will-change` promotes to its own compositor layer so iGPUs
           don't re-rasterize the whole section on each scroll frame. */}
-      <motion.g
+      <Motion.g
         style={{
           x: stageX,
           y: stageY,
@@ -87,11 +88,11 @@ function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
       >
         <ellipse cx="1100" cy="450" rx="500" ry="380" fill="url(#music-stage-glow)" />
         <ellipse cx="1140" cy="430" rx="180" ry="140" fill="url(#music-stage-hot)" />
-      </motion.g>
+      </Motion.g>
 
       {/* Left-side COOLER GLOW: answers the stage with a drift in the
           opposite direction. */}
-      <motion.g
+      <Motion.g
         style={{
           x: moonX,
           y: moonY,
@@ -102,15 +103,15 @@ function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
         }}
       >
         <ellipse cx="200" cy="500" rx="320" ry="280" fill="url(#music-moon)" />
-      </motion.g>
+      </Motion.g>
 
       {/* Needle of light — sweeps horizontally across the section */}
-      <motion.g style={{ x: needleX, opacity: needleOpacity, willChange: 'transform, opacity' }}>
+      <Motion.g style={{ x: needleX, opacity: needleOpacity, willChange: 'transform, opacity' }}>
         <rect x="-200" y="0" width="400" height="900" fill="url(#music-needle)" />
-      </motion.g>
+      </Motion.g>
 
       {/* Atmospheric dust motes — drift up gently, like specks in a beam */}
-      <motion.g style={{ y: dustY, opacity: dustOpacity }} fill="rgba(244, 200, 120, 0.5)">
+      <Motion.g style={{ y: dustY, opacity: dustOpacity }} fill="rgba(244, 200, 120, 0.5)">
         <circle cx="280" cy="200" r="1.2" />
         <circle cx="420" cy="350" r="0.9" />
         <circle cx="560" cy="240" r="1.4" />
@@ -126,8 +127,8 @@ function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
         <circle cx="1340" cy="220" r="0.9" />
         <circle cx="320" cy="380" r="0.8" />
         <circle cx="180" cy="560" r="0.7" />
-      </motion.g>
-    </motion.svg>
+      </Motion.g>
+    </Motion.svg>
   );
 }
 

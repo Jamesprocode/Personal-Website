@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -33,16 +33,13 @@ function AppRoutes() {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [showContent, setShowContent] = useState(false);
-
-  useEffect(() => {
+  const hasSeenLoading = () => {
     const hasSeenLoading = sessionStorage.getItem('hasSeenLoading');
-    if (hasSeenLoading) {
-      setIsLoading(false);
-      setShowContent(true);
-    }
-  }, []);
+    return Boolean(hasSeenLoading);
+  };
+
+  const [isLoading, setIsLoading] = useState(() => !hasSeenLoading());
+  const [showContent, setShowContent] = useState(hasSeenLoading);
 
   const handleLoadingComplete = () => {
     sessionStorage.setItem('hasSeenLoading', 'true');

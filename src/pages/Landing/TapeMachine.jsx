@@ -1,8 +1,8 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 
 function Reel({ cx, cy, r, reduceMotion, duration = 2.5 }) {
   return (
-    <motion.g
+    <Motion.g
       animate={reduceMotion ? undefined : { rotate: 360 }}
       transition={reduceMotion ? undefined : { duration, repeat: Infinity, ease: 'linear' }}
       style={{ transformBox: 'fill-box', transformOrigin: `${cx}px ${cy}px` }}
@@ -24,7 +24,7 @@ function Reel({ cx, cy, r, reduceMotion, duration = 2.5 }) {
       {/* Inner well */}
       <circle cx={cx} cy={cy} r={r * 0.38} fill="#451a03" />
       <circle cx={cx} cy={cy} r={r * 0.38} fill="none" stroke="#7c2d12" strokeWidth="0.6" />
-    </motion.g>
+    </Motion.g>
   );
 }
 

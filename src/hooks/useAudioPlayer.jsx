@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motionValue } from 'framer-motion';
 
@@ -47,9 +48,7 @@ export function AudioPlayerProvider({ children }) {
   // VU rAF loops — the disc visibly stuttered or froze. A MotionValue updates
   // subscribers without a React render, so the animation loop keeps a clean
   // frame budget. Stable across re-renders via a ref.
-  const currentTimeRef = useRef(null);
-  if (currentTimeRef.current === null) currentTimeRef.current = motionValue(0);
-  const currentTimeMV = currentTimeRef.current;
+  const [currentTimeMV] = useState(() => motionValue(0));
   // Track + album live in the provider so the mini-player and the main
   // turntable share the same source of truth.
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -314,7 +313,7 @@ export function AudioPlayerProvider({ children }) {
       });
       setHasEverPlayed(true);
     }
-  }, [volume, ensureAnalyser]);
+  }, [volume, ensureAnalyser, currentTimeMV]);
 
   const pause = useCallback(() => {
     // Record intent first so the element's 'pause' listener knows this was a
@@ -390,7 +389,7 @@ export function AudioPlayerProvider({ children }) {
         currentTimeMV.set(0);
       }
     };
-  }, [selectedAlbum, selectedTrack, loopMode, play]);
+  }, [selectedAlbum, selectedTrack, loopMode, play, currentTimeMV]);
 
   // Serialize seeks instead of time-throttling them. Setting currentTime
   // again while the element is still resolving the previous seek (common
@@ -413,7 +412,7 @@ export function AudioPlayerProvider({ children }) {
       return;
     }
     audio.currentTime = time;
-  }, [ensureFullDownload]);
+  }, [ensureFullDownload, currentTimeMV]);
 
   // Clean up the audio context on unmount of the provider (i.e., app unload)
   useEffect(() => {

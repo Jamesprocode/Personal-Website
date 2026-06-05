@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { useTranslation, Trans } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import Turntable from './Turntable';
@@ -66,7 +66,7 @@ function Music() {
 
         <div className="relative z-10" style={{ width: '100%', maxWidth: 'min(82rem, 96vw)' }}>
           {/* Page header */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -108,7 +108,7 @@ function Music() {
             >
               {t(isStacked ? 'music.introMobile' : 'music.intro')}
             </p>
-          </motion.div>
+          </Motion.div>
 
           {/* Turntable centered with album browser anchored to its right */}
           <div
@@ -121,7 +121,7 @@ function Music() {
               gap: 'clamp(2rem, 3.5vw, 3.5rem)',
             }}
           >
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -147,9 +147,9 @@ function Music() {
                 onCycleLoop={cycleLoopMode}
                 onNext={playNext}
               />
-            </motion.div>
+            </Motion.div>
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
@@ -171,7 +171,7 @@ function Music() {
                 isBuffering={isBuffering}
                 onSelectTrack={handleSelectTrack}
               />
-            </motion.div>
+            </Motion.div>
           </div>
 
           <style>{`
@@ -189,7 +189,7 @@ function Music() {
 
           {/* Streaming-only releases: not playable here, just point at the
               published versions on Spotify / Apple Music. */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
@@ -321,10 +321,10 @@ function Music() {
                 </a>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
           {/* Disclaimer */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: '-60px' }}
@@ -376,7 +376,7 @@ function Music() {
                 }}
               />
             </p>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
     </PageTransition>

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll } from 'framer-motion';
+import { motion as Motion, useReducedMotion, useScroll } from 'framer-motion';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ContactPainterlyBackground from './ContactPainterlyBackground';
@@ -35,7 +35,7 @@ function ContactSection() {
       {inView && (
         <ContactPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
       )}
-      <motion.div
+      <Motion.div
         initial={reduceMotion ? false : 'hidden'}
         whileInView="show"
         viewport={{ once: true, margin: '-80px' }}
@@ -46,7 +46,7 @@ function ContactSection() {
         className="relative z-10 text-center"
         style={{ width: '100%', maxWidth: '52ch' }}
       >
-        <motion.p
+        <Motion.p
           style={{ fontSize: 'clamp(1.05rem, 1.6vw, 1.45rem)', lineHeight: 1.45, fontWeight: 500, color: 'var(--text-strong)' }}
           variants={{
             hidden: { opacity: 0, y: 16 },
@@ -58,8 +58,8 @@ function ContactSection() {
           }}
         >
           {t('contact.lead')}
-        </motion.p>
-        <motion.a
+        </Motion.p>
+        <Motion.a
           href="mailto:jameswangjiayi@gmail.com"
           className="inline-block mt-[clamp(0.75rem,1.5vh,1.25rem)] transition-colors duration-200 font-medium underline-offset-[6px]"
           style={{
@@ -80,8 +80,8 @@ function ContactSection() {
           }}
         >
           jameswangjiayi@gmail.com
-        </motion.a>
-      </motion.div>
+        </Motion.a>
+      </Motion.div>
     </section>
   );
 }

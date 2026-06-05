@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
@@ -214,7 +214,7 @@ function ParallelTracks() {
         ) : (
         <div className="relative">
           {trackData.map((track, trackIdx) => (
-            <motion.div
+            <Motion.div
               key={track.key}
               initial={reduceMotion ? false : { opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -293,7 +293,7 @@ function ParallelTracks() {
                   );
                 })()}
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
 
           {/* Year axis */}
@@ -472,7 +472,7 @@ function VerticalStack({ items, t, reduceMotion }) {
 
               <AnimatePresence initial={false}>
                 {isOpen && (
-                  <motion.div
+                  <Motion.div
                     initial={reduceMotion ? false : { opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
@@ -495,7 +495,7 @@ function VerticalStack({ items, t, reduceMotion }) {
                       )}
                       {detailsTr}
                     </p>
-                  </motion.div>
+                  </Motion.div>
                 )}
               </AnimatePresence>
             </li>

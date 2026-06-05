@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import TransportButton from '../../components/TransportButton';
@@ -364,7 +364,7 @@ function Lightbox({ image, onClose }) {
     };
   }, [onClose]);
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -406,7 +406,7 @@ function Lightbox({ image, onClose }) {
       >
         Close ✕
       </button>
-      <motion.img
+      <Motion.img
         initial={{ scale: 0.96 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.96 }}
@@ -424,7 +424,7 @@ function Lightbox({ image, onClose }) {
           backgroundColor: '#fff',
         }}
       />
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -1156,9 +1156,6 @@ function ProjectDetail() {
 
   // Localized meta — defaultValue falls through to the English source when no zh key exists.
   const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
-  const shortTitle = t(`project.${project.slug}.shortTitle`, {
-    defaultValue: project.shortTitle,
-  });
   const period = t(`project.${project.slug}.period`, { defaultValue: project.period });
   const subtitle = t(`project.${project.slug}.subtitle`, {
     defaultValue: project.venue,
@@ -1239,7 +1236,7 @@ function ProjectDetail() {
             padding: 'clamp(2.5rem, 5vh, 4rem) clamp(1.5rem, 6vw, 5rem) clamp(2.5rem, 5vh, 4rem)',
           }}
         >
-          <motion.div
+          <Motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -1388,7 +1385,7 @@ function ProjectDetail() {
                 </span>
               ))}
             </div>
-          </motion.div>
+          </Motion.div>
         </section>
 
         {/* Body — interleaved blocks */}
@@ -1397,7 +1394,7 @@ function ProjectDetail() {
             {body.map((block, i) => {
               const localized = localizeBlock(project.slug, i, block, t);
               return (
-                <motion.div
+                <Motion.div
                   key={i}
                   initial={reduceMotion ? false : { opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -1425,7 +1422,7 @@ function ProjectDetail() {
                   }}
                 >
                   <BodyBlock block={localized} onOpenImage={setLightbox} />
-                </motion.div>
+                </Motion.div>
               );
             })}
           </section>

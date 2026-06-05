@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll } from 'framer-motion';
+import { motion as Motion, useReducedMotion, useScroll } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -80,7 +80,7 @@ function TimelinePreview() {
       {inView && (
         <TimelinePainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
       )}
-      <motion.div
+      <Motion.div
         initial={reduceMotion ? false : 'hidden'}
         whileInView="show"
         viewport={{ once: true, margin: '-80px' }}
@@ -98,14 +98,14 @@ function TimelinePreview() {
       >
         <div className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(2rem,4vh,3rem)] items-center">
           {/* LEFT: framing copy + CTA cascade */}
-          <motion.div
+          <Motion.div
             className="col-span-12 lg:col-span-5"
             variants={{
               hidden: {},
               show: { transition: { staggerChildren: 0.16 } },
             }}
           >
-            <motion.h2
+            <Motion.h2
               className="font-bold tracking-tight"
               style={{ fontSize: 'clamp(1.75rem, 3.5vw, 3rem)', lineHeight: 1.05, color: 'var(--text-strong)' }}
               variants={{
@@ -118,8 +118,8 @@ function TimelinePreview() {
               }}
             >
               {t('timelinePreview.heading')}
-            </motion.h2>
-            <motion.p
+            </Motion.h2>
+            <Motion.p
               className="mt-[clamp(1rem,2vh,1.5rem)]"
               style={{ fontSize: 'clamp(0.95rem, 1.15vw, 1.1rem)', maxWidth: '34ch', lineHeight: 1.55, color: 'var(--text)' }}
               variants={{
@@ -132,8 +132,8 @@ function TimelinePreview() {
               }}
             >
               {t('timelinePreview.bio')}
-            </motion.p>
-            <motion.div
+            </Motion.p>
+            <Motion.div
               variants={{
                 hidden: { opacity: 0, y: 12 },
                 show: {
@@ -162,15 +162,15 @@ function TimelinePreview() {
                 {t('timelinePreview.cta')}
                 <span aria-hidden>&rarr;</span>
               </Link>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
 
           {/* RIGHT: tracks draw left→right as one phrase. Tighter parent
               stagger (0.22 s) means the lines overlap their wipes rather
               than waiting their turn — reads as one continuous gesture
               instead of three sequential ones. Each line's wipe duration
               varies by track depth (deeper brass = slower/heavier). */}
-          <motion.div
+          <Motion.div
             className="col-span-12 lg:col-span-7"
             aria-hidden
             variants={{
@@ -186,7 +186,7 @@ function TimelinePreview() {
                 const lineDuration = [1.05, 0.9, 0.78][trackIdx] ?? 0.9;
                 const dotsDelay = [0.62, 0.5, 0.42][trackIdx] ?? 0.5;
                 return (
-                <motion.div
+                <Motion.div
                   key={track.key}
                   className="relative"
                   style={{
@@ -200,7 +200,7 @@ function TimelinePreview() {
                   }}
                 >
                   {/* Horizontal track line — wipes left to right */}
-                  <motion.div
+                  <Motion.div
                     className="absolute left-0 right-0 top-1/2 -translate-y-1/2"
                     style={{
                       height: '1px',
@@ -219,7 +219,7 @@ function TimelinePreview() {
                   {/* Dots cluster — cascades in after the line wipes.
                       A small y-bloom (3 px → 0) makes each dot feel like
                       it lands on the line rather than fading in flat. */}
-                  <motion.div
+                  <Motion.div
                     style={{ position: 'absolute', inset: 0 }}
                     variants={{
                       hidden: {},
@@ -229,7 +229,7 @@ function TimelinePreview() {
                     }}
                   >
                     {track.dots.map((dot, dotIdx) => (
-                      <motion.span
+                      <Motion.span
                         key={`${track.key}-${dot.id}-${dotIdx}`}
                         className="absolute top-1/2 rounded-full"
                         style={{
@@ -251,13 +251,13 @@ function TimelinePreview() {
                         }}
                       />
                     ))}
-                  </motion.div>
-                </motion.div>
+                  </Motion.div>
+                </Motion.div>
                 );
               })}
 
               {/* Year axis — fades in last, after the tracks have drawn */}
-              <motion.div
+              <Motion.div
                 className="relative mt-[clamp(0.5rem,1vh,0.85rem)]"
                 style={{ height: '1.4em' }}
                 variants={{
@@ -291,11 +291,11 @@ function TimelinePreview() {
                     </span>
                   );
                 })}
-              </motion.div>
+              </Motion.div>
             </div>
-          </motion.div>
+          </Motion.div>
         </div>
-      </motion.div>
+      </Motion.div>
     </section>
   );
 }

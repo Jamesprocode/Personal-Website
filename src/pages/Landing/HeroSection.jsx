@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { motion as Motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HeroPortraitCarousel from './HeroPortraitCarousel';
@@ -76,7 +76,7 @@ function HeroSection() {
           paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
         }}
       >
-        <motion.div
+        <Motion.div
           // Patient cinematic choreography for the Landing hero. The whole
           // grid is one orchestrated entrance: name → brass hairline sweep
           // → bio → CTAs. Photo materializes on its own beat. ease-out-expo
@@ -96,7 +96,7 @@ function HeroSection() {
         >
           {/* LEFT: type column — children share the parent's stagger, and
               the whole column drifts upward with scroll for parallax. */}
-          <motion.div
+          <Motion.div
             className="col-span-12 lg:col-span-7 order-2 lg:order-1"
             style={{ y: textY }}
             variants={{
@@ -108,7 +108,7 @@ function HeroSection() {
               },
             }}
           >
-            <motion.h1
+            <Motion.h1
               className="font-bold tracking-[-0.025em] leading-[1.04]"
               style={{ fontSize: 'clamp(2.25rem, 8vw, 7rem)', marginBottom: '0.25em', color: 'var(--text-strong)' }}
               variants={{
@@ -130,10 +130,10 @@ function HeroSection() {
                 </span>
               )}
               {titleLast && <>{' '}{titleLast}</>}
-            </motion.h1>
+            </Motion.h1>
 
             {/* Brass hairline — sweeps in from the left like a wipe. */}
-            <motion.div
+            <Motion.div
               className="my-[clamp(4rem,8vh,6rem)]"
               data-prototype-hairline
               style={{
@@ -152,7 +152,7 @@ function HeroSection() {
               }}
             />
 
-            <motion.p
+            <Motion.p
               style={{
                 fontSize: 'clamp(1rem, 1.35vw, 1.3rem)',
                 lineHeight: 2,
@@ -171,9 +171,9 @@ function HeroSection() {
               }}
             >
               {t('hero.bio')}
-            </motion.p>
+            </Motion.p>
 
-            <motion.div
+            <Motion.div
               className="flex flex-wrap gap-[clamp(1.25rem,2vw,2rem)] mt-[clamp(4.5rem,9vh,6.5rem)] items-center"
               variants={{
                 hidden: { opacity: 0, y: 14 },
@@ -219,12 +219,12 @@ function HeroSection() {
                 {t('hero.listenToMusic')}
                 <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
               </Link>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
 
           {/* RIGHT: photo — materializes like film coming into focus, on
               its own beat right after the H1 reveals. */}
-          <motion.div
+          <Motion.div
             className="col-span-12 lg:col-span-5 order-1 lg:order-2 flex flex-col items-center lg:items-end"
             variants={{
               hidden: { opacity: 0, scale: 0.95 },
@@ -235,7 +235,7 @@ function HeroSection() {
               },
             }}
           >
-            <motion.div
+            <Motion.div
               className="relative"
               style={{
                 width: 'clamp(250px, 33vw, 460px)',
@@ -272,9 +272,9 @@ function HeroSection() {
                   <HeroPortraitCarousel reduceMotion={reduceMotion} />
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </Motion.div>
+          </Motion.div>
+        </Motion.div>
 
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
 import ParallelTracks from './ParallelTracks';
@@ -32,7 +32,7 @@ function Timeline() {
             paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
           }}
         >
-          <motion.div
+          <Motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -57,7 +57,7 @@ function Timeline() {
             >
               {t('timeline.bio')}
             </p>
-          </motion.div>
+          </Motion.div>
         </section>
 
         <ParallelTracks />

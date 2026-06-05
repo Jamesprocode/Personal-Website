@@ -1,5 +1,5 @@
 import { memo, useCallback, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import SleeveBack from './SleeveBack';
@@ -90,7 +90,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
         }}
       >
         {isActive && isBuffering ? (
-          <motion.span
+          <Motion.span
             aria-hidden
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }}
@@ -232,7 +232,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
 
       <AnimatePresence initial={false}>
         {isExpanded && (
-          <motion.div
+          <Motion.div
             initial={reduceMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
@@ -292,7 +292,7 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
                 </button>
               )}
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>

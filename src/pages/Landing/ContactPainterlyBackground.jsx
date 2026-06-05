@@ -1,23 +1,24 @@
-import { motion, useTransform } from 'framer-motion';
+import { motion as Motion, useTransform } from 'framer-motion';
 
 // Contact section painterly background. Smallest, quietest composition:
 // a centered radial halo behind the email line, like a single overhead
 // spotlight at the end of the page. Pulses softly with scroll as you
 // reach the bottom of the page.
 function ContactPainterlyBackground({ reduceMotion, scrollYProgress }) {
-  const r = (range) => useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
+  const useScrollRange = (range) =>
+    useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
 
   // Scroll-driven values are pushed wide so the halo visibly inflates
   // and the rings noticeably rotate as you arrive at the bottom of the
   // page. The halo "exhales" toward the email link.
-  const haloScale = r([0.75, 1.28]);
-  const haloOpacity = r([0.22, 1]);
-  const haloY = r([30, -20]);
-  const ringRotate = r([-12, 48]);
-  const ringScale = r([0.9, 1.12]);
+  const haloScale = useScrollRange([0.75, 1.28]);
+  const haloOpacity = useScrollRange([0.22, 1]);
+  const haloY = useScrollRange([30, -20]);
+  const ringRotate = useScrollRange([-12, 48]);
+  const ringScale = useScrollRange([0.9, 1.12]);
 
   return (
-    <motion.svg
+    <Motion.svg
       aria-hidden
       viewBox="0 0 1440 600"
       preserveAspectRatio="xMidYMid slice"
@@ -44,7 +45,7 @@ function ContactPainterlyBackground({ reduceMotion, scrollYProgress }) {
       </defs>
 
       {/* Outer brass halo — inflates + brightens visibly with scroll */}
-      <motion.g
+      <Motion.g
         style={{
           scale: haloScale,
           y: haloY,
@@ -55,11 +56,11 @@ function ContactPainterlyBackground({ reduceMotion, scrollYProgress }) {
       >
         <ellipse cx="720" cy="300" rx="520" ry="260" fill="url(#contact-halo)" />
         <ellipse cx="720" cy="280" rx="240" ry="120" fill="url(#contact-inner)" />
-      </motion.g>
+      </Motion.g>
 
       {/* Thin concentric brass rings — rotate visibly with scroll, like
           a turning dial pointing the reader to the email. */}
-      <motion.g
+      <Motion.g
         stroke="rgba(184, 134, 46, 0.18)"
         strokeWidth="0.6"
         fill="none"
@@ -73,8 +74,8 @@ function ContactPainterlyBackground({ reduceMotion, scrollYProgress }) {
         <ellipse cx="720" cy="300" rx="320" ry="180" />
         <ellipse cx="720" cy="300" rx="380" ry="210" strokeOpacity="0.14" />
         <ellipse cx="720" cy="300" rx="440" ry="240" strokeOpacity="0.1" />
-      </motion.g>
-    </motion.svg>
+      </Motion.g>
+    </Motion.svg>
   );
 }
 

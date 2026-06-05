@@ -1,4 +1,4 @@
-import { motion, useTransform } from 'framer-motion';
+import { motion as Motion, useTransform } from 'framer-motion';
 
 // Timeline background: a large CD partially off the right edge with a
 // brass-toned iridescent surface, slowly rotating with scroll. Below the
@@ -9,7 +9,7 @@ import { motion, useTransform } from 'framer-motion';
 
 function CDDisc({ rotateMV }) {
   return (
-    <motion.div
+    <Motion.div
       style={{
         position: 'relative',
         width: '100%',
@@ -90,7 +90,7 @@ function CDDisc({ rotateMV }) {
             'inset 0 0 0 1px rgba(74, 46, 10, 0.75), inset 0 2px 4px rgba(28, 18, 8, 0.5), 0 0 0 2px rgba(212, 161, 61, 0.55)',
         }}
       />
-    </motion.div>
+    </Motion.div>
   );
 }
 

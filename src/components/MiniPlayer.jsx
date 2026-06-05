@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  motion,
+  motion as Motion,
   AnimatePresence,
   useMotionValue,
   useAnimationFrame,
@@ -59,7 +59,6 @@ function MiniPlayer() {
   // after its animation completes so the array stays tiny.
   useEffect(() => {
     if (!isPlaying || reduceMotion) {
-      setNotes([]);
       return undefined;
     }
     const spawn = () => {
@@ -100,6 +99,7 @@ function MiniPlayer() {
 
   const onMusicPage = location.pathname === '/music';
   const shouldShow = hasEverPlayed && !onMusicPage;
+  const activeNotes = isPlaying && !reduceMotion ? notes : [];
 
   const accent = selectedAlbum?.accentColor || '#c4a265';
 
@@ -125,7 +125,7 @@ function MiniPlayer() {
   return (
     <AnimatePresence>
       {shouldShow && (
-        <motion.div
+        <Motion.div
           key="mini"
           initial={{ opacity: 0, y: 24, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -141,7 +141,7 @@ function MiniPlayer() {
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          whileDrag={{ cursor: 'grabbing' }}
+          
           aria-label="Floating music player. Drag to reposition."
           style={{
             position: 'fixed',
@@ -168,7 +168,7 @@ function MiniPlayer() {
           {/* Disc + tap handler — onTap fires only when not dragging.
               We wrap the disc in its own motion element so it carries its
               own gestures separate from the parent card's drag. */}
-          <motion.div
+          <Motion.div
             onTap={handleDiscTap}
             role="button"
             tabIndex={0}
@@ -184,8 +184,8 @@ function MiniPlayer() {
             {/* Music-note particles. Each one starts at the upper half of
                 the disc and drifts up + outward while fading. */}
             <AnimatePresence>
-              {notes.map((note) => (
-                <motion.span
+              {activeNotes.map((note) => (
+                <Motion.span
                   key={note.id}
                   aria-hidden
                   initial={{ opacity: 0, y: 0, x: 0, scale: 0.7, rotate: 0 }}
@@ -211,12 +211,12 @@ function MiniPlayer() {
                   }}
                 >
                   {note.glyph}
-                </motion.span>
+                </Motion.span>
               ))}
             </AnimatePresence>
 
             {/* Spinning record */}
-            <motion.div
+            <Motion.div
               style={{
                 rotate: rotation,
                 width: '100%',
@@ -266,13 +266,13 @@ function MiniPlayer() {
                   border: '1px solid rgba(196,162,101,0.5)',
                 }}
               />
-            </motion.div>
+            </Motion.div>
 
             {/* Buffering ring: spins around the disc while the track is
                 downloading so a slow start reads as "loading," matching the
                 turntable's play-button spinner. */}
             {isBuffering && !reduceMotion && (
-              <motion.span
+              <Motion.span
                 aria-hidden
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }}
@@ -292,7 +292,7 @@ function MiniPlayer() {
             {/* Hover overlay: visual hint for play/pause state. */}
             <AnimatePresence>
               {hovered && (
-                <motion.span
+                <Motion.span
                   key="overlay"
                   aria-hidden
                   initial={{ opacity: 0 }}
@@ -320,10 +320,10 @@ function MiniPlayer() {
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   )}
-                </motion.span>
+                </Motion.span>
               )}
             </AnimatePresence>
-          </motion.div>
+          </Motion.div>
 
           {/* Transport row */}
           <div
@@ -340,7 +340,7 @@ function MiniPlayer() {
             <LoopButton mode={loopMode} onClick={cycleLoopMode} size={20} />
             <NextButton onClick={playNext} size={20} />
           </div>
-        </motion.div>
+        </Motion.div>
       )}
     </AnimatePresence>
   );

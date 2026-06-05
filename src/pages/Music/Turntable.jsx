@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useMotionValue, useMotionValueEvent, useAnimationFrame, useReducedMotion } from 'framer-motion';
+import { motion as Motion, useMotionValue, useMotionValueEvent, useAnimationFrame, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import AnalogVUMeter from './AnalogVUMeter';
@@ -324,7 +324,7 @@ function Turntable({
       {/* Platter zone */}
       <div className="relative" style={{ aspectRatio: '1 / 1', maxWidth: 560, margin: '0 auto' }}>
         {/* Platter */}
-        <motion.div
+        <Motion.div
           ref={platterRef}
           onPointerDown={onPlatterPointerDown}
           onPointerMove={onPlatterPointerMove}
@@ -456,7 +456,7 @@ function Turntable({
               pointerEvents: 'none',
             }}
           />
-        </motion.div>
+        </Motion.div>
 
         {/* Tonearm assembly */}
         <div
@@ -515,7 +515,7 @@ function Turntable({
 
           {/* Tonearm motion wrapper. Rotation is driven by playback progress
               (or the user's pointer while scrubbing the needle). */}
-          <motion.div
+          <Motion.div
             style={{
               rotate: armRotation,
               position: 'absolute',
@@ -625,7 +625,7 @@ function Turntable({
                 pointerEvents: hasTrack && duration ? 'auto' : 'none',
               }}
             />
-          </motion.div>
+          </Motion.div>
         </div>
 
         {/* Scrub hint (mono, visible only when scrubbing) */}
@@ -725,7 +725,7 @@ function Turntable({
               >
                 {t(isBuffering ? 'music.transport.buffering' : isPlaying ? 'music.transport.pause' : 'music.transport.play')}
               </p>
-              <motion.button
+              <Motion.button
                 whileHover={hasTrack ? { scale: 1.06 } : undefined}
                 whileTap={hasTrack ? { scale: 0.94 } : undefined}
                 onClick={onPlayPause}
@@ -752,7 +752,7 @@ function Turntable({
                     while the track downloads, so a slow start reads as
                     "loading" rather than a dead click. */}
                 {isBuffering && !reduceMotion && (
-                  <motion.span
+                  <Motion.span
                     aria-hidden
                     animate={{ rotate: 360 }}
                     transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }}
@@ -776,7 +776,7 @@ function Turntable({
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 )}
-              </motion.button>
+              </Motion.button>
             </div>
 
             {/* Next track */}

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 // Sort key: last whitespace-delimited token of a name, lowercased.
@@ -46,7 +46,7 @@ function SleeveBack({ album, onClose }) {
   return createPortal(
     <AnimatePresence>
       {album ? (
-        <motion.div
+        <Motion.div
           key="backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -69,7 +69,7 @@ function SleeveBack({ album, onClose }) {
           aria-modal="true"
           aria-label={t('music.sleeveAria', { title: album.title })}
         >
-          <motion.div
+          <Motion.div
             key="sleeve"
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -226,8 +226,8 @@ function SleeveBack({ album, onClose }) {
               <span>{album.year}</span>
               <span>{t('nav.brand')} · jameswangjiayi@gmail.com</span>
             </div>
-          </motion.div>
-        </motion.div>
+          </Motion.div>
+        </Motion.div>
       ) : null}
     </AnimatePresence>,
     document.body,

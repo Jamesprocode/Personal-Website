@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll } from 'framer-motion';
+import { motion as Motion, useReducedMotion, useScroll } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -149,7 +149,7 @@ function MusicPreview() {
       >
         <div className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(3rem,6vh,5rem)] items-center">
           {/* LEFT: framing copy + CTA cascade in */}
-          <motion.div
+          <Motion.div
             initial={reduceMotion ? false : 'hidden'}
             whileInView="show"
             viewport={{ once: true, margin: '-80px' }}
@@ -159,7 +159,7 @@ function MusicPreview() {
             }}
             className="col-span-12 lg:col-span-6 order-2 lg:order-1"
           >
-            <motion.h2
+            <Motion.h2
               className="font-bold tracking-tight"
               style={{
                 fontSize: 'clamp(1.75rem, 3.5vw, 3rem)',
@@ -176,8 +176,8 @@ function MusicPreview() {
               }}
             >
               {t('musicPreview.heading')}
-            </motion.h2>
-            <motion.p
+            </Motion.h2>
+            <Motion.p
               className="mt-[clamp(1rem,2vh,1.5rem)] leading-[1.55]"
               style={{
                 fontSize: 'clamp(1rem, 1.2vw, 1.15rem)',
@@ -194,9 +194,9 @@ function MusicPreview() {
               }}
             >
               {t('musicPreview.bio')}
-            </motion.p>
+            </Motion.p>
 
-            <motion.div
+            <Motion.div
               className="mt-[clamp(1.5rem,3vh,2rem)] flex items-baseline gap-[clamp(1.5rem,3vw,2.5rem)] flex-wrap"
               variants={{
                 hidden: { opacity: 0, y: 14 },
@@ -237,9 +237,9 @@ function MusicPreview() {
                   {trackCount}
                 </p>
               </div>
-            </motion.div>
+            </Motion.div>
 
-            <motion.div
+            <Motion.div
               variants={{
                 hidden: { opacity: 0, y: 12 },
                 show: {
@@ -269,12 +269,12 @@ function MusicPreview() {
                 {t('musicPreview.cta')}
                 <span aria-hidden>→</span>
               </Link>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
 
           {/* RIGHT: vinyl materializes on its own beat — slower, like film
               coming into focus, paired with the heading reveal. */}
-          <motion.div
+          <Motion.div
             initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: '-80px' }}
@@ -293,7 +293,7 @@ function MusicPreview() {
             >
               <VinylDisc hovered={hovered} reduceMotion={reduceMotion} />
             </Link>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
     </section>
