@@ -4,9 +4,12 @@ import { useTranslation } from 'react-i18next';
 import ProjectShelf from './ProjectShelf';
 import ProjectsPainterlyBackground from './ProjectsPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
+import useIsMobile from '../../hooks/useIsMobile';
 
 function ProjectsSection() {
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+  const simplifyMotion = reduceMotion || isMobile;
   const { t } = useTranslation();
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -48,7 +51,7 @@ function ProjectsSection() {
       }}
     >
       {inView && (
-        <ProjectsPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
+        <ProjectsPainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} />
       )}
       <div className="relative z-10"
         style={{

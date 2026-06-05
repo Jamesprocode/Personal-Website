@@ -139,12 +139,24 @@ function Turntable({
       return;
     }
 
-    // Recompute the arm target from the current playback position each frame.
     const ct = currentTimeMV.get();
     const engaged = hasTrack && (isPlaying || ct > 0);
     armTargetRef.current = engaged && duration > 0
       ? ARM_OUTER + ARM_SWEEP * Math.min(1, Math.max(0, ct / duration))
       : ARM_OUTER;
+
+    const cur = armRotation.get();
+    const target = armTargetRef.current;
+    const idleSettled =
+      !isPlaying &&
+      !isBuffering &&
+      !isScrubbing &&
+      Math.abs(cur - target) < 0.02;
+
+    if (idleSettled) {
+      if (cur !== target) armRotation.set(target);
+      return;
+    }
 
     // Keep the slider's aria-valuenow live without a render (whole-second granularity).
     const slider = scrubRef.current;
@@ -156,8 +168,6 @@ function Turntable({
       }
     }
 
-    const cur = armRotation.get();
-    const target = armTargetRef.current;
     const diff = target - cur;
     if (Math.abs(diff) < 0.02) {
       if (cur !== target) armRotation.set(target);

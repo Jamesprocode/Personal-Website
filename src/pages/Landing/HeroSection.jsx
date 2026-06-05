@@ -5,9 +5,12 @@ import { useTranslation } from 'react-i18next';
 import HeroPortraitCarousel from './HeroPortraitCarousel';
 import HeroPainterlyBackground from './HeroPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
+import useIsMobile from '../../hooks/useIsMobile';
 
 function HeroSection() {
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+  const simplifyMotion = reduceMotion || isMobile;
   const { t } = useTranslation();
   const titleMiddle = t('hero.titleMiddle');
   const titleLast = t('hero.titleLast');
@@ -41,10 +44,10 @@ function HeroSection() {
   // photo drifts gently upward and rotates a half-degree, like a polaroid
   // held in an unsteady hand. Title column drifts at a slightly different
   // rate so the two layers parallax against each other.
-  const portraitY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -64]);
-  const portraitRotate = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -1.6]);
-  const portraitScale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1] : [1, 0.96]);
-  const textY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -28]);
+  const portraitY = useTransform(scrollYProgress, [0, 1], simplifyMotion ? [0, 0] : [0, -64]);
+  const portraitRotate = useTransform(scrollYProgress, [0, 1], simplifyMotion ? [0, 0] : [0, -1.6]);
+  const portraitScale = useTransform(scrollYProgress, [0, 1], simplifyMotion ? [1, 1] : [1, 0.96]);
+  const textY = useTransform(scrollYProgress, [0, 1], simplifyMotion ? [0, 0] : [0, -28]);
 
   return (
     <section
@@ -65,7 +68,7 @@ function HeroSection() {
         background: 'var(--bg)',
       }}
     >
-      <HeroPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} inView={inView} />
+      <HeroPainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} inView={inView} />
 
       <div
         className="relative z-10"

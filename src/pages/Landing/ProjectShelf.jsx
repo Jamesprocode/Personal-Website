@@ -391,6 +391,7 @@ function ProjectShelf() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const simplifyMotion = reduceMotion || isMobile;
   const [selectedId, setSelectedId] = useState(null);
   const selectedProject = projects.find((p) => p.id === selectedId) || null;
 
@@ -410,7 +411,7 @@ function ProjectShelf() {
   // desktop keeps the inherited staggered reveal alongside the cascade.
   const panelAnim = isMobile
     ? {
-        initial: reduceMotion ? false : { opacity: 0 },
+        initial: simplifyMotion ? false : { opacity: 0 },
         animate: { opacity: 1 },
         transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
       }
@@ -437,7 +438,7 @@ function ProjectShelf() {
 
   return (
     <Motion.div
-      initial={reduceMotion ? false : 'hidden'}
+      initial={simplifyMotion ? false : 'hidden'}
       whileInView="show"
       viewport={{ once: true, margin: '-80px' }}
       variants={{
@@ -491,7 +492,7 @@ function ProjectShelf() {
               project={p}
               isSelected={selectedId === p.id}
               onClick={handleSelect}
-              reduceMotion={reduceMotion}
+              reduceMotion={simplifyMotion}
             />
           </Motion.div>
         ))}
@@ -518,14 +519,14 @@ function ProjectShelf() {
               key={selectedProject.id}
               project={selectedProject}
               onClose={() => setSelectedId(null)}
-              reduceMotion={reduceMotion}
+              reduceMotion={simplifyMotion}
             />
           ) : (
             <Motion.div
               key="placeholder"
-              initial={reduceMotion ? false : { opacity: 0 }}
+              initial={simplifyMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={reduceMotion ? undefined : { opacity: 0 }}
+              exit={simplifyMotion ? undefined : { opacity: 0 }}
               transition={{ duration: 0.3 }}
               style={{
                 textAlign: 'center',

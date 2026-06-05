@@ -202,6 +202,11 @@ html {
   to   { transform: rotate(360deg); }
 }
 
+@keyframes loading-reel-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* Navbar entrance. Driven by CSS rather than framer-motion's rAF loop on
    purpose: rAF is paused for background tabs, so a framer y:-100→0 entrance
    would leave the fixed navbar (and the theme/lang toggles inside it) stuck
@@ -265,6 +270,15 @@ section[data-isolate] {
 }
 
 @media (max-width: 767px) {
+  html {
+    /* Touch scrolling should stay free on phones. Desktop keeps the
+       snap-to-hero / snap-to-projects rhythm; mobile gets a lighter,
+       native-feeling scroll path. */
+    scroll-snap-type: none;
+    scroll-padding-top: 0;
+    scroll-padding-bottom: 0;
+  }
+
   .site-footer {
     position: static !important;
   }

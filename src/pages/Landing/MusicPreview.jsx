@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import albums from '../../data/albums';
 import MusicPainterlyBackground from './MusicPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
+import useIsMobile from '../../hooks/useIsMobile';
 
 const tracks = albums.flatMap((a) => a.tracks);
 
@@ -105,6 +106,8 @@ function VinylDisc({ hovered, reduceMotion }) {
 function MusicPreview() {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+  const simplifyMotion = reduceMotion || isMobile;
   const [hovered, setHovered] = useState(false);
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -135,7 +138,7 @@ function MusicPreview() {
       }}
     >
       {inView && (
-        <MusicPainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
+        <MusicPainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} />
       )}
 
       <div

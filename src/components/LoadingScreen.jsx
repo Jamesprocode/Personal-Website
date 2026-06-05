@@ -1,6 +1,7 @@
-import { AnimatePresence, motion as Motion } from 'framer-motion';
+import { AnimatePresence, motion as Motion, useReducedMotion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import useIsMobile from '../hooks/useIsMobile';
 
 const FLOATING_NOTES = Array.from({ length: 12 }, (_, i) => ({
   note: ['♪', '♫', '♬', '♩'][i % 4],
@@ -22,26 +23,42 @@ const reelSize = 'clamp(3rem, 15vw, 4rem)';
 
 function LoadingScreen({ onLoadingComplete }) {
   const { t } = useTranslation();
+  const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+  const liteMotion = reduceMotion || isMobile;
+  const visibleWaveBars = liteMotion ? WAVEFORM_BARS.slice(0, 10) : WAVEFORM_BARS;
+  const progressStep = isMobile ? 4 : 2;
+  const progressIntervalMs = isMobile ? 55 : 35;
+  const finishDelay = liteMotion ? 260 : 600;
+  const completeDelay = liteMotion ? 180 : 400;
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    let completeTimer;
+    let finishTimer;
+
+    const interval = window.setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
+        const next = Math.min(100, prev + progressStep);
+        if (next >= 100) {
+          window.clearInterval(interval);
+          completeTimer = window.setTimeout(() => {
             setIsComplete(true);
-            setTimeout(() => onLoadingComplete(), 600);
-          }, 400);
+            finishTimer = window.setTimeout(() => onLoadingComplete(), finishDelay);
+          }, completeDelay);
           return 100;
         }
-        return prev + 2;
+        return next;
       });
-    }, 35);
+    }, progressIntervalMs);
 
-    return () => clearInterval(interval);
-  }, [onLoadingComplete]);
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(completeTimer);
+      window.clearTimeout(finishTimer);
+    };
+  }, [completeDelay, finishDelay, onLoadingComplete, progressIntervalMs, progressStep]);
 
   return (
     <AnimatePresence>
@@ -53,31 +70,34 @@ function LoadingScreen({ onLoadingComplete }) {
           className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-amber-950 via-amber-900 to-orange-950"
           style={{ minHeight: '100dvh' }}
         >
-          {/* Subtle floating notes */}
-          <div className="absolute inset-0 pointer-events-none opacity-10">
-            {FLOATING_NOTES.map((item, i) => (
-              <Motion.div
-                key={i}
-                className="absolute text-4xl"
-                initial={{
-                  x: item.startX,
-                  y: 'calc(100dvh + 50px)',
-                }}
-                animate={{
-                  y: -50,
-                  x: item.endX,
-                }}
-                transition={{
-                  duration: item.duration,
-                  repeat: Infinity,
-                  delay: item.delay,
-                  ease: 'linear',
-                }}
-              >
-                {item.note}
-              </Motion.div>
-            ))}
-          </div>
+          {/* Subtle floating notes. Desktop only: the mobile loader keeps the
+              cassette identity but skips decorative JS-driven drift. */}
+          {!liteMotion && (
+            <div className="absolute inset-0 pointer-events-none opacity-10">
+              {FLOATING_NOTES.map((item, i) => (
+                <Motion.div
+                  key={i}
+                  className="absolute text-4xl"
+                  initial={{
+                    x: item.startX,
+                    y: 'calc(100dvh + 50px)',
+                  }}
+                  animate={{
+                    y: -50,
+                    x: item.endX,
+                  }}
+                  transition={{
+                    duration: item.duration,
+                    repeat: Infinity,
+                    delay: item.delay,
+                    ease: 'linear',
+                  }}
+                >
+                  {item.note}
+                </Motion.div>
+              ))}
+            </div>
+          )}
 
           {/* Main content uses dynamic viewport height and responsive fixed-format
               pieces, so the cassette stays centered on narrow mobile screens. */}
@@ -127,11 +147,13 @@ function LoadingScreen({ onLoadingComplete }) {
                   }}
                 >
                   {/* Left Reel */}
-                  <Motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                  <div
                     className="w-16 h-16 rounded-full bg-amber-900 border-4 border-amber-800 relative overflow-hidden"
-                    style={{ width: reelSize, height: reelSize }}
+                    style={{
+                      width: reelSize,
+                      height: reelSize,
+                      animation: reduceMotion ? 'none' : 'loading-reel-spin 2.4s linear infinite',
+                    }}
                   >
                     {[...Array(8)].map((_, i) => (
                       <div
@@ -141,14 +163,16 @@ function LoadingScreen({ onLoadingComplete }) {
                       />
                     ))}
                     <div className="absolute inset-3 rounded-full bg-amber-950" />
-                  </Motion.div>
+                  </div>
 
                   {/* Right Reel */}
-                  <Motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                  <div
                     className="w-16 h-16 rounded-full bg-amber-900 border-4 border-amber-800 relative overflow-hidden"
-                    style={{ width: reelSize, height: reelSize }}
+                    style={{
+                      width: reelSize,
+                      height: reelSize,
+                      animation: reduceMotion ? 'none' : 'loading-reel-spin 2.4s linear infinite',
+                    }}
                   >
                     {[...Array(8)].map((_, i) => (
                       <div
@@ -158,7 +182,7 @@ function LoadingScreen({ onLoadingComplete }) {
                       />
                     ))}
                     <div className="absolute inset-3 rounded-full bg-amber-950" />
-                  </Motion.div>
+                  </div>
                 </div>
 
                 {/* Tape Window */}
@@ -206,28 +230,40 @@ function LoadingScreen({ onLoadingComplete }) {
               </div>
 
               {/* Waveform */}
-              <Motion.div
-                className="flex items-end gap-1 h-12 justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-              >
-                {WAVEFORM_BARS.map((bar, i) => (
-                  <Motion.div
-                    key={i}
-                    className="w-2 bg-amber-400 rounded-full"
-                    animate={{
-                      height: bar.heights
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      repeat: Infinity,
-                      repeatType: 'reverse',
-                      delay: i * 0.1
-                    }}
-                  />
-                ))}
-              </Motion.div>
+              {liteMotion ? (
+                <div className="flex items-end gap-1 h-12 justify-center" aria-hidden>
+                  {visibleWaveBars.map((bar, i) => (
+                    <div
+                      key={i}
+                      className="w-2 bg-amber-400 rounded-full"
+                      style={{ height: bar.heights[0] }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Motion.div
+                  className="flex items-end gap-1 h-12 justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  {visibleWaveBars.map((bar, i) => (
+                    <Motion.div
+                      key={i}
+                      className="w-2 bg-amber-400 rounded-full"
+                      animate={{
+                        height: bar.heights
+                      }}
+                      transition={{
+                        duration: 0.5,
+                        repeat: Infinity,
+                        repeatType: 'reverse',
+                        delay: i * 0.1
+                      }}
+                    />
+                  ))}
+                </Motion.div>
+              )}
             </Motion.div>
             </div>
           </div>

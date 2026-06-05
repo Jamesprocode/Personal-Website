@@ -35,10 +35,17 @@ function Navbar() {
 
   useEffect(() => {
     if (!mobileOpen) return undefined;
+    const root = document.documentElement;
     const previousOverflow = document.body.style.overflow;
+    const previousRootOverflow = root.style.overflow;
+    const previousOverscroll = root.style.overscrollBehavior;
     document.body.style.overflow = 'hidden';
+    root.style.overflow = 'hidden';
+    root.style.overscrollBehavior = 'none';
     return () => {
       document.body.style.overflow = previousOverflow;
+      root.style.overflow = previousRootOverflow;
+      root.style.overscrollBehavior = previousOverscroll;
     };
   }, [mobileOpen]);
 
@@ -153,7 +160,7 @@ function Navbar() {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden flex flex-col items-center justify-center gap-1.5 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80"
+            className="md:hidden relative flex items-center justify-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80"
             aria-label={t(mobileOpen ? 'nav.closeMenu' : 'nav.openMenu')}
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav-menu"
@@ -167,24 +174,33 @@ function Navbar() {
                 : 'inset 0 1px 0 rgba(253,244,220,0.18)',
             }}
           >
-            <Motion.div
-              animate={mobileOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="w-5 h-0.5 rounded-full"
-              style={{ backgroundColor: hamburgerColor }}
-            />
-            <Motion.div
-              animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
-              transition={{ duration: 0.16 }}
-              className="w-5 h-0.5 rounded-full"
-              style={{ backgroundColor: hamburgerColor }}
-            />
-            <Motion.div
-              animate={mobileOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="w-5 h-0.5 rounded-full"
-              style={{ backgroundColor: hamburgerColor }}
-            />
+            {[
+              mobileOpen
+                ? 'translate(-50%, -50%) rotate(45deg)'
+                : 'translate(-50%, calc(-50% - 6px)) rotate(0deg)',
+              'translate(-50%, -50%) rotate(0deg)',
+              mobileOpen
+                ? 'translate(-50%, -50%) rotate(-45deg)'
+                : 'translate(-50%, calc(-50% + 6px)) rotate(0deg)',
+            ].map((transform, i) => (
+              <span
+                key={i}
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: mobileOpen ? 24 : 20,
+                  height: 2,
+                  borderRadius: 9999,
+                  backgroundColor: hamburgerColor,
+                  opacity: mobileOpen && i === 1 ? 0 : 1,
+                  transform,
+                  transition:
+                    'transform 230ms cubic-bezier(0.16,1,0.3,1), opacity 150ms ease, width 230ms cubic-bezier(0.16,1,0.3,1)',
+                }}
+              />
+            ))}
           </button>
         </div>
       </nav>
@@ -205,8 +221,11 @@ function Navbar() {
               // theme swap. Padding set inline because the universal
               // reset zeroes Tailwind padding utilities.
               backgroundColor: 'var(--overlay-bg)',
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              overflowY: 'auto',
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch',
               paddingTop: 'clamp(6rem, 12vh, 7rem)',
               paddingLeft: 'clamp(1rem, 6vw, 2rem)',
               paddingRight: 'clamp(1rem, 6vw, 2rem)',

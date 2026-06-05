@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
 import TimelinePainterlyBackground from './TimelinePainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
+import useIsMobile from '../../hooks/useIsMobile';
 
 const TRACKS = [
   { key: 'Academic', color: '#3b82f6' },
@@ -18,6 +19,8 @@ const YEAR_SPAN = END_YEAR - START_YEAR;
 
 function TimelinePreview() {
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+  const simplifyMotion = reduceMotion || isMobile;
   const { t } = useTranslation();
   const sectionRef = useRef(null);
   // Active range: from when the section first appears at the bottom of
@@ -78,7 +81,7 @@ function TimelinePreview() {
       }}
     >
       {inView && (
-        <TimelinePainterlyBackground reduceMotion={reduceMotion} scrollYProgress={scrollYProgress} />
+        <TimelinePainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} />
       )}
       <Motion.div
         initial={reduceMotion ? false : 'hidden'}
