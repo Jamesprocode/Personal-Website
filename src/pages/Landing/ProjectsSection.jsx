@@ -24,12 +24,15 @@ function ProjectsSection() {
     <section
       ref={sectionRef}
       id="research-projects-top"
+      data-snap-section
       data-offscreen-skip
       data-isolate
       className="relative overflow-hidden"
       style={{
         width: '100%',
+        minHeight: '100svh',
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         // Feathered edges: the alternating ground melts into the page base
         // (var(--bg)) over the first/last ~260px instead of butting against
@@ -39,8 +42,8 @@ function ProjectsSection() {
         // the transition, so there's no hard line to mark the seam.
         background:
           'linear-gradient(to bottom, var(--bg) 0%, var(--bg-alt) 260px, var(--bg-alt) calc(100% - 260px), var(--bg) 100%)',
-        paddingTop: 'clamp(2.5rem, 5vh, 4rem)',
-        paddingBottom: 'clamp(7rem, 14vh, 12rem)',
+        paddingTop: 'clamp(5.5rem, 10vh, 8rem)',
+        paddingBottom: 'clamp(5.5rem, 10vh, 8rem)',
         scrollMarginTop: '4rem',
       }}
     >

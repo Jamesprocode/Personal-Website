@@ -1,6 +1,24 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion as Motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+const FLOATING_NOTES = Array.from({ length: 12 }, (_, i) => ({
+  note: ['♪', '♫', '♬', '♩'][i % 4],
+  startX: `${(i * 23 + 11) % 100}vw`,
+  endX: `${(i * 31 + 37) % 100}vw`,
+  duration: 12 + (i % 5) * 1.6,
+  delay: (i % 6) * 0.45,
+}));
+
+const WAVEFORM_BARS = Array.from({ length: 20 }, (_, i) => ({
+  heights: [
+    12 + ((i * 7) % 28),
+    8 + ((i * 11) % 34),
+    12 + ((i * 5) % 28),
+  ],
+}));
+
+const reelSize = 'clamp(3rem, 15vw, 4rem)';
 
 function LoadingScreen({ onLoadingComplete }) {
   const { t } = useTranslation();
@@ -28,67 +46,92 @@ function LoadingScreen({ onLoadingComplete }) {
   return (
     <AnimatePresence>
       {!isComplete && (
-        <motion.div
+        <Motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6 }}
-          className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-br from-amber-950 via-amber-900 to-orange-950"
+          className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-amber-950 via-amber-900 to-orange-950"
+          style={{ minHeight: '100dvh' }}
         >
           {/* Subtle floating notes */}
-          <div className="absolute inset-0 opacity-10">
-            {[...Array(12)].map((_, i) => (
-              <motion.div
+          <div className="absolute inset-0 pointer-events-none opacity-10">
+            {FLOATING_NOTES.map((item, i) => (
+              <Motion.div
                 key={i}
                 className="absolute text-4xl"
                 initial={{
-                  x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-                  y: (typeof window !== 'undefined' ? window.innerHeight : 800) + 50,
+                  x: item.startX,
+                  y: 'calc(100dvh + 50px)',
                 }}
                 animate={{
                   y: -50,
-                  x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                  x: item.endX,
                 }}
                 transition={{
-                  duration: 12 + Math.random() * 8,
+                  duration: item.duration,
                   repeat: Infinity,
-                  delay: Math.random() * 5,
+                  delay: item.delay,
                   ease: 'linear',
                 }}
               >
-                {['♪', '♫', '♬', '♩'][Math.floor(Math.random() * 4)]}
-              </motion.div>
+                {item.note}
+              </Motion.div>
             ))}
           </div>
 
-          {/* Main Content — wrapper is min-h-full + centered so on tall
-              viewports it sits dead-center, and on short (mobile) ones the
-              parent scrolls with breathing room instead of clipping the top
-              and bottom (the old `items-center` + `overflow-hidden` did). */}
-          <div className="relative z-10 min-h-full flex items-center justify-center px-6 py-10">
-            <div className="text-center">
+          {/* Main content uses dynamic viewport height and responsive fixed-format
+              pieces, so the cassette stays centered on narrow mobile screens. */}
+          <div
+            className="relative z-10 flex items-center justify-center px-5 py-8 sm:px-6 sm:py-10"
+            style={{ minHeight: '100dvh', width: '100%' }}
+          >
+            <div className="text-center" style={{ width: 'min(100%, 24rem)' }}>
             {/* Cassette */}
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="mb-8 sm:mb-12 relative"
             >
-              <div className="relative w-80 sm:w-96 h-56 bg-gradient-to-br from-amber-200 to-amber-300 rounded-2xl shadow-2xl mx-auto border-4 border-amber-900">
+              <div
+                className="relative bg-gradient-to-br from-amber-200 to-amber-300 rounded-2xl shadow-2xl mx-auto border-4 border-amber-900"
+                style={{ width: 'min(100%, 24rem)', height: 'clamp(12rem, 56vw, 14rem)' }}
+              >
                 {/* Label Area */}
-                <div className="absolute top-4 left-8 right-8 h-20 bg-white/80 rounded-lg flex items-center justify-center">
+                <div
+                  className="absolute top-4 bg-white/80 rounded-lg flex items-center justify-center"
+                  style={{
+                    left: 'clamp(1.25rem, 7vw, 2rem)',
+                    right: 'clamp(1.25rem, 7vw, 2rem)',
+                    height: 'clamp(4rem, 18vw, 5rem)',
+                  }}
+                >
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-amber-900 tracking-widest">JAMES WANG</p>
+                    <p
+                      className="font-bold text-amber-900 tracking-widest"
+                      style={{ fontSize: 'clamp(1.35rem, 6.5vw, 1.5rem)' }}
+                    >
+                      JAMES WANG
+                    </p>
                     <p className="text-xs text-amber-700 mt-1">PORTFOLIO &middot; SIDE A</p>
                   </div>
                 </div>
 
                 {/* Tape Reels - fixed size, just spinning */}
-                <div className="absolute bottom-8 left-12 right-12 flex justify-between items-center">
+                <div
+                  className="absolute flex justify-between items-center"
+                  style={{
+                    left: 'clamp(2rem, 11vw, 3rem)',
+                    right: 'clamp(2rem, 11vw, 3rem)',
+                    bottom: 'clamp(1.5rem, 8vw, 2rem)',
+                  }}
+                >
                   {/* Left Reel */}
-                  <motion.div
+                  <Motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                     className="w-16 h-16 rounded-full bg-amber-900 border-4 border-amber-800 relative overflow-hidden"
+                    style={{ width: reelSize, height: reelSize }}
                   >
                     {[...Array(8)].map((_, i) => (
                       <div
@@ -98,13 +141,14 @@ function LoadingScreen({ onLoadingComplete }) {
                       />
                     ))}
                     <div className="absolute inset-3 rounded-full bg-amber-950" />
-                  </motion.div>
+                  </Motion.div>
 
                   {/* Right Reel */}
-                  <motion.div
+                  <Motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                     className="w-16 h-16 rounded-full bg-amber-900 border-4 border-amber-800 relative overflow-hidden"
+                    style={{ width: reelSize, height: reelSize }}
                   >
                     {[...Array(8)].map((_, i) => (
                       <div
@@ -114,26 +158,32 @@ function LoadingScreen({ onLoadingComplete }) {
                       />
                     ))}
                     <div className="absolute inset-3 rounded-full bg-amber-950" />
-                  </motion.div>
+                  </Motion.div>
                 </div>
 
                 {/* Tape Window */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-32 h-1 bg-amber-800 rounded-full">
-                  <motion.div
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 h-1 bg-amber-800 rounded-full"
+                  style={{ width: 'clamp(5.5rem, 30vw, 8rem)', bottom: 'clamp(1.5rem, 8vw, 2rem)' }}
+                >
+                  <Motion.div
                     className="h-full bg-amber-950 rounded-full"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
 
             {/* Loading Text */}
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-4xl font-bold text-amber-100 mb-4">
+              <h2
+                className="font-bold text-amber-100 mb-4"
+                style={{ fontSize: 'clamp(1.9rem, 8vw, 2.25rem)', lineHeight: 1.1 }}
+              >
                 {t('loading.heading')}
               </h2>
               <p className="text-amber-300 text-lg mb-6">
@@ -144,9 +194,9 @@ function LoadingScreen({ onLoadingComplete }) {
               </p>
 
               {/* Progress Bar */}
-              <div className="w-80 sm:w-96 mx-auto mb-8 sm:mb-12">
+              <div className="mx-auto mb-8 sm:mb-12" style={{ width: 'min(100%, 24rem)' }}>
                 <div className="h-3 bg-amber-950 rounded-full overflow-hidden border-2 border-amber-700">
-                  <motion.div
+                  <Motion.div
                     className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500"
                     style={{ width: `${progress}%` }}
                     transition={{ duration: 0.3 }}
@@ -156,22 +206,18 @@ function LoadingScreen({ onLoadingComplete }) {
               </div>
 
               {/* Waveform */}
-              <motion.div
+              <Motion.div
                 className="flex items-end gap-1 h-12 justify-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6 }}
               >
-                {[...Array(20)].map((_, i) => (
-                  <motion.div
+                {WAVEFORM_BARS.map((bar, i) => (
+                  <Motion.div
                     key={i}
                     className="w-2 bg-amber-400 rounded-full"
                     animate={{
-                      height: [
-                        Math.random() * 30 + 10,
-                        Math.random() * 40 + 5,
-                        Math.random() * 30 + 10
-                      ]
+                      height: bar.heights
                     }}
                     transition={{
                       duration: 0.5,
@@ -181,11 +227,11 @@ function LoadingScreen({ onLoadingComplete }) {
                     }}
                   />
                 ))}
-              </motion.div>
-            </motion.div>
+              </Motion.div>
+            </Motion.div>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       )}
     </AnimatePresence>
   );

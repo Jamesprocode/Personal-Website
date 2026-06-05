@@ -11,7 +11,7 @@ function Footer() {
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-50"
+      className="site-footer fixed bottom-0 left-0 right-0 z-50"
       style={{
         backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(6px)',
@@ -20,6 +20,7 @@ function Footer() {
       }}
     >
       <div
+        data-footer-inner
         className="flex items-center justify-center gap-8"
         style={{
           width: '100%',

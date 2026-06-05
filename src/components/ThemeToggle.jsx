@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import useTheme from '../hooks/useTheme';
 
@@ -28,11 +28,13 @@ function ThemeToggle({ variant = 'desktop' }) {
         // light mode is near-invisible (~1.2:1). Use the strong text token
         // (walnut) in light so the glyph stays a legible control.
         color: isDark ? 'var(--accent)' : 'var(--text-strong)',
-        background: 'transparent',
+        background: isMobile ? 'var(--surface)' : 'transparent',
+        border: isMobile ? '1px solid var(--border)' : 'none',
+        boxShadow: isMobile ? 'inset 0 1px 0 rgba(253,244,220,0.38)' : 'none',
         cursor: 'pointer',
       }}
     >
-      <motion.span
+      <Motion.span
         key={isDark ? 'moon' : 'sun'}
         initial={{ rotate: -90, scale: 0.4, opacity: 0 }}
         animate={{ rotate: 0, scale: 1, opacity: 1 }}
@@ -54,7 +56,7 @@ function ThemeToggle({ variant = 'desktop' }) {
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
           </svg>
         )}
-      </motion.span>
+      </Motion.span>
     </button>
   );
 }

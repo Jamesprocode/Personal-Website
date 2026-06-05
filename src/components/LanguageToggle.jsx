@@ -45,10 +45,10 @@ function LanguageToggle({ variant = 'desktop' }) {
 
   const brass = '#c4a265';
   const activeColor = variant === 'mobile'
-    ? '#ffffff'
+    ? 'var(--text-strong)'
     : isCream ? '#2d2d2d' : '#ffffff';
   const inactiveColor = variant === 'mobile'
-    ? 'rgba(255,255,255,0.45)'
+    ? 'var(--text-muted)'
     : isCream ? 'rgba(108,92,59,0.6)' : 'rgba(255,255,255,0.45)';
   const dividerColor = variant === 'mobile'
     ? 'rgba(255,255,255,0.2)'
@@ -73,23 +73,25 @@ function LanguageToggle({ variant = 'desktop' }) {
   });
 
   if (variant === 'mobile') {
-    // Mobile drawer is cream-themed now; tint the toggle's surface to
-    // match instead of the dark espresso it inherited.
     return (
       <button
         type="button"
         onClick={toggle}
         aria-label={ariaLabel}
-        className="flex items-center justify-center gap-4 w-full py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/70"
+        className="flex items-center justify-center gap-3 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/70"
         style={{
-          backgroundColor: 'rgba(160, 111, 29, 0.06)',
-          border: '1px solid rgba(160, 111, 29, 0.18)',
+          width: '100%',
+          minHeight: 44,
+          padding: '0 1rem',
+          backgroundColor: 'var(--surface)',
+          border: '1px solid var(--border)',
+          boxShadow: 'inset 0 1px 0 rgba(253,244,220,0.38)',
         }}
       >
-        <span style={labelStyle(currentLang === 'en', true)}>EN</span>
+        <span style={labelStyle(currentLang === 'en', false)}>EN</span>
         <span
           aria-hidden="true"
-          style={{ color: 'rgba(108,92,59,0.6)', fontFamily: monoFamily, fontSize: '0.72rem' }}
+          style={{ color: 'var(--text-muted)', fontFamily: monoFamily, fontSize: '0.72rem' }}
         >
           /
         </span>

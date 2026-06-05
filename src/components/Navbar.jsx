@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion as Motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from './LanguageToggle';
@@ -29,8 +29,18 @@ function Navbar() {
   }, [entered]);
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [location]);
+    const id = window.setTimeout(() => setMobileOpen(false), 0);
+    return () => window.clearTimeout(id);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -52,8 +62,6 @@ function Navbar() {
   // Active nav item gets a small brass LED dot; the navbar's bottom edge
   // is finished with a 1 px brass hairline that runs the full width.
   const brass = '#c4a265';
-  const brassLight = '#d4b76e';
-  const brassDark = '#8c6e3b';
 
   return (
     <>
@@ -143,23 +151,37 @@ function Navbar() {
 
           {/* Mobile hamburger */}
           <button
+            type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden w-8 h-8 flex flex-col items-center justify-center gap-1.5"
+            className="md:hidden flex flex-col items-center justify-center gap-1.5 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80"
             aria-label={t(mobileOpen ? 'nav.closeMenu' : 'nav.openMenu')}
             aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-menu"
+            style={{
+              width: 44,
+              height: 44,
+              border: `1px solid ${brass}55`,
+              backgroundColor: mobileOpen ? 'var(--hover-bg)' : 'rgba(196,162,101,0.08)',
+              boxShadow: mobileOpen
+                ? 'inset 0 0 0 1px rgba(196,162,101,0.22)'
+                : 'inset 0 1px 0 rgba(253,244,220,0.18)',
+            }}
           >
-            <motion.div
-              animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
+            <Motion.div
+              animate={mobileOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="w-5 h-0.5 rounded-full"
               style={{ backgroundColor: hamburgerColor }}
             />
-            <motion.div
+            <Motion.div
               animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
+              transition={{ duration: 0.16 }}
               className="w-5 h-0.5 rounded-full"
               style={{ backgroundColor: hamburgerColor }}
             />
-            <motion.div
-              animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
+            <Motion.div
+              animate={mobileOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="w-5 h-0.5 rounded-full"
               style={{ backgroundColor: hamburgerColor }}
             />
@@ -170,11 +192,12 @@ function Navbar() {
       {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
+          <Motion.div
+            id="mobile-nav-menu"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-40 md:hidden"
             style={{
               // Match the cream parlor instead of the dark espresso. The
@@ -184,23 +207,29 @@ function Navbar() {
               backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
-              paddingTop: '6rem',
-              paddingLeft: '2rem',
-              paddingRight: '2rem',
+              paddingTop: 'clamp(6rem, 12vh, 7rem)',
+              paddingLeft: 'clamp(1rem, 6vw, 2rem)',
+              paddingRight: 'clamp(1rem, 6vw, 2rem)',
             }}
           >
-            <div className="flex flex-col" style={{ gap: '0.5rem' }}>
-              <motion.div
+            <div className="flex flex-col" style={{ gap: '0.5rem', maxWidth: 440, margin: '0 auto' }}>
+              <Motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                style={{
+                  marginBottom: '1.1rem',
+                  display: 'grid',
+                  gridTemplateColumns: '44px minmax(0, 1fr)',
+                  alignItems: 'center',
+                  gap: '0.7rem',
+                }}
               >
                 <ThemeToggle variant="mobile" />
                 <LanguageToggle variant="mobile" />
-              </motion.div>
+              </Motion.div>
               {navLinks.map((link, i) => (
-                <motion.div
+                <Motion.div
                   key={link.path}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -229,9 +258,9 @@ function Navbar() {
                   >
                     {link.label}
                   </Link>
-                </motion.div>
+                </Motion.div>
               ))}
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: navLinks.length * 0.05 }}
@@ -253,9 +282,9 @@ function Navbar() {
                 >
                   {t('nav.cv')}
                 </a>
-              </motion.div>
+              </Motion.div>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </>

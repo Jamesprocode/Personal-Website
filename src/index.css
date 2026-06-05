@@ -60,6 +60,19 @@
   --accent: #c4a265;
   --accent-bright: #d8b677;
   --accent-deep: #8c6e3b;
+
+  /* Cursor baton palette. */
+  --cursor-tip-fill: rgba(90, 52, 16, 0.95);
+  --cursor-tip-stroke: rgba(196, 162, 101, 0.86);
+  --cursor-tip-core: rgba(244, 232, 209, 0.88);
+  --cursor-click-ring: rgba(90, 52, 16, 0.42);
+  --cursor-shaft: rgba(90, 52, 16, 0.76);
+  --cursor-shaft-highlight: rgba(196, 162, 101, 0.76);
+  --cursor-handle-fill: rgba(74, 63, 53, 0.96);
+  --cursor-handle-stroke: rgba(140, 110, 59, 0.68);
+  --cursor-handle-highlight: rgba(244, 232, 209, 0.22);
+  --cursor-shadow: rgba(90, 52, 16, 0.28);
+  --cursor-shadow-active: rgba(140, 110, 59, 0.38);
 }
 
 [data-theme='dark'] {
@@ -81,6 +94,19 @@
   --nav-bg: #1d1611;      /* navbar bar — near-black warm */
   --overlay-bg: rgba(20, 15, 10, 0.97); /* mobile menu scrim */
   --hover-bg: rgba(196, 162, 101, 0.12);
+
+  /* Cursor baton palette. */
+  --cursor-tip-fill: rgba(244, 232, 209, 0.94);
+  --cursor-tip-stroke: rgba(74, 63, 53, 0.62);
+  --cursor-tip-core: rgba(196, 162, 101, 0.9);
+  --cursor-click-ring: rgba(216, 182, 119, 0.62);
+  --cursor-shaft: rgba(244, 232, 209, 0.82);
+  --cursor-shaft-highlight: rgba(196, 162, 101, 0.7);
+  --cursor-handle-fill: rgba(74, 63, 53, 0.96);
+  --cursor-handle-stroke: rgba(196, 162, 101, 0.6);
+  --cursor-handle-highlight: rgba(244, 232, 209, 0.2);
+  --cursor-shadow: rgba(26, 20, 16, 0.28);
+  --cursor-shadow-active: rgba(196, 162, 101, 0.34);
 }
 
 * {
@@ -110,8 +136,8 @@ html {
 }
 
 /* Only sections explicitly marked with data-snap-section get a snap
-   target. Currently that's just the Hero — the rest of the page
-   scrolls freely. */
+   target. The Landing hero and research projects become full-screen
+   beats; unmarked sections continue scrolling freely. */
 .landing-snap > section[data-snap-section] {
   scroll-snap-align: start;
   scroll-snap-stop: normal;
@@ -202,6 +228,25 @@ section[data-isolate] {
   contain: layout paint style;
 }
 
+@media (max-width: 767px) {
+  .site-footer {
+    position: static !important;
+  }
+
+  .site-footer [data-footer-inner] {
+    gap: 1.25rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    flex-wrap: wrap;
+  }
+
+  .site-footer [data-footer-inner] > span {
+    width: 100%;
+    margin-left: 0 !important;
+    text-align: center;
+  }
+}
+
 body {
   font-family: var(--font-sans);
   /* Drive the body from theme tokens so it flips with the global light/dark
@@ -221,6 +266,21 @@ body {
 ::selection {
   background: rgba(196, 162, 101, 0.3);
   color: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.conductor-cursor-active,
+  html.conductor-cursor-active body,
+  html.conductor-cursor-active body * {
+    cursor: none !important;
+  }
+
+  html.conductor-cursor-active body input,
+  html.conductor-cursor-active body textarea,
+  html.conductor-cursor-active body select,
+  html.conductor-cursor-active body [contenteditable='true'] {
+    cursor: text !important;
+  }
 }
 
 ::-webkit-scrollbar {

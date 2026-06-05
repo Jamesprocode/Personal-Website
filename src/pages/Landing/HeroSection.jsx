@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import profileImg from '../../assets/me.JPG';
+import HeroPortraitCarousel from './HeroPortraitCarousel';
 import HeroPainterlyBackground from './HeroPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
 
@@ -238,7 +238,7 @@ function HeroSection() {
             <motion.div
               className="relative"
               style={{
-                width: 'clamp(220px, 28vw, 380px)',
+                width: 'clamp(250px, 33vw, 460px)',
                 y: portraitY,
                 rotate: portraitRotate,
                 scale: portraitScale,
@@ -264,23 +264,12 @@ function HeroSection() {
                   className="relative overflow-hidden"
                   style={{ aspectRatio: '1 / 1', borderRadius: '16%' }}
                 >
-                  <img
-                    src={profileImg}
-                    alt={t('nav.brand')}
-                    loading="eager"
-                    decoding="async"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  {/* Cream "vignette" — softens the photo's edges into the
-                      mat instead of cutting hard against it. */}
-                  <div
-                    aria-hidden
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      boxShadow: 'inset 0 0 28px rgba(253, 244, 220, 0.55)',
-                      borderRadius: '16%',
-                    }}
-                  />
+                  {/* Slide-tray of James at work: jazz sax, the control room,
+                      the podium, the person. Cross-fades on its own slow beat,
+                      swipe / arrow-key to move by hand. Replaces the single
+                      matted portrait so the hero argues the multi-hyphenate
+                      instead of asserting it. */}
+                  <HeroPortraitCarousel reduceMotion={reduceMotion} />
                 </div>
               </div>
             </motion.div>
