@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   motion as Motion,
   AnimatePresence,
@@ -29,6 +30,8 @@ const MAX_ACTIVE_NOTES = 14;
 const BATON_TIP_X = 8;
 const BATON_TIP_Y = 8;
 
+let lastKnownPointer = null;
+
 const ACTION_SELECTOR = [
   'a',
   'button',
@@ -49,18 +52,21 @@ const ACTION_SELECTOR = [
  * and on coarse pointers.
  */
 function CursorMusicTrail() {
+  const location = useLocation();
   const reduceMotion = useReducedMotion();
+  const initialPointer = lastKnownPointer;
   const [notes, setNotes] = useState([]);
   const [canUseCursor, setCanUseCursor] = useState(false);
-  const [cursorReady, setCursorReady] = useState(false);
+  const [cursorReady, setCursorReady] = useState(() => Boolean(initialPointer));
   const [isActionTarget, setIsActionTarget] = useState(false);
   const [isPointerPressed, setIsPointerPressed] = useState(false);
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
+  const cursorX = useMotionValue(initialPointer ? initialPointer.x - BATON_TIP_X : -100);
+  const cursorY = useMotionValue(initialPointer ? initialPointer.y - BATON_TIP_Y : -100);
   const cursorRotate = useMotionValue(-18);
   const batonRotate = useSpring(cursorRotate, { stiffness: 420, damping: 34, mass: 0.4 });
-  const lastPos = useRef({ x: -9999, y: -9999 });
-  const cursorReadyRef = useRef(false);
+  const lastPointer = useRef(initialPointer);
+  const lastPos = useRef(initialPointer ?? { x: -9999, y: -9999 });
+  const cursorReadyRef = useRef(Boolean(initialPointer));
   const lastActionTarget = useRef(false);
   const idRef = useRef(0);
   const lastScrollAt = useRef(0);
@@ -87,6 +93,43 @@ function CursorMusicTrail() {
   useEffect(() => {
     if (reduceMotion || !canUseCursor) return undefined;
 
+    function markCursorReady() {
+      if (cursorReadyRef.current) return;
+      cursorReadyRef.current = true;
+      setCursorReady(true);
+    }
+
+    function setActionTargetFromElement(target) {
+      const targetIsAction = target instanceof Element && Boolean(target.closest(ACTION_SELECTOR));
+      if (targetIsAction !== lastActionTarget.current) {
+        lastActionTarget.current = targetIsAction;
+        setIsActionTarget(targetIsAction);
+      }
+    }
+
+    function setActionTargetFromLastPointer() {
+      const point = lastPointer.current ?? lastKnownPointer;
+      if (!point) return;
+      setActionTargetFromElement(document.elementFromPoint(point.x, point.y));
+    }
+
+    function placeCursor(x, y) {
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+      lastKnownPointer = { x, y };
+      lastPointer.current = lastKnownPointer;
+      cursorX.set(x - BATON_TIP_X);
+      cursorY.set(y - BATON_TIP_Y);
+      markCursorReady();
+      return true;
+    }
+
+    function restoreCursorFromLastPointer() {
+      const point = lastPointer.current ?? lastKnownPointer;
+      if (!point || !placeCursor(point.x, point.y)) return;
+      setActionTargetFromLastPointer();
+      document.documentElement.classList.add('conductor-cursor-active');
+    }
+
     function spawnNote(x, y, dirSign, verticalBias = -1) {
       const id = idRef.current++;
       const symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
@@ -106,18 +149,8 @@ function CursorMusicTrail() {
     }
 
     function onMove(e) {
-      cursorX.set(e.clientX - BATON_TIP_X);
-      cursorY.set(e.clientY - BATON_TIP_Y);
-      if (!cursorReadyRef.current) {
-        cursorReadyRef.current = true;
-        setCursorReady(true);
-      }
-
-      const targetIsAction = e.target instanceof Element && Boolean(e.target.closest(ACTION_SELECTOR));
-      if (targetIsAction !== lastActionTarget.current) {
-        lastActionTarget.current = targetIsAction;
-        setIsActionTarget(targetIsAction);
-      }
+      placeCursor(e.clientX, e.clientY);
+      setActionTargetFromElement(e.target);
 
       const dx = e.clientX - lastPos.current.x;
       const dy = e.clientY - lastPos.current.y;
@@ -138,6 +171,11 @@ function CursorMusicTrail() {
       lastPos.current = { x: e.clientX, y: e.clientY };
     }
 
+    function onPointerOver(e) {
+      placeCursor(e.clientX, e.clientY);
+      setActionTargetFromElement(e.target);
+    }
+
     function onScroll() {
       lastScrollAt.current = performance.now();
     }
@@ -150,19 +188,54 @@ function CursorMusicTrail() {
       setIsPointerPressed(false);
     }
 
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') restoreCursorFromLastPointer();
+      else setIsPointerPressed(false);
+    }
+
     window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerover', onPointerOver, { passive: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
     window.addEventListener('pointerup', onPointerUp, { passive: true });
     window.addEventListener('pointercancel', onPointerUp, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('focus', restoreCursorFromLastPointer);
+    window.addEventListener('pageshow', restoreCursorFromLastPointer);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerover', onPointerOver);
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('focus', restoreCursorFromLastPointer);
+      window.removeEventListener('pageshow', restoreCursorFromLastPointer);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [canUseCursor, cursorRotate, cursorX, cursorY, reduceMotion]);
+
+  useEffect(() => {
+    if (reduceMotion || !canUseCursor || !cursorReady) return undefined;
+
+    function syncActionTarget() {
+      const point = lastPointer.current ?? lastKnownPointer;
+      if (!point) return;
+      const target = document.elementFromPoint(point.x, point.y);
+      const targetIsAction = target instanceof Element && Boolean(target.closest(ACTION_SELECTOR));
+      if (targetIsAction !== lastActionTarget.current) {
+        lastActionTarget.current = targetIsAction;
+        setIsActionTarget(targetIsAction);
+      }
+    }
+
+    const frame = window.requestAnimationFrame(syncActionTarget);
+    const timeout = window.setTimeout(syncActionTarget, 360);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [canUseCursor, cursorReady, location.pathname, reduceMotion]);
 
   useEffect(() => {
     if (reduceMotion || !canUseCursor || !cursorReady) return undefined;
