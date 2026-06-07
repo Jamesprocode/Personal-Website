@@ -2,6 +2,7 @@ import { AnimatePresence, motion as Motion, useReducedMotion } from 'framer-moti
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import useIsMobile from '../hooks/useIsMobile';
+import useTheme from '../hooks/useTheme';
 
 const FLOATING_NOTES = Array.from({ length: 12 }, (_, i) => ({
   note: ['♪', '♫', '♬', '♩'][i % 4],
@@ -21,23 +22,46 @@ const WAVEFORM_BARS = Array.from({ length: 20 }, (_, i) => ({
 
 const reelSize = 'clamp(3rem, 15vw, 4rem)';
 
-const LOADER_COLORS = {
+const LIGHT_LOADER_COLORS = {
   bg: '#f4e8d1',
   bgAlt: '#f1e5cd',
   surface: '#fdf4dc',
   surface2: '#f3e7c8',
+  labelBg: 'rgba(244, 232, 209, 0.82)',
   textStrong: '#5a3410',
   text: '#6b4a1e',
   textMuted: 'rgba(107, 74, 30, 0.7)',
-  walnut: '#4a3f35',
+  reel: '#4a3f35',
+  reelCenter: '#5a3410',
   accent: '#c4a265',
   accentBright: '#d8b677',
   accentDeep: '#8c6e3b',
   border: 'rgba(160, 111, 29, 0.32)',
+  shadow: '0 16px 42px rgba(90, 52, 16, 0.18)',
+};
+
+const DARK_LOADER_COLORS = {
+  bg: '#1a130c',
+  bgAlt: '#1e160e',
+  surface: '#2a1f15',
+  surface2: '#342718',
+  labelBg: 'rgba(26, 19, 12, 0.7)',
+  textStrong: '#f4e8d1',
+  text: 'rgba(244, 232, 209, 0.88)',
+  textMuted: 'rgba(244, 232, 209, 0.6)',
+  reel: '#4a3f35',
+  reelCenter: '#1a130c',
+  accent: '#c4a265',
+  accentBright: '#d8b677',
+  accentDeep: '#8c6e3b',
+  border: 'rgba(196, 162, 101, 0.35)',
+  shadow: '0 18px 48px rgba(26, 20, 16, 0.42)',
 };
 
 function LoadingScreen({ onLoadingComplete }) {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
+  const colors = isDark ? DARK_LOADER_COLORS : LIGHT_LOADER_COLORS;
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const liteMotion = reduceMotion || isMobile;
@@ -85,14 +109,14 @@ function LoadingScreen({ onLoadingComplete }) {
           className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden"
           style={{
             minHeight: '100dvh',
-            background: `linear-gradient(135deg, ${LOADER_COLORS.surface} 0%, ${LOADER_COLORS.bg} 46%, ${LOADER_COLORS.bgAlt} 100%)`,
-            color: LOADER_COLORS.text,
+            background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.bg} 46%, ${colors.bgAlt} 100%)`,
+            color: colors.text,
           }}
         >
           {/* Subtle floating notes. Desktop only: the mobile loader keeps the
               cassette identity but skips decorative JS-driven drift. */}
           {!liteMotion && (
-            <div className="absolute inset-0 pointer-events-none" style={{ color: LOADER_COLORS.accent, opacity: 0.18 }}>
+            <div className="absolute inset-0 pointer-events-none" style={{ color: colors.accent, opacity: 0.18 }}>
               {FLOATING_NOTES.map((item, i) => (
                 <Motion.div
                   key={i}
@@ -137,9 +161,9 @@ function LoadingScreen({ onLoadingComplete }) {
                   style={{
                     width: 'min(100%, 24rem)',
                     height: 'clamp(12rem, 56vw, 14rem)',
-                    background: `linear-gradient(135deg, ${LOADER_COLORS.surface} 0%, ${LOADER_COLORS.surface2} 100%)`,
-                    borderColor: LOADER_COLORS.accentDeep,
-                    boxShadow: '0 16px 42px rgba(90, 52, 16, 0.18)',
+                    background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.surface2} 100%)`,
+                    borderColor: colors.accentDeep,
+                    boxShadow: colors.shadow,
                   }}
                 >
                   {/* Label Area */}
@@ -149,21 +173,21 @@ function LoadingScreen({ onLoadingComplete }) {
                       left: 'clamp(1.25rem, 7vw, 2rem)',
                       right: 'clamp(1.25rem, 7vw, 2rem)',
                       height: 'clamp(4rem, 18vw, 5rem)',
-                      backgroundColor: 'rgba(244, 232, 209, 0.82)',
-                      border: `1px solid ${LOADER_COLORS.border}`,
+                      backgroundColor: colors.labelBg,
+                      border: `1px solid ${colors.border}`,
                     }}
                   >
                     <div className="text-center">
                       <p
                         className="font-bold tracking-widest"
                         style={{
-                          color: LOADER_COLORS.textStrong,
+                          color: colors.textStrong,
                           fontSize: 'clamp(1.35rem, 6.5vw, 1.5rem)',
                         }}
                       >
                         JAMES WANG
                       </p>
-                      <p className="text-xs mt-1" style={{ color: LOADER_COLORS.textMuted }}>
+                      <p className="text-xs mt-1" style={{ color: colors.textMuted }}>
                         PORTFOLIO &middot; SIDE A
                       </p>
                     </div>
@@ -185,8 +209,8 @@ function LoadingScreen({ onLoadingComplete }) {
                         width: reelSize,
                         height: reelSize,
                         animation: reduceMotion ? 'none' : 'loading-reel-spin 2.4s linear infinite',
-                        backgroundColor: LOADER_COLORS.walnut,
-                        borderColor: LOADER_COLORS.accentDeep,
+                        backgroundColor: colors.reel,
+                        borderColor: colors.accentDeep,
                       }}
                     >
                       {[...Array(8)].map((_, i) => (
@@ -194,7 +218,7 @@ function LoadingScreen({ onLoadingComplete }) {
                           key={i}
                           className="absolute w-1 h-full left-1/2 top-0"
                           style={{
-                            backgroundColor: LOADER_COLORS.accent,
+                            backgroundColor: colors.accent,
                             transform: `rotate(${i * 45}deg)`,
                             transformOrigin: 'center',
                           }}
@@ -202,7 +226,7 @@ function LoadingScreen({ onLoadingComplete }) {
                       ))}
                       <div
                         className="absolute inset-3 rounded-full"
-                        style={{ backgroundColor: LOADER_COLORS.textStrong }}
+                        style={{ backgroundColor: colors.reelCenter }}
                       />
                     </div>
 
@@ -213,8 +237,8 @@ function LoadingScreen({ onLoadingComplete }) {
                         width: reelSize,
                         height: reelSize,
                         animation: reduceMotion ? 'none' : 'loading-reel-spin 2.4s linear infinite',
-                        backgroundColor: LOADER_COLORS.walnut,
-                        borderColor: LOADER_COLORS.accentDeep,
+                        backgroundColor: colors.reel,
+                        borderColor: colors.accentDeep,
                       }}
                     >
                       {[...Array(8)].map((_, i) => (
@@ -222,7 +246,7 @@ function LoadingScreen({ onLoadingComplete }) {
                           key={i}
                           className="absolute w-1 h-full left-1/2 top-0"
                           style={{
-                            backgroundColor: LOADER_COLORS.accent,
+                            backgroundColor: colors.accent,
                             transform: `rotate(${i * 45}deg)`,
                             transformOrigin: 'center',
                           }}
@@ -230,7 +254,7 @@ function LoadingScreen({ onLoadingComplete }) {
                       ))}
                       <div
                         className="absolute inset-3 rounded-full"
-                        style={{ backgroundColor: LOADER_COLORS.textStrong }}
+                        style={{ backgroundColor: colors.reelCenter }}
                       />
                     </div>
                   </div>
@@ -241,12 +265,12 @@ function LoadingScreen({ onLoadingComplete }) {
                     style={{
                       width: 'clamp(5.5rem, 30vw, 8rem)',
                       bottom: 'clamp(1.5rem, 8vw, 2rem)',
-                      backgroundColor: LOADER_COLORS.accentDeep,
+                      backgroundColor: colors.accentDeep,
                     }}
                   >
                     <Motion.div
                       className="h-full rounded-full"
-                      style={{ width: `${progress}%`, backgroundColor: LOADER_COLORS.textStrong }}
+                      style={{ width: `${progress}%`, backgroundColor: colors.textStrong }}
                     />
                   </div>
                 </div>
@@ -261,14 +285,14 @@ function LoadingScreen({ onLoadingComplete }) {
                 <h2
                   className="font-bold mb-4"
                   style={{
-                    color: LOADER_COLORS.textStrong,
+                    color: colors.textStrong,
                     fontSize: 'clamp(1.9rem, 8vw, 2.25rem)',
                     lineHeight: 1.1,
                   }}
                 >
                   {t('loading.heading')}
                 </h2>
-                <p className="text-lg mb-6" style={{ color: LOADER_COLORS.textMuted }}>
+                <p className="text-lg mb-6" style={{ color: colors.textMuted }}>
                   {progress < 30 && t('loading.status.tuning')}
                   {progress >= 30 && progress < 60 && t('loading.status.setup')}
                   {progress >= 60 && progress < 90 && t('loading.status.sound')}
@@ -279,18 +303,18 @@ function LoadingScreen({ onLoadingComplete }) {
                 <div className="mx-auto mb-8 sm:mb-12" style={{ width: 'min(100%, 24rem)' }}>
                   <div
                     className="h-3 rounded-full overflow-hidden border-2"
-                    style={{ backgroundColor: LOADER_COLORS.surface2, borderColor: LOADER_COLORS.border }}
+                    style={{ backgroundColor: colors.surface2, borderColor: colors.border }}
                   >
                     <Motion.div
                       className="h-full"
                       style={{
                         width: `${progress}%`,
-                        background: `linear-gradient(90deg, ${LOADER_COLORS.accentDeep}, ${LOADER_COLORS.accent}, ${LOADER_COLORS.accentBright})`,
+                        background: `linear-gradient(90deg, ${colors.accentDeep}, ${colors.accent}, ${colors.accentBright})`,
                       }}
                       transition={{ duration: 0.3 }}
                     />
                   </div>
-                  <p className="text-sm mt-2 font-mono" style={{ color: LOADER_COLORS.textMuted }}>
+                  <p className="text-sm mt-2 font-mono" style={{ color: colors.textMuted }}>
                     {progress}%
                   </p>
                 </div>
@@ -302,7 +326,7 @@ function LoadingScreen({ onLoadingComplete }) {
                       <div
                         key={i}
                         className="w-2 rounded-full"
-                        style={{ height: bar.heights[0], backgroundColor: LOADER_COLORS.accent }}
+                        style={{ height: bar.heights[0], backgroundColor: colors.accent }}
                       />
                     ))}
                   </div>
@@ -320,7 +344,7 @@ function LoadingScreen({ onLoadingComplete }) {
                         animate={{
                           height: bar.heights,
                         }}
-                        style={{ backgroundColor: LOADER_COLORS.accent }}
+                        style={{ backgroundColor: colors.accent }}
                         transition={{
                           duration: 0.5,
                           repeat: Infinity,

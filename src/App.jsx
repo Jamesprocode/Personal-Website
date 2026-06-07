@@ -32,17 +32,18 @@ function AppRoutes() {
   );
 }
 
-function App() {
-  const hasSeenLoading = () => {
-    const hasSeenLoading = sessionStorage.getItem('hasSeenLoading');
-    return Boolean(hasSeenLoading);
-  };
+function shouldShowInitialLoading() {
+  if (typeof window === 'undefined') return true;
+  const navigationEntry = window.performance?.getEntriesByType?.('navigation')?.[0];
+  if (!navigationEntry) return true;
+  return navigationEntry.type === 'navigate' || navigationEntry.type === 'prerender';
+}
 
-  const [isLoading, setIsLoading] = useState(() => !hasSeenLoading());
-  const [showContent, setShowContent] = useState(hasSeenLoading);
+function App() {
+  const [isLoading, setIsLoading] = useState(shouldShowInitialLoading);
+  const [showContent, setShowContent] = useState(() => !shouldShowInitialLoading());
 
   const handleLoadingComplete = () => {
-    sessionStorage.setItem('hasSeenLoading', 'true');
     setIsLoading(false);
     setTimeout(() => setShowContent(true), 100);
   };
