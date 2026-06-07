@@ -48,27 +48,25 @@ function App() {
   };
 
   return (
-    <>
-      {isLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
+    <Router>
+      <ScrollToTop />
+      <ThemeProvider>
+        {isLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
 
-      {showContent && (
-        <Router>
-          <ScrollToTop />
-          <ThemeProvider>
+        {showContent && (
           <AudioPlayerProvider>
             <div className="app">
               <Navbar />
               <AppRoutes />
               <Footer />
               <MiniPlayer />
-              {/* Cursor music trail follows the user across every route */}
-              <CursorMusicTrail />
             </div>
           </AudioPlayerProvider>
-          </ThemeProvider>
-        </Router>
-      )}
-    </>
+        )}
+        {/* Cursor music trail follows the user across loading and every route */}
+        <CursorMusicTrail />
+      </ThemeProvider>
+    </Router>
   );
 }
 

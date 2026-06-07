@@ -238,12 +238,12 @@ function CursorMusicTrail() {
   }, [canUseCursor, cursorReady, location.pathname, reduceMotion]);
 
   useEffect(() => {
-    if (reduceMotion || !canUseCursor || !cursorReady) return undefined;
+    if (reduceMotion || !canUseCursor) return undefined;
     document.documentElement.classList.add('conductor-cursor-active');
     return () => {
       document.documentElement.classList.remove('conductor-cursor-active');
     };
-  }, [canUseCursor, cursorReady, reduceMotion]);
+  }, [canUseCursor, reduceMotion]);
 
   function removeNote(id) {
     setNotes((prev) => prev.filter((n) => n.id !== id));
