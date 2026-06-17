@@ -58,7 +58,7 @@ const DARK_LOADER_COLORS = {
   shadow: '0 18px 48px rgba(26, 20, 16, 0.42)',
 };
 
-function LoadingScreen({ onLoadingComplete }) {
+function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false }) {
   const { t } = useTranslation();
   const { isDark } = useTheme();
   const colors = isDark ? DARK_LOADER_COLORS : LIGHT_LOADER_COLORS;
@@ -67,10 +67,10 @@ function LoadingScreen({ onLoadingComplete }) {
   const liteMotion = reduceMotion || isMobile;
   const animateLoader = !reduceMotion;
   const visibleWaveBars = liteMotion ? WAVEFORM_BARS.slice(0, 10) : WAVEFORM_BARS;
-  const progressDurationMs = isMobile ? 360 : 1800;
+  const progressDurationMs = 1800;
   const progressIntervalMs = 35;
-  const finishDelay = isMobile ? 120 : reduceMotion ? 260 : 600;
-  const completeDelay = isMobile ? 60 : reduceMotion ? 180 : 400;
+  const finishDelay = reduceMotion ? 260 : 600;
+  const completeDelay = reduceMotion ? 180 : 400;
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -93,6 +93,11 @@ function LoadingScreen({ onLoadingComplete }) {
     const tick = () => {
       const elapsed = Date.now() - startedAt;
       const next = Math.min(100, Math.floor((elapsed / progressDurationMs) * 100));
+      if (holdUntilUnmount) {
+        setProgress(Math.min(96, next));
+        if (next >= 96) window.clearInterval(interval);
+        return;
+      }
       if (next >= 100) {
         window.clearInterval(interval);
         complete();
@@ -111,7 +116,7 @@ function LoadingScreen({ onLoadingComplete }) {
       window.clearTimeout(finishTimer);
       document.removeEventListener('visibilitychange', tick);
     };
-  }, [completeDelay, finishDelay, onLoadingComplete, progressDurationMs, progressIntervalMs]);
+  }, [completeDelay, finishDelay, holdUntilUnmount, onLoadingComplete, progressDurationMs, progressIntervalMs]);
 
   return (
     <AnimatePresence>

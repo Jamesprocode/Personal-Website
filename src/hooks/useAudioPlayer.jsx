@@ -30,6 +30,14 @@ const pickNext = (playlist, current, mode) => {
   return playlist[(idx + 1) % playlist.length];
 };
 
+const isMobileAudioRuntime = () => {
+  if (typeof window === 'undefined') return false;
+  return Boolean(
+    window.matchMedia?.('(max-width: 767px)').matches ||
+    (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0),
+  );
+};
+
 export function AudioPlayerProvider({ children }) {
   const [isPlaying, setIsPlaying] = useState(false);
   // True while the element is fetching/buffering audio and can't yet produce
@@ -76,6 +84,7 @@ export function AudioPlayerProvider({ children }) {
   // run the download at most once per track, and only on demand (first seek).
   const blobFetchStartedRef = useRef(null);
   const resumeTimerRef = useRef(null);
+  const resumeRetryTimersRef = useRef([]);
 
   // Web Audio analyzer chain
   const audioCtxRef = useRef(null);
@@ -90,6 +99,13 @@ export function AudioPlayerProvider({ children }) {
   }, [volume]);
 
   const ensureAnalyser = useCallback((mediaEl) => {
+    // Mobile browsers often suspend Web Audio contexts on lock screen,
+    // notification shade, or app switch. If the media element is routed
+    // through an analyser, that suspension can cut the real audio. On mobile
+    // we keep playback as a direct <audio> stream and let the visual meters
+    // fall back to their quiet state.
+    if (isMobileAudioRuntime()) return;
+
     try {
       if (!audioCtxRef.current) {
         const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -117,7 +133,7 @@ export function AudioPlayerProvider({ children }) {
       }
 
       if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
+        audioCtxRef.current.resume().catch(() => {});
       }
     } catch {
       /* Analyser is best-effort. */
@@ -216,6 +232,8 @@ export function AudioPlayerProvider({ children }) {
       const audio = new Audio(trackFile);
       audio.crossOrigin = 'anonymous';
       audio.preload = 'auto';
+      audio.playsInline = true;
+      audio.setAttribute('playsinline', '');
       audio.volume = volume / 100;
       audioRef.current = audio;
       currentTrackRef.current = trackFile;
@@ -285,7 +303,12 @@ export function AudioPlayerProvider({ children }) {
           return;
         }
         setIsPlaying(false);
-        setIsBuffering(true);
+        const visible = document.visibilityState !== 'hidden';
+        setIsBuffering(visible);
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'paused';
+        }
+        if (!visible) return;
         if (resumeTimerRef.current) {
           window.clearTimeout(resumeTimerRef.current);
         }
@@ -325,7 +348,9 @@ export function AudioPlayerProvider({ children }) {
       // that once sound is actually out. We do show the buffering indicator
       // immediately so the click feels acknowledged.
       if (audioRef.current.paused) setIsBuffering(true);
-      audioRef.current.play().catch(() => {
+      const playTarget = audioRef.current;
+      playTarget.play().catch(() => {
+        if (audioRef.current !== playTarget) return;
         // Autoplay rejection or an aborted load. Drop the intent so the UI
         // doesn't get stuck showing a spinner forever.
         wantPlayingRef.current = false;
@@ -395,7 +420,9 @@ export function AudioPlayerProvider({ children }) {
 
   const togglePlayPause = useCallback(() => {
     if (!selectedTrack || !selectedTrack.file) return;
-    if (isPlaying) {
+    const audio = audioRef.current;
+    const actuallyPlaying = audio && !audio.paused && !audio.ended;
+    if (isPlaying && actuallyPlaying) {
       pause();
     } else {
       play(selectedTrack.file);
@@ -479,6 +506,8 @@ export function AudioPlayerProvider({ children }) {
       if (resumeTimerRef.current) {
         window.clearTimeout(resumeTimerRef.current);
       }
+      resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      resumeRetryTimersRef.current = [];
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -545,7 +574,16 @@ export function AudioPlayerProvider({ children }) {
   useEffect(() => {
     const tryResumeAfterInterruption = () => {
       const audio = audioRef.current;
-      if (!audio || !wantPlayingRef.current || !audio.paused) return;
+      if (!audio || !wantPlayingRef.current || audio.ended) return;
+      if (!audio.paused) {
+        setIsPlaying(true);
+        setIsBuffering(false);
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'playing';
+        }
+        return;
+      }
+      ensureAnalyser(audio);
       setIsBuffering(true);
       audio.play().catch(() => {
         setIsBuffering(false);
@@ -557,18 +595,26 @@ export function AudioPlayerProvider({ children }) {
       if (resumeTimerRef.current) {
         window.clearTimeout(resumeTimerRef.current);
       }
-      resumeTimerRef.current = window.setTimeout(tryResumeAfterInterruption, 250);
+      resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      resumeRetryTimersRef.current = [150, 900, 1800].map((delay) =>
+        window.setTimeout(tryResumeAfterInterruption, delay),
+      );
+      resumeTimerRef.current = resumeRetryTimersRef.current[0];
     };
 
     document.addEventListener('visibilitychange', scheduleResume);
     window.addEventListener('focus', scheduleResume);
     window.addEventListener('pageshow', scheduleResume);
+    window.addEventListener('online', scheduleResume);
     return () => {
       document.removeEventListener('visibilitychange', scheduleResume);
       window.removeEventListener('focus', scheduleResume);
       window.removeEventListener('pageshow', scheduleResume);
+      window.removeEventListener('online', scheduleResume);
+      resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      resumeRetryTimersRef.current = [];
     };
-  }, []);
+  }, [ensureAnalyser]);
 
   // Memoized so the context value identity only changes when real control
   // state does (play state, track, volume, duration…), NOT on every playback

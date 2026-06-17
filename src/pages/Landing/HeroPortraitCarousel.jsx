@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import proPhoto from '../../assets/me.webp';
+import useIsMobile from '../../hooks/useIsMobile';
 
 // All processed hero frames, ordered by their numeric filename prefix
 // (01-…, 02-…). Vite fingerprints each URL so they cache well behind
@@ -88,6 +89,7 @@ const navButtonBase = {
 
 function HeroPortraitCarousel({ reduceMotion }) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const count = FRAMES.length;
   const [index, setIndex] = useState(INITIAL_FRAME_INDEX);
   // Which frames have been mounted (and therefore fetched). We start with ONLY
@@ -101,6 +103,7 @@ function HeroPortraitCarousel({ reduceMotion }) {
   const [inView, setInView] = useState(true);
   const [showControls, setShowControls] = useState(false);
   const [hoveredNav, setHoveredNav] = useState(null);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const rootRef = useRef(null);
   const pointerStart = useRef(null);
@@ -112,6 +115,8 @@ function HeroPortraitCarousel({ reduceMotion }) {
   const [saveData] = useState(prefersSaveData);
 
   const autoOk = !reduceMotion && !saveData;
+  const activeFrame = FRAMES[index];
+  const activeMeta = META[activeFrame?.key] || {};
 
   // Single entry point for changing frame: moves the index and mounts the
   // target (plus the next one) in the same pass. Called only from event
@@ -186,6 +191,22 @@ function HeroPortraitCarousel({ reduceMotion }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!zoomOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setZoomOpen(false);
+      if (event.key === 'ArrowRight') go(1);
+      if (event.key === 'ArrowLeft') go(-1);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [go, zoomOpen]);
+
   // Pointer swipe + tap (covers touch + mouse via Pointer Events).
   const onPointerDown = (e) => {
     pointerStart.current = { x: e.clientX, y: e.clientY, button: e.button };
@@ -209,9 +230,13 @@ function HeroPortraitCarousel({ reduceMotion }) {
       Math.abs(dy) < TAP_PX &&
       !(e.target instanceof Element && e.target.closest('button'))
     ) {
-      // A click/tap on the photo itself (not a dot control) advances to the
-      // next frame — the primary "click to change photo" interaction.
-      go(1);
+      if (isMobile) {
+        setPaused(true);
+        setZoomOpen(true);
+      } else {
+        // Desktop keeps the original "click to change photo" interaction.
+        go(1);
+      }
     }
   };
 
@@ -233,8 +258,7 @@ function HeroPortraitCarousel({ reduceMotion }) {
   const hide = () => setShowControls(false);
 
   const activeAlt = (() => {
-    const m = META[FRAMES[index]?.key];
-    return m ? t(m.altKey, { defaultValue: m.alt }) : t('nav.brand');
+    return activeMeta.altKey ? t(activeMeta.altKey, { defaultValue: activeMeta.alt }) : t('nav.brand');
   })();
   const getNavButtonStyle = (side, disabled = false) => {
     const active = showControls || hoveredNav === side;
@@ -252,37 +276,38 @@ function HeroPortraitCarousel({ reduceMotion }) {
   };
 
   return (
-    <div
-      ref={rootRef}
-      className="absolute inset-0"
-      role="group"
-      aria-roledescription={t('hero.photo.carousel', { defaultValue: 'image carousel' })}
-      aria-label={t('hero.photo.groupLabel', { defaultValue: 'Photos of James Wang' })}
-      aria-keyshortcuts="ArrowLeft ArrowRight Enter"
-      tabIndex={0}
-      onKeyDown={onKeyDown}
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-      onPointerCancel={() => (pointerStart.current = null)}
-      onMouseEnter={() => {
-        setPaused(true);
-        reveal();
-      }}
-      onMouseLeave={() => {
-        setPaused(false);
-        hide();
-      }}
-      onFocus={reveal}
-      onBlur={hide}
-      style={{
-        cursor: count > 1 ? 'pointer' : 'default',
-        touchAction: 'pan-y',
-        outline: 'none',
-        userSelect: 'none',
-        overflow: 'hidden',
-        borderRadius: '16%',
-      }}
-    >
+    <>
+      <div
+        ref={rootRef}
+        className="absolute inset-0"
+        role="group"
+        aria-roledescription={t('hero.photo.carousel', { defaultValue: 'image carousel' })}
+        aria-label={t('hero.photo.groupLabel', { defaultValue: 'Photos of James Wang' })}
+        aria-keyshortcuts="ArrowLeft ArrowRight Enter"
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => (pointerStart.current = null)}
+        onMouseEnter={() => {
+          setPaused(true);
+          reveal();
+        }}
+        onMouseLeave={() => {
+          setPaused(false);
+          hide();
+        }}
+        onFocus={reveal}
+        onBlur={hide}
+        style={{
+          cursor: count > 1 ? 'pointer' : 'default',
+          touchAction: 'pan-y',
+          outline: 'none',
+          userSelect: 'none',
+          overflow: 'hidden',
+          borderRadius: '16%',
+        }}
+      >
       {/* Live region announces the current frame for screen readers without
           a visible caption. */}
       <span
@@ -468,7 +493,92 @@ function HeroPortraitCarousel({ reduceMotion }) {
           </div>
         </>
       )}
-    </div>
+      </div>
+
+      {zoomOpen && activeFrame && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('hero.photo.zoomLabel', { defaultValue: 'Expanded photo viewer' })}
+          className="fixed inset-0 z-[120] bg-black/92"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            touchAction: 'pan-x pan-y pinch-zoom',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              padding: 'calc(env(safe-area-inset-top, 0px) + 0.85rem) 1rem 0.85rem',
+              color: '#fdf4dc',
+              flexShrink: 0,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '0.72rem',
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: 'rgba(253, 244, 220, 0.72)',
+              }}
+            >
+              {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')} · pinch to zoom
+            </p>
+            <button
+              type="button"
+              aria-label={t('common.close', { defaultValue: 'Close' })}
+              onClick={() => setZoomOpen(false)}
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 9999,
+                border: '1px solid rgba(253, 244, 220, 0.35)',
+                background: 'rgba(20, 15, 12, 0.65)',
+                color: '#fdf4dc',
+                fontSize: '1.55rem',
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              overflow: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+              touchAction: 'pan-x pan-y pinch-zoom',
+            }}
+          >
+            <img
+              src={activeFrame.url}
+              alt={t(activeMeta.altKey, { defaultValue: activeMeta.alt || activeAlt })}
+              draggable={false}
+              style={{
+                width: 'auto',
+                maxWidth: 'min(100%, 980px)',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                borderRadius: '1rem',
+                touchAction: 'pan-x pan-y pinch-zoom',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55)',
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

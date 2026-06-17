@@ -84,7 +84,7 @@ function HeroSection() {
           // grid is one orchestrated entrance: name → brass hairline sweep
           // → bio → CTAs. Photo materializes on its own beat. ease-out-expo
           // throughout; collapses to instant under prefers-reduced-motion.
-          className="grid grid-cols-12 gap-x-[clamp(2rem,6vw,6rem)] gap-y-[clamp(4rem,7vh,6rem)] items-center"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-x-[clamp(2rem,6vw,6rem)] gap-y-[clamp(4rem,7vh,6rem)] items-center justify-items-center lg:justify-items-stretch"
           initial={reduceMotion ? false : 'hidden'}
           animate="show"
           variants={{
@@ -100,7 +100,7 @@ function HeroSection() {
           {/* LEFT: type column — children share the parent's stagger, and
               the whole column drifts upward with scroll for parallax. */}
           <Motion.div
-            className="col-span-12 lg:col-span-7 order-2 lg:order-1"
+            className="col-span-1 lg:col-span-7 order-2 lg:order-1 text-center lg:text-left w-full max-w-[52rem]"
             style={{ y: textY }}
             variants={{
               hidden: {},
@@ -137,7 +137,7 @@ function HeroSection() {
 
             {/* Brass hairline — sweeps in from the left like a wipe. */}
             <Motion.div
-              className="my-[clamp(4rem,8vh,6rem)]"
+              className="my-[clamp(4rem,8vh,6rem)] mx-auto lg:mx-0"
               data-prototype-hairline
               style={{
                 height: '1px',
@@ -156,6 +156,7 @@ function HeroSection() {
             />
 
             <Motion.p
+              className="mx-auto lg:mx-0"
               style={{
                 fontSize: 'clamp(1rem, 1.35vw, 1.3rem)',
                 lineHeight: 2,
@@ -177,7 +178,7 @@ function HeroSection() {
             </Motion.p>
 
             <Motion.div
-              className="flex flex-wrap gap-[clamp(1.25rem,2vw,2rem)] mt-[clamp(4.5rem,9vh,6.5rem)] items-center"
+              className="flex flex-wrap justify-center lg:justify-start gap-[clamp(1.25rem,2vw,2rem)] mt-[clamp(4.5rem,9vh,6.5rem)] items-center"
               variants={{
                 hidden: { opacity: 0, y: 14 },
                 show: {
@@ -251,7 +252,7 @@ function HeroSection() {
           {/* RIGHT: photo — materializes like film coming into focus, on
               its own beat right after the H1 reveals. */}
           <Motion.div
-            className="col-span-12 lg:col-span-5 order-1 lg:order-2 flex flex-col items-center lg:items-end"
+            className="col-span-1 lg:col-span-5 order-1 lg:order-2 flex flex-col items-center lg:items-end w-full"
             variants={{
               hidden: { opacity: 0, scale: 0.95 },
               show: {

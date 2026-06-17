@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -11,20 +11,27 @@ import { AudioPlayerProvider } from './hooks/useAudioPlayer';
 import { ThemeProvider } from './hooks/useTheme';
 import './App.css';
 
-const Landing = lazy(() => import('./pages/Landing/Landing'));
-const Music = lazy(() => import('./pages/Music/Music'));
-const Timeline = lazy(() => import('./pages/Timeline/Timeline'));
-const ProjectDetail = lazy(() => import('./pages/Project/ProjectDetail'));
+const routeImports = {
+  landing: () => import('./pages/Landing/Landing'),
+  music: () => import('./pages/Music/Music'),
+  timeline: () => import('./pages/Timeline/Timeline'),
+  project: () => import('./pages/Project/ProjectDetail'),
+};
+
+const Landing = lazy(routeImports.landing);
+const Music = lazy(routeImports.music);
+const Timeline = lazy(routeImports.timeline);
+const ProjectDetail = lazy(routeImports.project);
+
+function preloadRoute(pathname) {
+  if (pathname.startsWith('/music')) return routeImports.music();
+  if (pathname.startsWith('/timeline')) return routeImports.timeline();
+  if (pathname.startsWith('/projects/')) return routeImports.project();
+  return routeImports.landing();
+}
 
 function RouteLoadingFallback() {
-  return (
-    <main className="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
-      <div className="flex items-center gap-3 text-walnut/70 dark:text-cream/70" role="status" aria-live="polite">
-        <span className="h-3 w-3 rounded-full bg-gold animate-pulse" />
-        <span className="font-mono text-xs tracking-[0.28em] uppercase">Loading side</span>
-      </div>
-    </main>
-  );
+  return <LoadingScreen holdUntilUnmount />;
 }
 
 function LazyRoute({ children }) {
@@ -86,6 +93,11 @@ function shouldShowInitialLoading() {
 function App() {
   const [isLoading, setIsLoading] = useState(shouldShowInitialLoading);
   const [showContent, setShowContent] = useState(() => !shouldShowInitialLoading());
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    preloadRoute(window.location.pathname);
+  }, []);
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
