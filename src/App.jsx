@@ -30,26 +30,33 @@ function preloadRoute(pathname) {
   return routeImports.landing();
 }
 
-function RouteLoadingFallback() {
-  return <LoadingScreen holdUntilUnmount />;
+function LazyRoute({ children, showRouteFallback }) {
+  return <Suspense fallback={showRouteFallback ? <RouteLoadingFallback /> : null}>{children}</Suspense>;
 }
 
-function LazyRoute({ children }) {
-  return <Suspense fallback={<RouteLoadingFallback />}>{children}</Suspense>;
+function RouteLoadingFallback() {
+  return (
+    <div className="route-loading-fallback" role="status" aria-label="Loading page">
+      <div className="route-loading-card">
+        <span className="route-loading-reel" aria-hidden="true" />
+        <span>Changing sides…</span>
+      </div>
+    </div>
+  );
 }
 
 // Inner component lives below <Router> so it can call useLocation. Keying
-// AnimatePresence's child Routes by location.pathname is what lets
-// framer-motion run each page's exit before the next page's enter.
-function AppRoutes() {
+// Routes by location.pathname lets framer-motion animate route changes while
+// keeping the next route mounted quickly enough to avoid blank transition gaps.
+function AppRoutes({ showRouteFallback = true }) {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route
           path="/"
           element={
-            <LazyRoute>
+            <LazyRoute showRouteFallback={showRouteFallback}>
               <Landing />
             </LazyRoute>
           }
@@ -57,7 +64,7 @@ function AppRoutes() {
         <Route
           path="/music"
           element={
-            <LazyRoute>
+            <LazyRoute showRouteFallback={showRouteFallback}>
               <Music />
             </LazyRoute>
           }
@@ -65,7 +72,7 @@ function AppRoutes() {
         <Route
           path="/timeline"
           element={
-            <LazyRoute>
+            <LazyRoute showRouteFallback={showRouteFallback}>
               <Timeline />
             </LazyRoute>
           }
@@ -73,7 +80,7 @@ function AppRoutes() {
         <Route
           path="/projects/:id"
           element={
-            <LazyRoute>
+            <LazyRoute showRouteFallback={showRouteFallback}>
               <ProjectDetail />
             </LazyRoute>
           }
@@ -91,17 +98,28 @@ function shouldShowInitialLoading() {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(shouldShowInitialLoading);
-  const [showContent, setShowContent] = useState(() => !shouldShowInitialLoading());
+  const [shouldLoadInitially] = useState(shouldShowInitialLoading);
+  const [isLoading, setIsLoading] = useState(shouldLoadInitially);
+  const [initialRouteReady, setInitialRouteReady] = useState(!shouldLoadInitially);
+  const showContent = !shouldLoadInitially || initialRouteReady;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    preloadRoute(window.location.pathname);
+    let isMounted = true;
+
+    preloadRoute(window.location.pathname)
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setInitialRouteReady(true);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
-    setTimeout(() => setShowContent(true), 100);
   };
 
   return (
@@ -114,7 +132,7 @@ function App() {
           <AudioPlayerProvider>
             <div className="app">
               <Navbar />
-              <AppRoutes />
+              <AppRoutes showRouteFallback={!isLoading} />
               <Footer />
               <MiniPlayer />
             </div>

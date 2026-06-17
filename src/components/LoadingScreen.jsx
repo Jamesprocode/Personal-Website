@@ -20,7 +20,7 @@ const WAVEFORM_BARS = Array.from({ length: 20 }, (_, i) => ({
   ],
 }));
 
-const reelSize = 'clamp(3rem, 15vw, 4rem)';
+const reelSize = 'clamp(2.35rem, 12vw, 4rem)';
 
 const LIGHT_LOADER_COLORS = {
   bg: '#f4e8d1',
@@ -58,7 +58,7 @@ const DARK_LOADER_COLORS = {
   shadow: '0 18px 48px rgba(26, 20, 16, 0.42)',
 };
 
-function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false }) {
+function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false, variant = 'initial' }) {
   const { t } = useTranslation();
   const { isDark } = useTheme();
   const colors = isDark ? DARK_LOADER_COLORS : LIGHT_LOADER_COLORS;
@@ -67,7 +67,8 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false 
   const liteMotion = reduceMotion || isMobile;
   const animateLoader = !reduceMotion;
   const visibleWaveBars = liteMotion ? WAVEFORM_BARS.slice(0, 10) : WAVEFORM_BARS;
-  const progressDurationMs = 1800;
+  const isRouteVariant = variant === 'route';
+  const progressDurationMs = isRouteVariant ? 700 : 1800;
   const progressIntervalMs = 35;
   const finishDelay = reduceMotion ? 260 : 600;
   const completeDelay = reduceMotion ? 180 : 400;
@@ -94,8 +95,8 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false 
       const elapsed = Date.now() - startedAt;
       const next = Math.min(100, Math.floor((elapsed / progressDurationMs) * 100));
       if (holdUntilUnmount) {
-        setProgress(Math.min(96, next));
-        if (next >= 96) window.clearInterval(interval);
+        setProgress(next);
+        if (next >= 100) window.clearInterval(interval);
         return;
       }
       if (next >= 100) {
@@ -117,6 +118,142 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false 
       document.removeEventListener('visibilitychange', tick);
     };
   }, [completeDelay, finishDelay, holdUntilUnmount, onLoadingComplete, progressDurationMs, progressIntervalMs]);
+
+  if (isRouteVariant) {
+    return (
+      <AnimatePresence>
+        {!isComplete && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0.12 : 0.22 }}
+            className="fixed inset-0 overflow-hidden"
+            style={{
+              zIndex: 70,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.25rem',
+              minHeight: '100dvh',
+              background: `radial-gradient(circle at 50% 38%, ${colors.surface} 0%, ${colors.bg} 52%, ${colors.bgAlt} 100%)`,
+              color: colors.text,
+            }}
+          >
+            <Motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
+              animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+              transition={reduceMotion ? undefined : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                width: 'min(86vw, 22rem)',
+                borderRadius: '1.35rem',
+                border: `1px solid ${colors.border}`,
+                background: `linear-gradient(145deg, ${colors.surface} 0%, ${colors.surface2} 100%)`,
+                boxShadow: colors.shadow,
+                padding: '1rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.9rem',
+                }}
+              >
+                {[0, 1].map((side) => (
+                  <div
+                    key={side}
+                    aria-hidden
+                    style={{
+                      width: 'clamp(2.15rem, 11vw, 3rem)',
+                      height: 'clamp(2.15rem, 11vw, 3rem)',
+                      borderRadius: '50%',
+                      border: `3px solid ${colors.accentDeep}`,
+                      backgroundColor: colors.reel,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                      animation: animateLoader ? 'loading-reel-spin 1.35s linear infinite' : 'none',
+                    }}
+                  >
+                    {[...Array(6)].map((_, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          position: 'absolute',
+                          width: 2,
+                          height: '100%',
+                          left: '50%',
+                          top: 0,
+                          backgroundColor: colors.accent,
+                          transform: `rotate(${i * 60}deg)`,
+                          transformOrigin: 'center',
+                        }}
+                      />
+                    ))}
+                    <span
+                      style={{
+                        position: 'absolute',
+                        inset: '33%',
+                        borderRadius: '50%',
+                        backgroundColor: colors.reelCenter,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div
+                aria-hidden
+                style={{
+                  height: 6,
+                  margin: '1rem 0 0.75rem',
+                  borderRadius: 9999,
+                  overflow: 'hidden',
+                  backgroundColor: colors.accentDeep,
+                }}
+              >
+                <Motion.div
+                  style={{
+                    width: `${progress}%`,
+                    height: '100%',
+                    borderRadius: 9999,
+                    background: `linear-gradient(90deg, ${colors.accent}, ${colors.accentBright})`,
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem' }}>
+                <p
+                  style={{
+                    margin: 0,
+                    color: colors.textStrong,
+                    fontWeight: 700,
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    fontSize: '0.72rem',
+                  }}
+                >
+                  Loading Side B
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    color: colors.textMuted,
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  {progress}%
+                </p>
+              </div>
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -178,8 +315,10 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false 
                 <div
                   className="relative rounded-2xl mx-auto border-4"
                   style={{
-                    width: 'min(100%, 24rem)',
-                    height: 'clamp(12rem, 56vw, 14rem)',
+                    width: 'clamp(15.5rem, 78vw, 24rem)',
+                    aspectRatio: '12 / 7',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
                     background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.surface2} 100%)`,
                     borderColor: colors.accentDeep,
                     boxShadow: colors.shadow,
