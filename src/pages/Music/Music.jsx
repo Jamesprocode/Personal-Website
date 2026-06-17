@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useTranslation, Trans } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
@@ -14,6 +14,7 @@ function Music() {
   // turntable once the layout collapses at 880px — so the intro's directional
   // cue ("on the right" vs "below") has to follow suit.
   const isStacked = useIsMobile('(max-width: 880px)');
+  const turntableRef = useRef(null);
   const {
     isPlaying,
     isBuffering,
@@ -31,6 +32,15 @@ function Music() {
     cycleLoopMode,
     playNext,
   } = useAudioPlayer();
+
+  const handleSelectTrackAndRevealPlayer = useCallback((album, track) => {
+    handleSelectTrack(album, track);
+    if (isStacked) {
+      window.requestAnimationFrame(() => {
+        turntableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [handleSelectTrack, isStacked]);
 
   // Keyboard: Space toggles playback
   useEffect(() => {
@@ -122,6 +132,8 @@ function Music() {
             }}
           >
             <Motion.div
+              ref={turntableRef}
+              className="music-player-panel"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -150,12 +162,14 @@ function Music() {
             </Motion.div>
 
             <Motion.div
+              className="music-crate-panel"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 flex: '0 1 360px',
-                minWidth: 300,
+                minWidth: 0,
+                width: '100%',
                 maxWidth: 400,
                 position: 'sticky',
                 top: 'clamp(6rem, 10vh, 9rem)',
@@ -169,13 +183,23 @@ function Music() {
                 activeTrackId={selectedTrack?.id}
                 isPlaying={isPlaying}
                 isBuffering={isBuffering}
-                onSelectTrack={handleSelectTrack}
+                onSelectTrack={handleSelectTrackAndRevealPlayer}
+                defaultOpenFirstAlbum={isStacked}
               />
             </Motion.div>
           </div>
 
           <style>{`
             @media (max-width: 880px) {
+              .music-layout {
+                gap: 1.35rem !important;
+              }
+              .music-crate-panel {
+                order: 1;
+              }
+              .music-player-panel {
+                order: 2;
+              }
               .music-layout > div:last-child {
                 position: relative !important;
                 top: 0 !important;
@@ -183,6 +207,7 @@ function Music() {
                 overflow: visible !important;
                 flex: 1 1 100% !important;
                 max-width: none !important;
+                width: 100% !important;
               }
             }
           `}</style>

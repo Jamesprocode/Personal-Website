@@ -75,6 +75,7 @@ export function AudioPlayerProvider({ children }) {
   // The trackFile we've already kicked off a full-file download for. Used to
   // run the download at most once per track, and only on demand (first seek).
   const blobFetchStartedRef = useRef(null);
+  const resumeTimerRef = useRef(null);
 
   // Web Audio analyzer chain
   const audioCtxRef = useRef(null);
@@ -261,6 +262,9 @@ export function AudioPlayerProvider({ children }) {
         if (!isCurrent()) return;
         setIsBuffering(false);
         setIsPlaying(true);
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'playing';
+        }
       });
       audio.addEventListener('canplay', () => {
         if (!isCurrent()) return;
@@ -272,16 +276,33 @@ export function AudioPlayerProvider({ children }) {
       });
       audio.addEventListener('pause', () => {
         if (!isCurrent()) return;
-        // Only treat as a real pause if the user actually wanted to stop.
-        // Buffering pauses keep wantPlaying true, so we ignore those here.
         if (!wantPlayingRef.current) {
           setIsPlaying(false);
           setIsBuffering(false);
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'paused';
+          }
+          return;
         }
+        setIsPlaying(false);
+        setIsBuffering(true);
+        if (resumeTimerRef.current) {
+          window.clearTimeout(resumeTimerRef.current);
+        }
+        resumeTimerRef.current = window.setTimeout(() => {
+          if (!isCurrent() || !wantPlayingRef.current || !audio.paused) return;
+          if (document.visibilityState === 'hidden') return;
+          audio.play().catch(() => {
+            if (isCurrent()) setIsBuffering(false);
+          });
+        }, 400);
       });
       audio.addEventListener('error', () => {
         if (!isCurrent()) return;
         setIsBuffering(false);
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'none';
+        }
       });
       // When a seek finishes, chase the most recent pending target (if any).
       // This serializes rapid scrub seeks so the element never gets stuck in
@@ -323,6 +344,9 @@ export function AudioPlayerProvider({ children }) {
       audioRef.current.pause();
       setIsPlaying(false);
       setIsBuffering(false);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     }
   }, []);
 
@@ -356,6 +380,9 @@ export function AudioPlayerProvider({ children }) {
     setDuration(0);
     setHasEverPlayed(false);
     currentTimeMV.set(0);
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+    }
   }, [currentTimeMV]);
 
   const selectTrack = useCallback((album, track) => {
@@ -449,6 +476,9 @@ export function AudioPlayerProvider({ children }) {
   // Clean up the audio context on unmount of the provider (i.e., app unload)
   useEffect(() => {
     return () => {
+      if (resumeTimerRef.current) {
+        window.clearTimeout(resumeTimerRef.current);
+      }
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -459,6 +489,84 @@ export function AudioPlayerProvider({ children }) {
       if (audioCtxRef.current) {
         audioCtxRef.current.close().catch(() => {});
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return undefined;
+
+    const runIfSupported = (action, handler) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {
+        /* Unsupported on this browser. */
+      }
+    };
+
+    runIfSupported('play', () => {
+      if (currentTrackRef.current) play(currentTrackRef.current);
+    });
+    runIfSupported('pause', pause);
+    runIfSupported('nexttrack', playNext);
+
+    return () => {
+      runIfSupported('play', null);
+      runIfSupported('pause', null);
+      runIfSupported('nexttrack', null);
+    };
+  }, [play, pause, playNext]);
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    if (!selectedTrack) {
+      navigator.mediaSession.metadata = null;
+      return;
+    }
+
+    if (!window.MediaMetadata) return;
+
+    const coverImage = selectedAlbum?.coverImage;
+    const coverType = coverImage?.toLowerCase().endsWith('.png')
+      ? 'image/png'
+      : coverImage?.toLowerCase().match(/\.jpe?g($|\?)/)
+        ? 'image/jpeg'
+        : 'image/webp';
+
+    navigator.mediaSession.metadata = new window.MediaMetadata({
+      title: selectedTrack.title,
+      artist: selectedTrack.composer || selectedAlbum?.artist || 'James Wang',
+      album: selectedAlbum?.title || '',
+      artwork: coverImage
+        ? [{ src: new URL(coverImage, window.location.origin).href, sizes: '512x512', type: coverType }]
+        : [],
+    });
+  }, [selectedAlbum, selectedTrack]);
+
+  useEffect(() => {
+    const tryResumeAfterInterruption = () => {
+      const audio = audioRef.current;
+      if (!audio || !wantPlayingRef.current || !audio.paused) return;
+      setIsBuffering(true);
+      audio.play().catch(() => {
+        setIsBuffering(false);
+      });
+    };
+
+    const scheduleResume = () => {
+      if (document.visibilityState === 'hidden') return;
+      if (resumeTimerRef.current) {
+        window.clearTimeout(resumeTimerRef.current);
+      }
+      resumeTimerRef.current = window.setTimeout(tryResumeAfterInterruption, 250);
+    };
+
+    document.addEventListener('visibilitychange', scheduleResume);
+    window.addEventListener('focus', scheduleResume);
+    window.addEventListener('pageshow', scheduleResume);
+    return () => {
+      document.removeEventListener('visibilitychange', scheduleResume);
+      window.removeEventListener('focus', scheduleResume);
+      window.removeEventListener('pageshow', scheduleResume);
     };
   }, []);
 

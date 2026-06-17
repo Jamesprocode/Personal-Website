@@ -20,6 +20,7 @@ function ContactSection() {
 
   return (
     <section
+      id="contact"
       ref={sectionRef}
       data-offscreen-skip
       data-isolate
@@ -33,6 +34,7 @@ function ContactSection() {
         paddingBottom: 'clamp(7rem, 12vh, 10rem)',
         paddingLeft: 'clamp(1.5rem, 6vw, 5rem)',
         paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
+        scrollMarginTop: '5rem',
       }}
     >
       {inView && (

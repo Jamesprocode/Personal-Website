@@ -98,32 +98,14 @@ function SpinningReelSvg({ cx, cy, r, duration = 4, reduceMotion }) {
   );
 }
 
-function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
+function CassetteRow({ project, isSelected, onClick, reduceMotion, isDirectLink = false }) {
   const { t } = useTranslation();
   const dotColor = categoryColor(project.category);
   const shortTitle = t(`project.${project.slug}.shortTitle`, {
     defaultValue: project.shortTitle,
   });
   const title = t(`project.${project.slug}.title`, { defaultValue: project.title });
-  return (
-    <Motion.button
-      onClick={() => onClick(project.id)}
-      whileHover={{ x: 4, transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
-      whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
-      animate={{ x: isSelected ? 6 : 0 }}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        display: 'block',
-        width: '100%',
-        padding: 0,
-        border: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        outline: 'none',
-      }}
-      aria-label={t(isSelected ? 'shelf.tapeAriaSelected' : 'shelf.tapeAria', { title })}
-      aria-pressed={isSelected}
-    >
+  const cassette = (
       <div
         style={{
           display: 'flex',
@@ -176,9 +158,11 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
               fontWeight: 600,
               color: '#451a03',
               letterSpacing: '-0.005em',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              overflow: isDirectLink ? 'visible' : 'hidden',
+              textOverflow: isDirectLink ? 'clip' : 'ellipsis',
+              whiteSpace: isDirectLink ? 'normal' : 'nowrap',
+              overflowWrap: 'anywhere',
+              lineHeight: 1.12,
               flex: 1,
             }}
           >
@@ -202,6 +186,52 @@ function CassetteRow({ project, isSelected, onClick, reduceMotion }) {
           <SpinningReel size={36} duration={5} reduceMotion={reduceMotion} />
         </div>
       </div>
+  );
+
+  if (isDirectLink) {
+    return (
+      <Motion.div
+        whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
+        style={{ display: 'block', width: '100%' }}
+      >
+        <Link
+          to={`/projects/${project.id}`}
+          style={{
+            display: 'block',
+            width: '100%',
+            textDecoration: 'none',
+            color: 'inherit',
+            outline: 'none',
+          }}
+          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
+          aria-label={t('shelf.openProject', { title })}
+        >
+          {cassette}
+        </Link>
+      </Motion.div>
+    );
+  }
+
+  return (
+    <Motion.button
+      onClick={() => onClick(project.id)}
+      whileHover={{ x: 4, transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
+      whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
+      animate={{ x: isSelected ? 6 : 0 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        display: 'block',
+        width: '100%',
+        padding: 0,
+        border: 'none',
+        background: 'transparent',
+        cursor: 'pointer',
+        outline: 'none',
+      }}
+      aria-label={t(isSelected ? 'shelf.tapeAriaSelected' : 'shelf.tapeAria', { title })}
+      aria-pressed={isSelected}
+    >
+      {cassette}
     </Motion.button>
   );
 }
@@ -493,6 +523,7 @@ function ProjectShelf() {
               isSelected={selectedId === p.id}
               onClick={handleSelect}
               reduceMotion={simplifyMotion}
+              isDirectLink={isMobile}
             />
           </Motion.div>
         ))}

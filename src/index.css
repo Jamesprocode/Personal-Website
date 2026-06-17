@@ -312,6 +312,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 420px) {
+  body {
+    overflow-wrap: anywhere;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  a,
+  button,
+  span {
+    min-width: 0;
+  }
+}
+
 /* Selection color */
 ::selection {
   background: rgba(196, 162, 101, 0.3);

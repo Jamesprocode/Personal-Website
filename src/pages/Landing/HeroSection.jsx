@@ -222,6 +222,29 @@ function HeroSection() {
                 {t('hero.listenToMusic')}
                 <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
               </Link>
+              <a
+                href="#contact"
+                className="inline-flex items-center gap-2 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]"
+                style={{
+                  color: 'var(--text-strong)',
+                  border: '1px solid var(--border-strong)',
+                  padding: 'clamp(0.75rem, 1.05vw, 0.95rem) clamp(1.2rem, 1.8vw, 1.6rem)',
+                  fontSize: 'clamp(0.88rem, 1vw, 0.95rem)',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--accent-bright)';
+                  e.currentTarget.style.borderColor = 'var(--accent-bright)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-strong)';
+                  e.currentTarget.style.borderColor = 'var(--border-strong)';
+                }}
+              >
+                {t('hero.contact')}
+                <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">&darr;</span>
+              </a>
             </Motion.div>
           </Motion.div>
 

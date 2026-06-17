@@ -7,6 +7,7 @@ import PageTransition from '../../components/PageTransition';
 import TransportButton from '../../components/TransportButton';
 import projects from '../../data/projects';
 import { useTheme } from '../../hooks/useTheme';
+import useIsMobile from '../../hooks/useIsMobile';
 
 // Editorial palette. The cream "parlor" in light; wood + espresso in dark.
 // Values are 6-digit hex on purpose: the blocks below append a 2-digit alpha
@@ -1137,6 +1138,8 @@ function NotFound() {
 function ProjectDetail() {
   const { id } = useParams();
   const reduceMotion = useReducedMotion();
+  const isMobileChrome = useIsMobile('(max-width: 767px)');
+  const simplifyMotion = reduceMotion || isMobileChrome;
   const { t } = useTranslation();
   const P = usePalette();
   const { CREAM_BASE, LINEN, BRONZE, INK_DEEP, BRASS, WALNUT } = P;
@@ -1181,6 +1184,105 @@ function ProjectDetail() {
   const nextTitle = nextProject
     ? t(`project.${nextProject.slug}.title`, { defaultValue: nextProject.title })
     : null;
+  const projectPager = (
+    <div
+      className="project-pager"
+      style={{
+        position: 'fixed',
+        bottom: isMobileChrome ? 'env(safe-area-inset-bottom, 0px)' : 64,
+        left: 0,
+        right: 0,
+        zIndex: 49,
+        width: '100%',
+        marginTop: 0,
+        backgroundColor: 'var(--overlay-bg)',
+        backdropFilter: isMobileChrome ? undefined : 'blur(10px)',
+        WebkitBackdropFilter: isMobileChrome ? undefined : 'blur(10px)',
+        borderTop: `1px solid ${LINEN}66`,
+        borderBottom: isMobileChrome ? 0 : `1px solid ${LINEN}44`,
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: MEASURE_MEDIA,
+          margin: '0 auto',
+          padding: isMobileChrome
+            ? '1rem clamp(1.5rem, 6vw, 5rem) clamp(1.25rem, 4vh, 1.75rem)'
+            : 'clamp(0.7rem, 1.2vw, 1rem) clamp(1.5rem, 6vw, 5rem)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: isMobileChrome ? '0.75rem' : '1rem',
+        }}
+      >
+        <div style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <TransportButton
+            to={prevProject ? `/projects/${prevProject.id}` : undefined}
+            variant="prev"
+            size={isMobileChrome ? 34 : 38}
+            disabled={!prevProject}
+            ariaLabel={prevProject ? `Previous project: ${prevTitle}` : 'No previous project'}
+          />
+          {prevProject && (
+            <Link
+              to={`/projects/${prevProject.id}`}
+              style={{
+                color: INK_DEEP,
+                fontSize: 'clamp(0.85rem, 1.1vw, 1rem)',
+                fontWeight: 500,
+                lineHeight: 1.25,
+                textDecoration: 'none',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: isMobileChrome ? 'normal' : 'nowrap',
+                display: isMobileChrome ? '-webkit-box' : 'block',
+                WebkitLineClamp: isMobileChrome ? 2 : undefined,
+                WebkitBoxOrient: isMobileChrome ? 'vertical' : undefined,
+                minWidth: 0,
+              }}
+              className="hover:underline"
+            >
+              {prevShortTitle}
+            </Link>
+          )}
+        </div>
+
+        <div style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          {nextProject && (
+            <Link
+              to={`/projects/${nextProject.id}`}
+              style={{
+                color: INK_DEEP,
+                fontSize: 'clamp(0.85rem, 1.1vw, 1rem)',
+                fontWeight: 500,
+                lineHeight: 1.25,
+                textDecoration: 'none',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                textAlign: 'right',
+                whiteSpace: isMobileChrome ? 'normal' : 'nowrap',
+                display: isMobileChrome ? '-webkit-box' : 'block',
+                WebkitLineClamp: isMobileChrome ? 2 : undefined,
+                WebkitBoxOrient: isMobileChrome ? 'vertical' : undefined,
+                minWidth: 0,
+              }}
+              className="hover:underline"
+            >
+              {nextShortTitle}
+            </Link>
+          )}
+          <TransportButton
+            to={nextProject ? `/projects/${nextProject.id}` : undefined}
+            variant="next"
+            size={isMobileChrome ? 34 : 38}
+            disabled={!nextProject}
+            ariaLabel={nextProject ? `Next project: ${nextTitle}` : 'No next project'}
+          />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <PageTransition scene="project">
@@ -1189,19 +1291,22 @@ function ProjectDetail() {
           width: '100%',
           backgroundColor: CREAM_BASE,
           minHeight: '100vh',
-          paddingTop: 'clamp(5rem, 8vh, 6.5rem)',
+          paddingTop: isMobileChrome ? '5.25rem' : 'clamp(5rem, 8vh, 6.5rem)',
         }}
       >
         {/* Transport bar — sticky header with REW (back to projects) + PREV/NEXT */}
         <div
+          className="project-transport-bar"
           style={{
             position: 'sticky',
-            top: 'clamp(3.5rem, 5vw, 4.25rem)',
-            zIndex: 30,
+            top: isMobileChrome
+              ? 'calc(5.25rem + env(safe-area-inset-top, 0px))'
+              : 'clamp(3.5rem, 5vw, 4.25rem)',
+            zIndex: isMobileChrome ? 45 : 30,
             width: '100%',
             backgroundColor: 'var(--overlay-bg)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            backdropFilter: isMobileChrome ? undefined : 'blur(10px)',
+            WebkitBackdropFilter: isMobileChrome ? undefined : 'blur(10px)',
             borderBottom: `1px solid ${LINEN}44`,
           }}
         >
@@ -1220,7 +1325,7 @@ function ProjectDetail() {
             <TransportButton
               to="/#research-projects-top"
               variant="rew"
-              size={52}
+              size={isMobileChrome ? 44 : 52}
               label={t('project.rewind')}
               sublabel={t('project.backToParlor', { defaultValue: 'back to parlor' })}
             />
@@ -1237,9 +1342,9 @@ function ProjectDetail() {
           }}
         >
           <Motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            initial={simplifyMotion ? false : { opacity: 0, y: 16 }}
+            animate={simplifyMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={simplifyMotion ? undefined : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <p
               className="font-mono uppercase"
@@ -1393,13 +1498,18 @@ function ProjectDetail() {
           <section style={{ width: '100%' }}>
             {body.map((block, i) => {
               const localized = localizeBlock(project.slug, i, block, t);
+              const revealProps = simplifyMotion
+                ? {}
+                : {
+                    initial: { opacity: 0, y: 16 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: true, margin: '-80px' },
+                    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+                  };
               return (
                 <Motion.div
                   key={i}
-                  initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-80px' }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  {...revealProps}
                   style={{
                     marginTop:
                       i === 0
@@ -1431,98 +1541,11 @@ function ProjectDetail() {
         <div
           style={{
             width: '100%',
-            paddingBottom: 'clamp(10rem, 20vh, 14rem)',
+            paddingBottom: isMobileChrome ? 'clamp(7rem, 16vh, 9rem)' : 'clamp(10rem, 20vh, 14rem)',
           }}
         />
 
-        {/* Fixed footer bar — rendered to body via portal so it pins to the viewport, not the page-transition wrapper. Sits just above the global Footer (~64 px). */}
-        {createPortal(
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 64,
-            left: 0,
-            right: 0,
-            zIndex: 49,
-            width: '100%',
-            backgroundColor: 'var(--overlay-bg)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            borderTop: `1px solid ${LINEN}66`,
-            borderBottom: `1px solid ${LINEN}44`,
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: MEASURE_MEDIA,
-              margin: '0 auto',
-              padding: 'clamp(0.7rem, 1.2vw, 1rem) clamp(1.5rem, 6vw, 5rem)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1rem',
-            }}
-          >
-            <div style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <TransportButton
-                to={prevProject ? `/projects/${prevProject.id}` : undefined}
-                variant="prev"
-                size={38}
-                disabled={!prevProject}
-                ariaLabel={prevProject ? `Previous project: ${prevTitle}` : 'No previous project'}
-              />
-              {prevProject && (
-                <Link
-                  to={`/projects/${prevProject.id}`}
-                  style={{
-                    color: INK_DEEP,
-                    fontSize: 'clamp(0.9rem, 1.1vw, 1rem)',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    minWidth: 0,
-                  }}
-                  className="hover:underline"
-                >
-                  {prevShortTitle}
-                </Link>
-              )}
-            </div>
-
-            <div style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              {nextProject && (
-                <Link
-                  to={`/projects/${nextProject.id}`}
-                  style={{
-                    color: INK_DEEP,
-                    fontSize: 'clamp(0.9rem, 1.1vw, 1rem)',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    minWidth: 0,
-                  }}
-                  className="hover:underline"
-                >
-                  {nextShortTitle}
-                </Link>
-              )}
-              <TransportButton
-                to={nextProject ? `/projects/${nextProject.id}` : undefined}
-                variant="next"
-                size={38}
-                disabled={!nextProject}
-                ariaLabel={nextProject ? `Next project: ${nextTitle}` : 'No next project'}
-              />
-            </div>
-          </div>
-        </div>,
-        document.body
-        )}
+        {createPortal(projectPager, document.body)}
 
         <AnimatePresence>
           {lightbox && (

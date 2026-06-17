@@ -8,6 +8,7 @@ import {
   useReducedMotion,
 } from 'framer-motion';
 import useAudioPlayer from '../hooks/useAudioPlayer';
+import useIsMobile from '../hooks/useIsMobile';
 import { LoopButton, NextButton } from '../pages/Music/TransportButtons';
 
 const DISC_SIZE = 92;
@@ -39,6 +40,7 @@ function MiniPlayer() {
   const navigate = useNavigate();
   const location = useLocation();
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile('(max-width: 767px)');
   const [hovered, setHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [bounds, setBounds] = useState({ top: -600, left: -1000, right: 0, bottom: 0 });
@@ -60,7 +62,7 @@ function MiniPlayer() {
   // Spawn a new note every ~700ms while playing. Each note auto-removes
   // after its animation completes so the array stays tiny.
   useEffect(() => {
-    if (!isPlaying || reduceMotion) {
+    if (!isPlaying || reduceMotion || isMobile) {
       return undefined;
     }
     const spawn = () => {
@@ -76,7 +78,7 @@ function MiniPlayer() {
     spawn(); // immediate first note so it feels alive right away
     const handle = window.setInterval(spawn, 700);
     return () => window.clearInterval(handle);
-  }, [isPlaying, reduceMotion]);
+  }, [isMobile, isPlaying, reduceMotion]);
 
   useEffect(() => {
     const update = () => {
@@ -94,14 +96,14 @@ function MiniPlayer() {
 
   const rotation = useMotionValue(0);
   useAnimationFrame((_, deltaMs) => {
-    if (isPlaying && !reduceMotion) {
+    if (isPlaying && !reduceMotion && !isMobile) {
       rotation.set(rotation.get() + deltaMs * 0.09);
     }
   });
 
   const onMusicPage = location.pathname === '/music';
   const shouldShow = hasEverPlayed && !onMusicPage;
-  const activeNotes = isPlaying && !reduceMotion ? notes : [];
+  const activeNotes = isPlaying && !reduceMotion && !isMobile ? notes : [];
 
   const accent = selectedAlbum?.accentColor || '#c4a265';
 
@@ -140,11 +142,11 @@ function MiniPlayer() {
       {shouldShow && (
         <Motion.div
           key="mini"
-          initial={{ opacity: 0, y: 24, scale: 0.92 }}
+          initial={isMobile || reduceMotion ? false : { opacity: 0, y: 24, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 12, scale: 0.92 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          drag
+          exit={isMobile || reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.92 }}
+          transition={isMobile || reduceMotion ? { duration: 0.12 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          drag={!isMobile}
           dragMomentum={false}
           dragElastic={0.15}
           dragConstraints={bounds}
@@ -155,7 +157,7 @@ function MiniPlayer() {
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           
-          aria-label="Floating music player. Drag to reposition."
+          aria-label={isMobile ? 'Floating music player.' : 'Floating music player. Drag to reposition.'}
           style={{
             position: 'fixed',
             bottom: 'clamp(1rem, 3vh, 2rem)',
@@ -166,15 +168,15 @@ function MiniPlayer() {
             flexDirection: 'column',
             alignItems: 'center',
             gap: 6,
-            cursor: isDragging ? 'grabbing' : 'grab',
+            cursor: isMobile ? 'pointer' : isDragging ? 'grabbing' : 'grab',
             zIndex: 60,
             borderRadius: 18,
             background: 'linear-gradient(155deg, rgba(42,31,21,0.95), rgba(20,15,12,0.95))',
             border: '1px solid rgba(196,162,101,0.22)',
             boxShadow: '0 18px 40px -12px rgba(0,0,0,0.7), inset 0 1px 0 rgba(196,162,101,0.08)',
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)',
-            touchAction: 'none',
+            backdropFilter: isMobile ? undefined : 'blur(6px)',
+            WebkitBackdropFilter: isMobile ? undefined : 'blur(6px)',
+            touchAction: isMobile ? 'manipulation' : 'none',
           }}
           className="focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
         >

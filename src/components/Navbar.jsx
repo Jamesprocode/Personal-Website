@@ -10,23 +10,21 @@ function Navbar() {
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Only play the slide-in entrance once the tab is actually visible. The
-  // navbar's RESTING style (no `.navbar-enter` class) is the visible
-  // position, so a tab that loads in the background never gets stuck with
-  // the bar — and the theme/lang toggles — parked off-screen. When the user
-  // focuses the tab the class is added and the slide-in plays normally.
-  const [entered, setEntered] = useState(
+  // Only play the slide-in while the tab is visible. The navbar's resting
+  // style (no `.navbar-enter` class) is the visible position; removing the
+  // animation class on animation end or tab hide prevents hidden tabs from
+  // freezing the navbar off-screen.
+  const [playEntrance, setPlayEntrance] = useState(
     () => typeof document === 'undefined' || document.visibilityState === 'visible'
   );
 
   useEffect(() => {
-    if (entered) return undefined;
     const onVis = () => {
-      if (document.visibilityState === 'visible') setEntered(true);
+      if (document.visibilityState !== 'visible') setPlayEntrance(false);
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [entered]);
+  }, []);
 
   useEffect(() => {
     const id = window.setTimeout(() => setMobileOpen(false), 0);
@@ -73,7 +71,8 @@ function Navbar() {
   return (
     <>
       <nav
-        className={`${entered ? 'navbar-enter ' : ''}fixed top-0 left-0 right-0 z-50 shadow-md`}
+        className={`${playEntrance ? 'navbar-enter ' : ''}fixed top-0 left-0 right-0 z-50 shadow-md`}
+        onAnimationEnd={() => setPlayEntrance(false)}
         style={{
           backgroundColor: surfaceBg,
           // Single brass hairline along the bottom — the cross-room thread

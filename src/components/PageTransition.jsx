@@ -1,4 +1,5 @@
-import { motion as Motion } from 'framer-motion';
+import { motion as Motion, useReducedMotion } from 'framer-motion';
+import useIsMobile from '../hooks/useIsMobile';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -13,6 +14,13 @@ const pageVariants = {
 };
 
 function PageTransition({ children }) {
+  const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile('(max-width: 767px)');
+
+  if (reduceMotion || isMobile) {
+    return <div style={{ width: '100%' }}>{children}</div>;
+  }
+
   return (
     <Motion.div
       variants={pageVariants}

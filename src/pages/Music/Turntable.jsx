@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion as Motion, useMotionValue, useMotionValueEvent, useAnimationFrame, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
+import useIsMobile from '../../hooks/useIsMobile';
 import AnalogVUMeter from './AnalogVUMeter';
 import Knob from './Knob';
 import { LoopButton, NextButton } from './TransportButtons';
@@ -28,6 +29,34 @@ function TimeReadout({ currentTimeMV, duration }) {
       <span style={{ color: 'rgba(196,162,101,0.3)', margin: '0 0.4em' }}>/</span>
       {fmtTime(duration)}
     </>
+  );
+}
+
+function MobileSeekSlider({ currentTimeMV, duration, onSeek, accent }) {
+  const [sec, setSec] = useState(0);
+  const max = Math.max(0, Math.floor(duration || 0));
+
+  useMotionValueEvent(currentTimeMV, 'change', (v) => {
+    const s = Math.floor(v);
+    setSec((prev) => (prev === s ? prev : s));
+  });
+
+  return (
+    <input
+      className="music-mobile-seek"
+      type="range"
+      min={0}
+      max={max}
+      value={Math.min(sec, max)}
+      disabled={!max}
+      aria-label="Seek"
+      onChange={(event) => onSeek?.(Number(event.currentTarget.value))}
+      style={{
+        width: '100%',
+        accentColor: accent,
+        display: 'none',
+      }}
+    />
   );
 }
 
@@ -60,6 +89,8 @@ function Turntable({
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const { isDark } = useTheme();
+  const isMobile = useIsMobile();
+  const simplifyMotion = reduceMotion || isMobile;
   const accent = album?.accentColor || '#c4a265';
   const hasTrack = Boolean(track && track.file);
 
@@ -122,14 +153,37 @@ function Turntable({
   const armRotation = useMotionValue(ARM_OUTER);
   const armTargetRef = useRef(ARM_OUTER);
 
+  useMotionValueEvent(currentTimeMV, 'change', (ct) => {
+    if (!simplifyMotion) return;
+    const engaged = hasTrack && (isPlaying || ct > 0);
+    const target = engaged && duration > 0
+      ? ARM_OUTER + ARM_SWEEP * Math.min(1, Math.max(0, ct / duration))
+      : ARM_OUTER;
+    armTargetRef.current = target;
+    if (Math.abs(armRotation.get() - target) > 0.2) {
+      armRotation.set(target);
+    }
+
+    const slider = scrubRef.current;
+    if (slider) {
+      const s = Math.floor(ct);
+      if (s !== lastAriaSecRef.current) {
+        lastAriaSecRef.current = s;
+        slider.setAttribute('aria-valuenow', String(s));
+      }
+    }
+  });
+
   // Drive the platter spin and the arm sweep from one animation frame. The
   // arm target is derived from the live playback position by READING the
   // MotionValue here (currentTimeMV.get()) rather than from a React state
   // prop — that's what keeps the 4x/sec 'timeupdate' from re-rendering this
   // whole component and starving this very loop on slow devices.
   useAnimationFrame((_, deltaMs) => {
+    if (simplifyMotion) return;
+
     // Platter spin
-    if (!isScrubbing && isPlaying && !reduceMotion) {
+    if (!isScrubbing && isPlaying) {
       rotation.set(rotation.get() + deltaMs * 0.12);
     }
 
@@ -189,6 +243,7 @@ function Turntable({
   };
 
   const onPlatterPointerDown = (e) => {
+    if (isMobile) return;
     if (!hasTrack || !duration) return;
     e.preventDefault();
     e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -234,6 +289,7 @@ function Turntable({
 
   // Needle scrub: drag the tonearm headshell to seek.
   const onArmPointerDown = (e) => {
+    if (isMobile) return;
     if (!hasTrack || !duration) return;
     const pivot = pivotRef.current;
     if (!pivot) return;
@@ -275,7 +331,7 @@ function Turntable({
 
   return (
     <div
-      className="relative"
+      className="music-deck relative"
       style={{
         background: deckBg,
         borderRadius: 24,
@@ -290,6 +346,13 @@ function Turntable({
           justify-between layout untouched. */}
       <style>{`
         @media (max-width: 760px) {
+          .music-deck {
+            border-radius: 18px !important;
+            padding: 1rem !important;
+          }
+          .music-platter-zone {
+            max-width: min(86vw, 420px) !important;
+          }
           .music-controls {
             flex-direction: column;
             align-items: center;
@@ -301,11 +364,18 @@ function Turntable({
           }
           .music-controls__time {
             text-align: center;
+            width: 100%;
+          }
+          .music-mobile-seek {
+            display: block !important;
+            margin-top: 0.65rem;
           }
           .music-controls__buttons {
             justify-content: center;
             width: 100%;
             margin-bottom: 0 !important;
+            flex-wrap: wrap;
+            gap: 0.75rem !important;
           }
           .music-controls__right {
             align-items: center !important;
@@ -314,6 +384,14 @@ function Turntable({
           .music-controls__hint {
             text-align: center !important;
             white-space: normal !important;
+          }
+          .music-control-unit {
+            height: 76px !important;
+            min-width: 56px !important;
+          }
+          .music-control-label {
+            font-size: 0.58rem !important;
+            letter-spacing: 0.1em !important;
           }
         }
       `}</style>
@@ -332,7 +410,7 @@ function Turntable({
       />
 
       {/* Platter zone */}
-      <div className="relative" style={{ aspectRatio: '1 / 1', maxWidth: 560, margin: '0 auto' }}>
+      <div className="music-platter-zone relative" style={{ aspectRatio: '1 / 1', maxWidth: 560, margin: '0 auto' }}>
         {/* Platter */}
         <Motion.div
           ref={platterRef}
@@ -351,8 +429,8 @@ function Turntable({
             background: 'radial-gradient(circle at 50% 50%, #2a2a2a 0%, #0a0a0a 70%, #050505 100%)',
             boxShadow: 'inset 0 2px 24px rgba(0,0,0,0.6), 0 4px 18px rgba(0,0,0,0.5)',
             border: '2px solid rgba(64, 64, 64, 0.45)',
-            cursor: hasTrack && duration ? (isScrubbing ? 'grabbing' : 'grab') : 'default',
-            touchAction: 'none',
+            cursor: !isMobile && hasTrack && duration ? (isScrubbing ? 'grabbing' : 'grab') : 'default',
+            touchAction: isMobile ? 'pan-y' : 'none',
           }}
         >
           {/* Concentric vinyl grooves */}
@@ -630,9 +708,9 @@ function Turntable({
                 left: 150,
                 width: 56,
                 height: 38,
-                cursor: hasTrack && duration ? (isScrubbingArm ? 'grabbing' : 'grab') : 'default',
-                touchAction: 'none',
-                pointerEvents: hasTrack && duration ? 'auto' : 'none',
+                cursor: !isMobile && hasTrack && duration ? (isScrubbingArm ? 'grabbing' : 'grab') : 'default',
+                touchAction: isMobile ? 'pan-y' : 'none',
+                pointerEvents: !isMobile && hasTrack && duration ? 'auto' : 'none',
               }}
             />
           </Motion.div>
@@ -690,6 +768,12 @@ function Turntable({
             }}
           >
             <TimeReadout currentTimeMV={currentTimeMV} duration={duration} />
+            <MobileSeekSlider
+              currentTimeMV={currentTimeMV}
+              duration={duration}
+              onSeek={onSeek}
+              accent={accent}
+            />
           </div>
           <div
             className="music-controls__buttons flex items-end"
@@ -700,11 +784,11 @@ function Turntable({
           >
             {/* Loop / shuffle */}
             <div
-              className="flex flex-col items-center"
+              className="music-control-unit flex flex-col items-center"
               style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
             >
               <p
-                className="font-mono uppercase"
+                className="music-control-label font-mono uppercase"
                 style={{
                   color: 'var(--text-muted)',
                   fontSize: '0.65rem',
@@ -721,11 +805,11 @@ function Turntable({
 
             {/* Play/Pause */}
             <div
-              className="flex flex-col items-center"
+              className="music-control-unit flex flex-col items-center"
               style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
             >
               <p
-                className="font-mono uppercase"
+                className="music-control-label font-mono uppercase"
                 style={{
                   color: 'var(--text-muted)',
                   fontSize: '0.65rem',
@@ -736,8 +820,8 @@ function Turntable({
                 {t(isBuffering ? 'music.transport.buffering' : isPlaying ? 'music.transport.pause' : 'music.transport.play')}
               </p>
               <Motion.button
-                whileHover={hasTrack ? { scale: 1.06 } : undefined}
-                whileTap={hasTrack ? { scale: 0.94 } : undefined}
+                whileHover={!simplifyMotion && hasTrack ? { scale: 1.06 } : undefined}
+                whileTap={hasTrack ? { scale: 0.96 } : undefined}
                 onClick={onPlayPause}
                 disabled={!hasTrack}
                 aria-label={t(isBuffering ? 'music.transport.buffering' : isPlaying ? 'music.transport.pause' : 'music.transport.play')}
@@ -761,7 +845,7 @@ function Turntable({
                 {/* Buffering ring: a thin arc that spins around the button
                     while the track downloads, so a slow start reads as
                     "loading" rather than a dead click. */}
-                {isBuffering && !reduceMotion && (
+                {isBuffering && !simplifyMotion && (
                   <Motion.span
                     aria-hidden
                     animate={{ rotate: 360 }}
@@ -791,11 +875,11 @@ function Turntable({
 
             {/* Next track */}
             <div
-              className="flex flex-col items-center"
+              className="music-control-unit flex flex-col items-center"
               style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
             >
               <p
-                className="font-mono uppercase"
+                className="music-control-label font-mono uppercase"
                 style={{
                   color: 'var(--text-muted)',
                   fontSize: '0.65rem',
@@ -812,11 +896,11 @@ function Turntable({
 
             {/* Volume */}
             <div
-              className="flex flex-col items-center"
+              className="music-control-unit flex flex-col items-center"
               style={{ height: 88, minWidth: 64, justifyContent: 'space-between', alignItems: 'center' }}
             >
               <p
-                className="font-mono uppercase"
+                className="music-control-label font-mono uppercase"
                 style={{
                   color: 'var(--text-muted)',
                   fontSize: '0.65rem',

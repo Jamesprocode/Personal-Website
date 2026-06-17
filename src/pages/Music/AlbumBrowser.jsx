@@ -2,7 +2,10 @@ import { memo, useCallback, useState } from 'react';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
+import useIsMobile from '../../hooks/useIsMobile';
 import SleeveBack from './SleeveBack';
+
+const DEFAULT_MOBILE_ALBUM_ID = 'special';
 
 function AlbumThumb({ album, size = 56 }) {
   return (
@@ -53,6 +56,7 @@ function AlbumThumb({ album, size = 56 }) {
 }
 
 const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBuffering, onClick }) {
+  const isMobile = useIsMobile();
   const playable = Boolean(track.file);
   return (
     <button
@@ -114,9 +118,10 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
             fontSize: '0.92rem',
             color: isActive ? 'var(--text-strong)' : 'var(--text)',
             fontWeight: isActive ? 500 : 400,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            overflow: isMobile ? 'visible' : 'hidden',
+            textOverflow: isMobile ? 'clip' : 'ellipsis',
+            whiteSpace: isMobile ? 'normal' : 'nowrap',
+            overflowWrap: 'anywhere',
           }}
         >
           {track.title}
@@ -130,9 +135,10 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
               color: 'var(--text-muted)',
               letterSpacing: '0.05em',
               marginTop: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              overflow: isMobile ? 'visible' : 'hidden',
+              textOverflow: isMobile ? 'clip' : 'ellipsis',
+              whiteSpace: isMobile ? 'normal' : 'nowrap',
+              overflowWrap: 'anywhere',
             }}
           >
             {track.composer}
@@ -161,6 +167,7 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
 
 const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, activeTrackId, isPlaying, isBuffering, onToggle, onSelectTrack, onOpenSleeve, reduceMotion }) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   return (
     <div
       style={{
@@ -193,9 +200,10 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
               fontSize: '0.98rem',
               color: 'var(--text-strong)',
               lineHeight: 1.3,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              overflow: isMobile ? 'visible' : 'hidden',
+              textOverflow: isMobile ? 'clip' : 'ellipsis',
+              whiteSpace: isMobile ? 'normal' : 'nowrap',
+              overflowWrap: 'anywhere',
             }}
           >
             {album.title}
@@ -207,9 +215,10 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
               color: 'var(--text-muted)',
               letterSpacing: '0.14em',
               marginTop: 2,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              overflow: isMobile ? 'visible' : 'hidden',
+              textOverflow: isMobile ? 'clip' : 'ellipsis',
+              whiteSpace: isMobile ? 'normal' : 'nowrap',
+              overflowWrap: 'anywhere',
             }}
           >
             {album.year} &nbsp; {album.tracks.length} {album.tracks.length === 1 ? 'track' : 'tracks'}
@@ -299,15 +308,30 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
   );
 });
 
-function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffering, onSelectTrack }) {
+function AlbumBrowser({
+  albums,
+  activeAlbumId,
+  activeTrackId,
+  isPlaying,
+  isBuffering,
+  onSelectTrack,
+  defaultOpenFirstAlbum = false,
+}) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
   const { isDark } = useTheme();
   // Start with every album collapsed by default. The one exception: if a
   // track is already playing when this view (re)mounts — e.g. the visitor
   // navigated away with the floating record still spinning and came back —
   // open the album that track belongs to so they land on what's playing.
-  const [expandedId, setExpandedId] = useState(activeAlbumId || null);
+  const [manualExpandedId, setManualExpandedId] = useState(undefined);
+  const defaultMobileAlbumId = albums.some((album) => album.id === DEFAULT_MOBILE_ALBUM_ID)
+    ? DEFAULT_MOBILE_ALBUM_ID
+    : albums[0]?.id;
+  const expandedId = manualExpandedId !== undefined
+    ? manualExpandedId
+    : (activeAlbumId || (defaultOpenFirstAlbum || isMobile ? defaultMobileAlbumId : null));
   const [sleeveAlbum, setSleeveAlbum] = useState(null);
 
   // Crate body matches the turntable deck: light cream-wood in light mode,
@@ -322,8 +346,8 @@ function AlbumBrowser({ albums, activeAlbumId, activeTrackId, isPlaying, isBuffe
 
   // Stable handlers so memoized AlbumRow children don't re-render every tick.
   const handleToggleExpand = useCallback((id) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  }, []);
+    setManualExpandedId(expandedId === id ? null : id);
+  }, [expandedId]);
   const handleCloseSleeve = useCallback(() => setSleeveAlbum(null), []);
 
   return (

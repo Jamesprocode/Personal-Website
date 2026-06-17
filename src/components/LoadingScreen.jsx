@@ -65,39 +65,53 @@ function LoadingScreen({ onLoadingComplete }) {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const liteMotion = reduceMotion || isMobile;
+  const animateLoader = !reduceMotion;
   const visibleWaveBars = liteMotion ? WAVEFORM_BARS.slice(0, 10) : WAVEFORM_BARS;
-  const progressStep = isMobile ? 4 : 2;
-  const progressIntervalMs = isMobile ? 55 : 35;
-  const finishDelay = liteMotion ? 260 : 600;
-  const completeDelay = liteMotion ? 180 : 400;
+  const progressDurationMs = isMobile ? 360 : 1800;
+  const progressIntervalMs = 35;
+  const finishDelay = isMobile ? 120 : reduceMotion ? 260 : 600;
+  const completeDelay = isMobile ? 60 : reduceMotion ? 180 : 400;
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     let completeTimer;
     let finishTimer;
+    let completed = false;
+    const startedAt = Date.now();
 
-    const interval = window.setInterval(() => {
-      setProgress((prev) => {
-        const next = Math.min(100, prev + progressStep);
-        if (next >= 100) {
-          window.clearInterval(interval);
-          completeTimer = window.setTimeout(() => {
-            setIsComplete(true);
-            finishTimer = window.setTimeout(() => onLoadingComplete(), finishDelay);
-          }, completeDelay);
-          return 100;
-        }
-        return next;
-      });
-    }, progressIntervalMs);
+    const complete = () => {
+      if (completed) return;
+      completed = true;
+      setProgress(100);
+      completeTimer = window.setTimeout(() => {
+        setIsComplete(true);
+        finishTimer = window.setTimeout(() => onLoadingComplete(), finishDelay);
+      }, completeDelay);
+    };
+
+    const tick = () => {
+      const elapsed = Date.now() - startedAt;
+      const next = Math.min(100, Math.floor((elapsed / progressDurationMs) * 100));
+      if (next >= 100) {
+        window.clearInterval(interval);
+        complete();
+        return;
+      }
+      setProgress(next);
+    };
+
+    const interval = window.setInterval(tick, progressIntervalMs);
+    document.addEventListener('visibilitychange', tick);
+    tick();
 
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(completeTimer);
       window.clearTimeout(finishTimer);
+      document.removeEventListener('visibilitychange', tick);
     };
-  }, [completeDelay, finishDelay, onLoadingComplete, progressIntervalMs, progressStep]);
+  }, [completeDelay, finishDelay, onLoadingComplete, progressDurationMs, progressIntervalMs]);
 
   return (
     <AnimatePresence>
@@ -105,7 +119,7 @@ function LoadingScreen({ onLoadingComplete }) {
         <Motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: liteMotion ? 0.18 : 0.6 }}
           className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden"
           style={{
             minHeight: '100dvh',
@@ -151,9 +165,9 @@ function LoadingScreen({ onLoadingComplete }) {
             <div className="text-center" style={{ width: 'min(100%, 24rem)' }}>
               {/* Cassette */}
               <Motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                initial={liteMotion ? false : { opacity: 0, y: 20 }}
+                animate={liteMotion ? undefined : { opacity: 1, y: 0 }}
+                transition={liteMotion ? undefined : { duration: 0.6 }}
                 className="mb-8 sm:mb-12 relative"
               >
                 <div
@@ -208,7 +222,7 @@ function LoadingScreen({ onLoadingComplete }) {
                       style={{
                         width: reelSize,
                         height: reelSize,
-                        animation: reduceMotion ? 'none' : 'loading-reel-spin 2.4s linear infinite',
+                        animation: animateLoader ? 'loading-reel-spin 2.4s linear infinite' : 'none',
                         backgroundColor: colors.reel,
                         borderColor: colors.accentDeep,
                       }}
@@ -236,7 +250,7 @@ function LoadingScreen({ onLoadingComplete }) {
                       style={{
                         width: reelSize,
                         height: reelSize,
-                        animation: reduceMotion ? 'none' : 'loading-reel-spin 2.4s linear infinite',
+                        animation: animateLoader ? 'loading-reel-spin 2.4s linear infinite' : 'none',
                         backgroundColor: colors.reel,
                         borderColor: colors.accentDeep,
                       }}
@@ -278,9 +292,9 @@ function LoadingScreen({ onLoadingComplete }) {
 
               {/* Loading Text */}
               <Motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                initial={liteMotion ? false : { opacity: 0, y: 20 }}
+                animate={liteMotion ? undefined : { opacity: 1, y: 0 }}
+                transition={liteMotion ? undefined : { duration: 0.6 }}
               >
                 <h2
                   className="font-bold mb-4"
