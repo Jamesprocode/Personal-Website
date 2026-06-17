@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import proPhoto from '../../assets/me.webp';
 import useIsMobile from '../../hooks/useIsMobile';
@@ -55,6 +56,24 @@ const DWELL_MS = 5200; // (only used when AUTO_ADVANCE) time each frame holds
 const FADE_MS = 850; // cross-dissolve duration for deliberate manual browsing
 const SWIPE_PX = 44; // horizontal travel that counts as a swipe
 const TAP_PX = 8; // movement under this counts as a click/tap, not a drag
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+const DOUBLE_TAP_ZOOM = 2.25;
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getDistance(pointA, pointB) {
+  return Math.hypot(pointA.x - pointB.x, pointA.y - pointB.y);
+}
+
+function getMidpoint(pointA, pointB) {
+  return {
+    x: (pointA.x + pointB.x) / 2,
+    y: (pointA.y + pointB.y) / 2,
+  };
+}
 
 function prefersSaveData() {
   if (typeof navigator === 'undefined') return false;
@@ -104,9 +123,17 @@ function HeroPortraitCarousel({ reduceMotion }) {
   const [showControls, setShowControls] = useState(false);
   const [hoveredNav, setHoveredNav] = useState(null);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoomScale, setZoomScale] = useState(MIN_ZOOM);
+  const [zoomPan, setZoomPan] = useState({ x: 0, y: 0 });
+  const [zoomInteracting, setZoomInteracting] = useState(false);
 
   const rootRef = useRef(null);
   const pointerStart = useRef(null);
+  const zoomPointersRef = useRef(new Map());
+  const zoomGestureRef = useRef(null);
+  const zoomLastTapRef = useRef(0);
+  const zoomLastToggleRef = useRef(0);
+  const zoomStateRef = useRef({ scale: MIN_ZOOM, pan: { x: 0, y: 0 } });
   // Mirrors `index` so the imperative handlers (swipe, arrow keys, the
   // auto-advance timeout) can read the current frame without re-subscribing.
   const indexRef = useRef(INITIAL_FRAME_INDEX);
@@ -118,12 +145,51 @@ function HeroPortraitCarousel({ reduceMotion }) {
   const activeFrame = FRAMES[index];
   const activeMeta = META[activeFrame?.key] || {};
 
+  const setZoomTransform = useCallback((nextScale, nextPan) => {
+    const scale = clamp(nextScale, MIN_ZOOM, MAX_ZOOM);
+    const pan = scale <= MIN_ZOOM + 0.01 ? { x: 0, y: 0 } : nextPan;
+    zoomStateRef.current = { scale, pan };
+    setZoomScale(scale);
+    setZoomPan(pan);
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    zoomPointersRef.current.clear();
+    zoomGestureRef.current = null;
+    zoomLastTapRef.current = 0;
+    zoomLastToggleRef.current = 0;
+    setZoomInteracting(false);
+    setZoomTransform(MIN_ZOOM, { x: 0, y: 0 });
+  }, [setZoomTransform]);
+
+  const getZoomPoints = () => Array.from(zoomPointersRef.current.values());
+
+  const startZoomPan = (point) => {
+    zoomGestureRef.current = {
+      type: 'pan',
+      startPointer: point,
+      startPan: zoomStateRef.current.pan,
+    };
+  };
+
+  const startZoomPinch = (points) => {
+    const [firstPoint, secondPoint] = points;
+    zoomGestureRef.current = {
+      type: 'pinch',
+      startDistance: Math.max(getDistance(firstPoint, secondPoint), 1),
+      startMidpoint: getMidpoint(firstPoint, secondPoint),
+      startScale: zoomStateRef.current.scale,
+      startPan: zoomStateRef.current.pan,
+    };
+  };
+
   // Single entry point for changing frame: moves the index and mounts the
   // target (plus the next one) in the same pass. Called only from event
   // handlers and the auto-advance timeout, never synchronously in an effect,
   // so the lazy-mount stays a side effect of interaction rather than render.
   const goTo = useCallback(
     (target) => {
+      if (zoomOpen) resetZoom();
       const next = ((target % count) + count) % count;
       indexRef.current = next;
       setIndex(next);
@@ -136,7 +202,7 @@ function HeroPortraitCarousel({ reduceMotion }) {
         return s;
       });
     },
-    [count],
+    [count, resetZoom, zoomOpen],
   );
 
   const go = useCallback(
@@ -232,6 +298,7 @@ function HeroPortraitCarousel({ reduceMotion }) {
     ) {
       if (isMobile) {
         setPaused(true);
+        resetZoom();
         setZoomOpen(true);
       } else {
         // Desktop keeps the original "click to change photo" interaction.
@@ -256,6 +323,105 @@ function HeroPortraitCarousel({ reduceMotion }) {
 
   const reveal = () => setShowControls(true);
   const hide = () => setShowControls(false);
+
+  const onZoomPointerDown = (event) => {
+    event.preventDefault();
+    if (event.currentTarget.setPointerCapture) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    const point = { x: event.clientX, y: event.clientY };
+    zoomPointersRef.current.set(event.pointerId, point);
+    const points = getZoomPoints();
+    setZoomInteracting(true);
+    if (points.length >= 2) {
+      startZoomPinch(points.slice(0, 2));
+    } else {
+      startZoomPan(point);
+    }
+  };
+
+  const onZoomPointerMove = (event) => {
+    if (!zoomPointersRef.current.has(event.pointerId)) return;
+    event.preventDefault();
+    zoomPointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const points = getZoomPoints();
+
+    if (points.length >= 2) {
+      if (!zoomGestureRef.current || zoomGestureRef.current.type !== 'pinch') {
+        startZoomPinch(points.slice(0, 2));
+      }
+      const gesture = zoomGestureRef.current;
+      const [firstPoint, secondPoint] = points;
+      const currentDistance = Math.max(getDistance(firstPoint, secondPoint), 1);
+      const currentMidpoint = getMidpoint(firstPoint, secondPoint);
+      const nextScale = gesture.startScale * (currentDistance / gesture.startDistance);
+      setZoomTransform(nextScale, {
+        x: gesture.startPan.x + currentMidpoint.x - gesture.startMidpoint.x,
+        y: gesture.startPan.y + currentMidpoint.y - gesture.startMidpoint.y,
+      });
+      return;
+    }
+
+    const [point] = points;
+    if (!point) return;
+    if (!zoomGestureRef.current || zoomGestureRef.current.type !== 'pan') {
+      startZoomPan(point);
+    }
+    if (zoomStateRef.current.scale <= MIN_ZOOM + 0.01) return;
+    const gesture = zoomGestureRef.current;
+    setZoomTransform(zoomStateRef.current.scale, {
+      x: gesture.startPan.x + point.x - gesture.startPointer.x,
+      y: gesture.startPan.y + point.y - gesture.startPointer.y,
+    });
+  };
+
+  const onZoomPointerEnd = (event) => {
+    if (event.currentTarget.releasePointerCapture && event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    zoomPointersRef.current.delete(event.pointerId);
+    const points = getZoomPoints();
+    if (points.length >= 2) {
+      startZoomPinch(points.slice(0, 2));
+      return;
+    }
+    if (points.length === 1) {
+      startZoomPan(points[0]);
+      return;
+    }
+    zoomGestureRef.current = null;
+    setZoomInteracting(false);
+    if (zoomStateRef.current.scale < MIN_ZOOM + 0.04) {
+      setZoomTransform(MIN_ZOOM, { x: 0, y: 0 });
+    }
+  };
+
+  const toggleZoom = (timestamp) => {
+    zoomLastToggleRef.current = timestamp;
+    if (zoomStateRef.current.scale > MIN_ZOOM + 0.01) {
+      setZoomTransform(MIN_ZOOM, { x: 0, y: 0 });
+    } else {
+      setZoomTransform(DOUBLE_TAP_ZOOM, { x: 0, y: 0 });
+    }
+  };
+
+  const onZoomDoubleTap = (event) => {
+    event.preventDefault();
+    const now = event.timeStamp;
+    if (now - zoomLastTapRef.current < 300) {
+      toggleZoom(now);
+      zoomLastTapRef.current = 0;
+      return;
+    }
+    zoomLastTapRef.current = now;
+  };
+
+  const onZoomDoubleClick = (event) => {
+    event.preventDefault();
+    const now = event.timeStamp;
+    if (now - zoomLastToggleRef.current < 80) return;
+    toggleZoom(now);
+  };
 
   const activeAlt = (() => {
     return activeMeta.altKey ? t(activeMeta.altKey, { defaultValue: activeMeta.alt }) : t('nav.brand');
@@ -495,89 +661,153 @@ function HeroPortraitCarousel({ reduceMotion }) {
       )}
       </div>
 
-      {zoomOpen && activeFrame && (
-        <div
+      {zoomOpen &&
+        activeFrame &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
           role="dialog"
           aria-modal="true"
           aria-label={t('hero.photo.zoomLabel', { defaultValue: 'Expanded photo viewer' })}
-          className="fixed inset-0 z-[120] bg-black/92"
+          className="fixed inset-0 z-[120] bg-black/72 backdrop-blur-[3px]"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setZoomOpen(false);
+          }}
           style={{
             display: 'flex',
-            flexDirection: 'column',
-            touchAction: 'pan-x pan-y pinch-zoom',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding:
+              'calc(env(safe-area-inset-top, 0px) + 1rem) 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+            touchAction: 'none',
           }}
         >
           <div
+            className="bg-[rgba(20,15,12,0.96)] border border-[rgba(253,244,220,0.18)] shadow-[0_24px_80px_rgba(0,0,0,0.62)]"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              padding: 'calc(env(safe-area-inset-top, 0px) + 0.85rem) 1rem 0.85rem',
-              color: '#fdf4dc',
-              flexShrink: 0,
+              width:
+                'min(92vw, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem), 34rem)',
+              aspectRatio: '1 / 1',
+              borderRadius: '1.35rem',
+              overflow: 'hidden',
+              position: 'relative',
             }}
           >
-            <p
+            <div
               style={{
-                margin: 0,
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: '0.72rem',
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: 'rgba(253, 244, 220, 0.72)',
-              }}
-            >
-              {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')} · pinch to zoom
-            </p>
-            <button
-              type="button"
-              aria-label={t('common.close', { defaultValue: 'Close' })}
-              onClick={() => setZoomOpen(false)}
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 9999,
-                border: '1px solid rgba(253, 244, 220, 0.35)',
-                background: 'rgba(20, 15, 12, 0.65)',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                padding: '0.75rem 0.8rem 1.4rem',
                 color: '#fdf4dc',
-                fontSize: '1.55rem',
-                lineHeight: 1,
+                background: 'linear-gradient(180deg, rgba(20, 15, 12, 0.88), rgba(20, 15, 12, 0))',
               }}
             >
-              ×
-            </button>
-          </div>
+              <p
+                style={{
+                  margin: 0,
+                  minWidth: 0,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: '0.7rem',
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(253, 244, 220, 0.72)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {String(index + 1).padStart(2, '0')} / {String(count).padStart(2, '0')} · pinch / drag
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={resetZoom}
+                  style={{
+                    height: 38,
+                    padding: '0 0.8rem',
+                    borderRadius: 9999,
+                    border: '1px solid rgba(253, 244, 220, 0.28)',
+                    background: 'rgba(253, 244, 220, 0.08)',
+                    color: '#fdf4dc',
+                    fontSize: '0.72rem',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  aria-label={t('common.close', { defaultValue: 'Close' })}
+                  onClick={() => setZoomOpen(false)}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 9999,
+                    border: '1px solid rgba(253, 244, 220, 0.35)',
+                    background: 'rgba(253, 244, 220, 0.08)',
+                    color: '#fdf4dc',
+                    fontSize: '1.45rem',
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
 
-          <div
-            style={{
-              flex: 1,
-              overflow: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem)',
-              touchAction: 'pan-x pan-y pinch-zoom',
-            }}
-          >
-            <img
-              src={activeFrame.url}
-              alt={t(activeMeta.altKey, { defaultValue: activeMeta.alt || activeAlt })}
-              draggable={false}
+            <div
+              aria-label={t('hero.photo.zoomInstructions', {
+                defaultValue: 'Pinch to zoom. Drag while zoomed. Double tap to toggle zoom.',
+              })}
+              onPointerDown={onZoomPointerDown}
+              onPointerMove={onZoomPointerMove}
+              onPointerUp={onZoomPointerEnd}
+              onPointerCancel={onZoomPointerEnd}
+              onLostPointerCapture={onZoomPointerEnd}
+              onClick={onZoomDoubleTap}
+              onDoubleClick={onZoomDoubleClick}
               style={{
-                width: 'auto',
-                maxWidth: 'min(100%, 980px)',
-                maxHeight: '100%',
-                objectFit: 'contain',
-                borderRadius: '1rem',
-                touchAction: 'pan-x pan-y pinch-zoom',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.55)',
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                touchAction: 'none',
+                cursor: zoomScale > MIN_ZOOM + 0.01 ? 'grab' : 'zoom-in',
               }}
-            />
+            >
+              <img
+                src={activeFrame.url}
+                alt={activeAlt}
+                draggable={false}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: activeMeta.pos || 'center',
+                  transform: `translate3d(${zoomPan.x}px, ${zoomPan.y}px, 0) scale(${zoomScale})`,
+                  transformOrigin: 'center center',
+                  transition: zoomInteracting || reduceMotion ? 'none' : 'transform 180ms ease-out',
+                  touchAction: 'none',
+                  userSelect: 'none',
+                }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

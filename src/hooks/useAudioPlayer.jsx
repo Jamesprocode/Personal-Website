@@ -92,6 +92,21 @@ export function AudioPlayerProvider({ children }) {
   const sourceRef = useRef(null);
   const dataArrayRef = useRef(null);
 
+  const setMediaSessionPlaybackState = useCallback((state) => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = state;
+    }
+  }, []);
+
+  const clearResumeRetries = useCallback(() => {
+    if (resumeTimerRef.current) {
+      window.clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+    resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    resumeRetryTimersRef.current = [];
+  }, []);
+
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
@@ -154,6 +169,60 @@ export function AudioPlayerProvider({ children }) {
     const rms = Math.sqrt(sumSquares / dataArray.length);
     return Math.min(1, rms * 2.2);
   }, [isPlaying]);
+
+  const resumeCurrentAudio = useCallback(
+    ({ keepIntent = true, showBuffering = true } = {}) => {
+      const audio = audioRef.current;
+      if (!audio || audio.ended) return;
+
+      if (!audio.paused) {
+        setIsPlaying(true);
+        setIsBuffering(false);
+        setMediaSessionPlaybackState('playing');
+        return;
+      }
+
+      ensureAnalyser(audio);
+      if (showBuffering) setIsBuffering(true);
+
+      audio.play().catch((error) => {
+        if (audioRef.current !== audio) return;
+        setIsPlaying(!audio.paused && !audio.ended);
+        setIsBuffering(false);
+        setMediaSessionPlaybackState(audio.paused ? 'paused' : 'playing');
+
+        // A direct user tap should not leave stale "I still want playback"
+        // state if the browser blocks the play request. Background resume
+        // attempts keep the intent so a later focus / pageshow can retry.
+        if (!keepIntent && error?.name === 'NotAllowedError') {
+          wantPlayingRef.current = false;
+        }
+      });
+    },
+    [ensureAnalyser, setMediaSessionPlaybackState],
+  );
+
+  const scheduleResumeAttempts = useCallback(
+    ({ allowHidden = false } = {}) => {
+      const audio = audioRef.current;
+      if (!audio || !wantPlayingRef.current || audio.ended) return;
+      if (document.visibilityState === 'hidden' && !allowHidden) return;
+
+      clearResumeRetries();
+      const delays = isMobileAudioRuntime() ? [80, 300, 900, 1800, 3500] : [150, 900, 1800];
+      resumeRetryTimersRef.current = delays.map((delay) =>
+        window.setTimeout(() => {
+          if (document.visibilityState === 'hidden' && !allowHidden) return;
+          resumeCurrentAudio({
+            keepIntent: true,
+            showBuffering: document.visibilityState !== 'hidden',
+          });
+        }, delay),
+      );
+      resumeTimerRef.current = resumeRetryTimersRef.current[0] || null;
+    },
+    [clearResumeRetries, resumeCurrentAudio],
+  );
 
   // Reliable seeking workaround, run ON DEMAND (first seek) rather than at
   // play() time. Cloudflare's static-asset hosting answers range requests with
@@ -227,14 +296,28 @@ export function AudioPlayerProvider({ children }) {
         prev.pause();
         prev.removeAttribute('src');
         try { prev.load(); } catch { /* no-op */ }
+        if (prev.parentNode) prev.parentNode.removeChild(prev);
       }
 
-      const audio = new Audio(trackFile);
+      const audio = document.createElement('audio');
       audio.crossOrigin = 'anonymous';
       audio.preload = 'auto';
       audio.playsInline = true;
       audio.setAttribute('playsinline', '');
+      audio.setAttribute('aria-hidden', 'true');
+      audio.disableRemotePlayback = false;
       audio.volume = volume / 100;
+      audio.src = trackFile;
+      Object.assign(audio.style, {
+        position: 'fixed',
+        width: '1px',
+        height: '1px',
+        left: '-9999px',
+        top: '0',
+        opacity: '0',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(audio);
       audioRef.current = audio;
       currentTrackRef.current = trackFile;
       currentTimeMV.set(0); // reset position for the new track
@@ -280,16 +363,15 @@ export function AudioPlayerProvider({ children }) {
         if (!isCurrent()) return;
         setIsBuffering(false);
         setIsPlaying(true);
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.playbackState = 'playing';
-        }
+        clearResumeRetries();
+        setMediaSessionPlaybackState('playing');
       });
       audio.addEventListener('canplay', () => {
         if (!isCurrent()) return;
         // Enough buffered to start. If the user still wants playback but the
         // element is paused (e.g. it paused itself to buffer), resume.
         if (wantPlayingRef.current && audio.paused) {
-          audio.play().catch(() => {});
+          resumeCurrentAudio({ keepIntent: true, showBuffering: document.visibilityState !== 'hidden' });
         }
       });
       audio.addEventListener('pause', () => {
@@ -297,35 +379,25 @@ export function AudioPlayerProvider({ children }) {
         if (!wantPlayingRef.current) {
           setIsPlaying(false);
           setIsBuffering(false);
-          if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'paused';
-          }
+          setMediaSessionPlaybackState('paused');
           return;
         }
         setIsPlaying(false);
         const visible = document.visibilityState !== 'hidden';
         setIsBuffering(visible);
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.playbackState = 'paused';
-        }
-        if (!visible) return;
-        if (resumeTimerRef.current) {
-          window.clearTimeout(resumeTimerRef.current);
-        }
-        resumeTimerRef.current = window.setTimeout(() => {
-          if (!isCurrent() || !wantPlayingRef.current || !audio.paused) return;
-          if (document.visibilityState === 'hidden') return;
-          audio.play().catch(() => {
-            if (isCurrent()) setIsBuffering(false);
-          });
-        }, 400);
+        setMediaSessionPlaybackState('paused');
+        scheduleResumeAttempts({ allowHidden: isMobileAudioRuntime() });
+      });
+      audio.addEventListener('abort', () => {
+        if (!isCurrent() || !wantPlayingRef.current) return;
+        setIsPlaying(false);
+        setIsBuffering(document.visibilityState !== 'hidden');
+        scheduleResumeAttempts({ allowHidden: isMobileAudioRuntime() });
       });
       audio.addEventListener('error', () => {
         if (!isCurrent()) return;
         setIsBuffering(false);
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.playbackState = 'none';
-        }
+        setMediaSessionPlaybackState('none');
       });
       // When a seek finishes, chase the most recent pending target (if any).
       // This serializes rapid scrub seeks so the element never gets stuck in
@@ -343,23 +415,21 @@ export function AudioPlayerProvider({ children }) {
     }
 
     if (audioRef.current) {
-      ensureAnalyser(audioRef.current);
       // Don't optimistically flip isPlaying here — the 'playing' event does
       // that once sound is actually out. We do show the buffering indicator
       // immediately so the click feels acknowledged.
       if (audioRef.current.paused) setIsBuffering(true);
-      const playTarget = audioRef.current;
-      playTarget.play().catch(() => {
-        if (audioRef.current !== playTarget) return;
-        // Autoplay rejection or an aborted load. Drop the intent so the UI
-        // doesn't get stuck showing a spinner forever.
-        wantPlayingRef.current = false;
-        setIsBuffering(false);
-        setIsPlaying(false);
-      });
+      resumeCurrentAudio({ keepIntent: false, showBuffering: true });
       setHasEverPlayed(true);
     }
-  }, [volume, ensureAnalyser, currentTimeMV]);
+  }, [
+    volume,
+    currentTimeMV,
+    clearResumeRetries,
+    resumeCurrentAudio,
+    scheduleResumeAttempts,
+    setMediaSessionPlaybackState,
+  ]);
 
   const pause = useCallback(() => {
     // Record intent first so the element's 'pause' listener knows this was a
@@ -369,11 +439,10 @@ export function AudioPlayerProvider({ children }) {
       audioRef.current.pause();
       setIsPlaying(false);
       setIsBuffering(false);
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'paused';
-      }
+      clearResumeRetries();
+      setMediaSessionPlaybackState('paused');
     }
-  }, []);
+  }, [clearResumeRetries, setMediaSessionPlaybackState]);
 
   const stop = useCallback(() => {
     wantPlayingRef.current = false;
@@ -384,6 +453,7 @@ export function AudioPlayerProvider({ children }) {
       audio.pause();
       audio.removeAttribute('src');
       try { audio.load(); } catch { /* no-op */ }
+      if (audio.parentNode) audio.parentNode.removeChild(audio);
     }
 
     audioRef.current = null;
@@ -405,10 +475,9 @@ export function AudioPlayerProvider({ children }) {
     setDuration(0);
     setHasEverPlayed(false);
     currentTimeMV.set(0);
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = 'none';
-    }
-  }, [currentTimeMV]);
+    clearResumeRetries();
+    setMediaSessionPlaybackState('none');
+  }, [clearResumeRetries, currentTimeMV, setMediaSessionPlaybackState]);
 
   const selectTrack = useCallback((album, track) => {
     setSelectedAlbum(album);
@@ -503,13 +572,12 @@ export function AudioPlayerProvider({ children }) {
   // Clean up the audio context on unmount of the provider (i.e., app unload)
   useEffect(() => {
     return () => {
-      if (resumeTimerRef.current) {
-        window.clearTimeout(resumeTimerRef.current);
-      }
-      resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-      resumeRetryTimersRef.current = [];
+      clearResumeRetries();
       if (audioRef.current) {
         audioRef.current.pause();
+        if (audioRef.current.parentNode) {
+          audioRef.current.parentNode.removeChild(audioRef.current);
+        }
       }
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
@@ -519,7 +587,7 @@ export function AudioPlayerProvider({ children }) {
         audioCtxRef.current.close().catch(() => {});
       }
     };
-  }, []);
+  }, [clearResumeRetries]);
 
   useEffect(() => {
     if (!('mediaSession' in navigator)) return undefined;
@@ -536,14 +604,16 @@ export function AudioPlayerProvider({ children }) {
       if (currentTrackRef.current) play(currentTrackRef.current);
     });
     runIfSupported('pause', pause);
+    runIfSupported('stop', stop);
     runIfSupported('nexttrack', playNext);
 
     return () => {
       runIfSupported('play', null);
       runIfSupported('pause', null);
+      runIfSupported('stop', null);
       runIfSupported('nexttrack', null);
     };
-  }, [play, pause, playNext]);
+  }, [play, pause, stop, playNext]);
 
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
@@ -572,49 +642,27 @@ export function AudioPlayerProvider({ children }) {
   }, [selectedAlbum, selectedTrack]);
 
   useEffect(() => {
-    const tryResumeAfterInterruption = () => {
-      const audio = audioRef.current;
-      if (!audio || !wantPlayingRef.current || audio.ended) return;
-      if (!audio.paused) {
-        setIsPlaying(true);
-        setIsBuffering(false);
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.playbackState = 'playing';
-        }
-        return;
-      }
-      ensureAnalyser(audio);
-      setIsBuffering(true);
-      audio.play().catch(() => {
-        setIsBuffering(false);
-      });
-    };
-
     const scheduleResume = () => {
-      if (document.visibilityState === 'hidden') return;
-      if (resumeTimerRef.current) {
-        window.clearTimeout(resumeTimerRef.current);
-      }
-      resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-      resumeRetryTimersRef.current = [150, 900, 1800].map((delay) =>
-        window.setTimeout(tryResumeAfterInterruption, delay),
-      );
-      resumeTimerRef.current = resumeRetryTimersRef.current[0];
+      scheduleResumeAttempts({ allowHidden: isMobileAudioRuntime() });
     };
 
+    document.addEventListener('resume', scheduleResume);
     document.addEventListener('visibilitychange', scheduleResume);
     window.addEventListener('focus', scheduleResume);
     window.addEventListener('pageshow', scheduleResume);
     window.addEventListener('online', scheduleResume);
     return () => {
+      document.removeEventListener('resume', scheduleResume);
       document.removeEventListener('visibilitychange', scheduleResume);
       window.removeEventListener('focus', scheduleResume);
       window.removeEventListener('pageshow', scheduleResume);
       window.removeEventListener('online', scheduleResume);
-      resumeRetryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-      resumeRetryTimersRef.current = [];
+      clearResumeRetries();
     };
-  }, [ensureAnalyser]);
+  }, [
+    clearResumeRetries,
+    scheduleResumeAttempts,
+  ]);
 
   // Memoized so the context value identity only changes when real control
   // state does (play state, track, volume, duration…), NOT on every playback
