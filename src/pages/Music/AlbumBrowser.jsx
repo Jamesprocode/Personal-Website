@@ -319,19 +319,18 @@ function AlbumBrowser({
 }) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
-  const isMobile = useIsMobile();
   const { isDark } = useTheme();
   // Start with every album collapsed by default. The one exception: if a
   // track is already playing when this view (re)mounts — e.g. the visitor
   // navigated away with the floating record still spinning and came back —
   // open the album that track belongs to so they land on what's playing.
   const [manualExpandedId, setManualExpandedId] = useState(undefined);
-  const defaultMobileAlbumId = albums.some((album) => album.id === DEFAULT_MOBILE_ALBUM_ID)
+  const defaultAlbumId = albums.some((album) => album.id === DEFAULT_MOBILE_ALBUM_ID)
     ? DEFAULT_MOBILE_ALBUM_ID
     : albums[0]?.id;
   const expandedId = manualExpandedId !== undefined
     ? manualExpandedId
-    : (activeAlbumId || (defaultOpenFirstAlbum || isMobile ? defaultMobileAlbumId : null));
+    : (activeAlbumId || (defaultOpenFirstAlbum ? defaultAlbumId : null));
   const [sleeveAlbum, setSleeveAlbum] = useState(null);
 
   // Crate body matches the turntable deck: light cream-wood in light mode,

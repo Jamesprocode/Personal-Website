@@ -184,7 +184,6 @@ function Music() {
                 isPlaying={isPlaying}
                 isBuffering={isBuffering}
                 onSelectTrack={handleSelectTrackAndRevealPlayer}
-                defaultOpenFirstAlbum={isStacked}
               />
             </Motion.div>
           </div>
