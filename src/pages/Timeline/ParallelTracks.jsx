@@ -600,6 +600,8 @@ function Entry({
           fontWeight: lit ? 600 : 500,
           textAlign: 'center',
           whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
           padding: '0 2px',
           pointerEvents: 'none',
           transition: reduceMotion ? 'none' : 'color 150ms ease',
@@ -637,14 +639,13 @@ function Entry({
 }
 
 // Standalone tooltip rendered as a sibling of all Entry wrappers within a
-// band, anchored to the active entry's xFrac. Left-half entries pop to the
-// left, right-half entries pop to the right — labels sail outward into the
-// chart's empty margins rather than crashing into neighboring discs. Per-
-// entry `tooltipSide` overrides the default.
+// band, anchored to the active entry's xFrac. Default placement keeps the
+// card inside the chart: left-half entries open right, right-half entries
+// open left. Per-entry `tooltipSide` overrides the default where needed.
 function EntryTooltip({ item, color, isPinned, t }) {
   const placeOnLeft = item.tooltipSide
     ? item.tooltipSide === 'left'
-    : item.xFrac < 0.5;
+    : item.xFrac > 0.5;
   const sideStyle = placeOnLeft
     ? { right: `calc(${(1 - item.xFrac) * 100}% + 30px)` }
     : { left: `calc(${item.xFrac * 100}% + 30px)` };
@@ -662,7 +663,7 @@ function EntryTooltip({ item, color, isPinned, t }) {
         top: SPINE_Y,
         ...sideStyle,
         transform: 'translateY(-50%)',
-        width: 'clamp(240px, 22vw, 300px)',
+        width: 'min(clamp(240px, 22vw, 300px), calc(100vw - 2rem))',
         backgroundColor: 'var(--surface)',
         border: '1px solid var(--border)',
         borderLeft: `3px solid ${color}`,
@@ -738,6 +739,7 @@ function EntryTooltip({ item, color, isPinned, t }) {
             color: 'var(--text)',
             fontSize: '0.85rem',
             lineHeight: 1.55,
+            overflowWrap: 'anywhere',
           }}
         >
           {detailsTr}
