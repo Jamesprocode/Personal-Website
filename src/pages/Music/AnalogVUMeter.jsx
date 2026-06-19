@@ -16,7 +16,7 @@ import { useReducedMotion } from 'framer-motion';
  *   - getLevel ((): number 0..1) optional; if absent, falls back to a quiet
  *     simulated reading so the dial isn't dead between tracks.
  */
-function AnalogVUMeter({ isPlaying, getLevel, label = 'VU' }) {
+function AnalogVUMeter({ isPlaying, getLevel, label = 'VU', useVisualFallback = false }) {
   const reduceMotion = useReducedMotion();
   const needleRef = useRef(null);
 
@@ -45,6 +45,13 @@ function AnalogVUMeter({ isPlaying, getLevel, label = 'VU' }) {
           // Idle sim — quiet wobble around -30 to -15 dB region
           level = 0.18 + Math.random() * 0.18;
         }
+        if (useVisualFallback && (!Number.isFinite(level) || level <= 0.002)) {
+          const seconds = performance.now() / 1000;
+          level = 0.14
+            + Math.sin(seconds * 4.7) * 0.08
+            + Math.sin(seconds * 10.9) * 0.05;
+          level = Math.max(0.05, Math.min(0.32, level));
+        }
       }
       // Map 0..1 level to -50°..+50° needle range (cube-root for VU feel)
       const shaped = Math.pow(level, 0.5);
@@ -58,7 +65,7 @@ function AnalogVUMeter({ isPlaying, getLevel, label = 'VU' }) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [isPlaying, getLevel, reduceMotion]);
+  }, [isPlaying, getLevel, reduceMotion, useVisualFallback]);
 
   return (
     <div className="flex flex-col items-center" style={{ width: '100%', maxWidth: 220 }}>

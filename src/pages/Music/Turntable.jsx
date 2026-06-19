@@ -958,7 +958,7 @@ function Turntable({
             </kbd>
             {t('music.hint.spaceSuffix')}
           </p>
-          <AnalogVUMeter isPlaying={isPlaying} getLevel={getLevel} />
+          <AnalogVUMeter isPlaying={isPlaying} getLevel={getLevel} useVisualFallback={isMobile} />
         </div>
       </div>
     </div>

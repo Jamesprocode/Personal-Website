@@ -117,8 +117,8 @@ export function AudioPlayerProvider({ children }) {
     // Mobile browsers often suspend Web Audio contexts on lock screen,
     // notification shade, or app switch. If the media element is routed
     // through an analyser, that suspension can cut the real audio. On mobile
-    // we keep playback as a direct <audio> stream and let the visual meters
-    // fall back to their quiet state.
+    // we keep playback as a direct <audio> stream; visual meters use a local
+    // fallback animation instead of reading the audio graph.
     if (isMobileAudioRuntime()) return;
 
     try {
