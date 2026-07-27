@@ -74,6 +74,13 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
   const completeDelay = reduceMotion ? 180 : 400;
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const loadingStatus = progress < 30
+    ? t('loading.status.tuning')
+    : progress < 60
+      ? t('loading.status.setup')
+      : progress < 90
+        ? t('loading.status.sound')
+        : t('loading.status.ready');
 
   useEffect(() => {
     let completeTimer;
@@ -264,6 +271,7 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
           transition={{ duration: liteMotion ? 0.18 : 0.6 }}
           className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden"
           style={{
+            zIndex: 70,
             minHeight: '100dvh',
             background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.bg} 46%, ${colors.bgAlt} 100%)`,
             color: colors.text,
@@ -311,16 +319,18 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                 animate={liteMotion ? undefined : { opacity: 1, y: 0 }}
                 transition={liteMotion ? undefined : { duration: 0.6 }}
                 className="mb-8 sm:mb-12 relative"
+                style={{ marginBottom: isMobile ? '1.75rem' : undefined }}
               >
                 <div
                   className="relative rounded-2xl mx-auto border-4"
                   style={{
-                    width: 'clamp(15.5rem, 78vw, 24rem)',
+                    width: isMobile ? 'min(68vw, 15.5rem)' : 'clamp(15.5rem, 78vw, 24rem)',
                     aspectRatio: '12 / 7',
                     marginLeft: 'auto',
                     marginRight: 'auto',
                     background: `linear-gradient(135deg, ${colors.surface} 0%, ${colors.surface2} 100%)`,
                     borderColor: colors.accentDeep,
+                    borderWidth: isMobile ? 3 : undefined,
                     boxShadow: colors.shadow,
                   }}
                 >
@@ -328,9 +338,10 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                   <div
                     className="absolute top-4 rounded-lg flex items-center justify-center"
                     style={{
-                      left: 'clamp(1.25rem, 7vw, 2rem)',
-                      right: 'clamp(1.25rem, 7vw, 2rem)',
-                      height: 'clamp(4rem, 18vw, 5rem)',
+                      top: isMobile ? '0.75rem' : undefined,
+                      left: isMobile ? '1.1rem' : 'clamp(1.25rem, 7vw, 2rem)',
+                      right: isMobile ? '1.1rem' : 'clamp(1.25rem, 7vw, 2rem)',
+                      height: isMobile ? '3.15rem' : 'clamp(4rem, 18vw, 5rem)',
                       backgroundColor: colors.labelBg,
                       border: `1px solid ${colors.border}`,
                     }}
@@ -340,12 +351,16 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                         className="font-bold tracking-widest"
                         style={{
                           color: colors.textStrong,
-                          fontSize: 'clamp(1.35rem, 6.5vw, 1.5rem)',
+                          fontSize: isMobile ? '1rem' : 'clamp(1.35rem, 6.5vw, 1.5rem)',
+                          letterSpacing: isMobile ? '0.12em' : undefined,
                         }}
                       >
                         JAMES WANG
                       </p>
-                      <p className="text-xs mt-1" style={{ color: colors.textMuted }}>
+                      <p
+                        className="text-xs mt-1"
+                        style={{ color: colors.textMuted, fontSize: isMobile ? '0.58rem' : undefined }}
+                      >
                         PORTFOLIO &middot; SIDE A
                       </p>
                     </div>
@@ -355,17 +370,18 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                   <div
                     className="absolute flex justify-between items-center"
                     style={{
-                      left: 'clamp(2rem, 11vw, 3rem)',
-                      right: 'clamp(2rem, 11vw, 3rem)',
-                      bottom: 'clamp(1.5rem, 8vw, 2rem)',
+                      left: isMobile ? '1.6rem' : 'clamp(2rem, 11vw, 3rem)',
+                      right: isMobile ? '1.6rem' : 'clamp(2rem, 11vw, 3rem)',
+                      bottom: isMobile ? '1rem' : 'clamp(1.5rem, 8vw, 2rem)',
                     }}
                   >
                     {/* Left Reel */}
                     <div
                       className="w-16 h-16 rounded-full border-4 relative overflow-hidden"
                       style={{
-                        width: reelSize,
-                        height: reelSize,
+                        width: isMobile ? '2.1rem' : reelSize,
+                        height: isMobile ? '2.1rem' : reelSize,
+                        borderWidth: isMobile ? 3 : undefined,
                         animation: animateLoader ? 'loading-reel-spin 2.4s linear infinite' : 'none',
                         backgroundColor: colors.reel,
                         borderColor: colors.accentDeep,
@@ -392,8 +408,9 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                     <div
                       className="w-16 h-16 rounded-full border-4 relative overflow-hidden"
                       style={{
-                        width: reelSize,
-                        height: reelSize,
+                        width: isMobile ? '2.1rem' : reelSize,
+                        height: isMobile ? '2.1rem' : reelSize,
+                        borderWidth: isMobile ? 3 : undefined,
                         animation: animateLoader ? 'loading-reel-spin 2.4s linear infinite' : 'none',
                         backgroundColor: colors.reel,
                         borderColor: colors.accentDeep,
@@ -421,8 +438,8 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                   <div
                     className="absolute left-1/2 -translate-x-1/2 h-1 rounded-full"
                     style={{
-                      width: 'clamp(5.5rem, 30vw, 8rem)',
-                      bottom: 'clamp(1.5rem, 8vw, 2rem)',
+                      width: isMobile ? '4.75rem' : 'clamp(5.5rem, 30vw, 8rem)',
+                      bottom: isMobile ? '1rem' : 'clamp(1.5rem, 8vw, 2rem)',
                       backgroundColor: colors.accentDeep,
                     }}
                   >
@@ -444,74 +461,102 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                   className="font-bold mb-4"
                   style={{
                     color: colors.textStrong,
-                    fontSize: 'clamp(1.9rem, 8vw, 2.25rem)',
+                    fontSize: isMobile ? '1.4rem' : 'clamp(1.9rem, 8vw, 2.25rem)',
                     lineHeight: 1.1,
+                    marginBottom: isMobile ? '0.7rem' : undefined,
                   }}
                 >
                   {t('loading.heading')}
                 </h2>
-                <p className="text-lg mb-6" style={{ color: colors.textMuted }}>
-                  {progress < 30 && t('loading.status.tuning')}
-                  {progress >= 30 && progress < 60 && t('loading.status.setup')}
-                  {progress >= 60 && progress < 90 && t('loading.status.sound')}
-                  {progress >= 90 && t('loading.status.ready')}
-                </p>
-
-                {/* Progress Bar */}
-                <div className="mx-auto mb-8 sm:mb-12" style={{ width: 'min(100%, 24rem)' }}>
+                {isMobile ? (
                   <div
-                    className="h-3 rounded-full overflow-hidden border-2"
-                    style={{ backgroundColor: colors.surface2, borderColor: colors.border }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      justifyContent: 'center',
+                      gap: '0.75rem',
+                      marginBottom: '1rem',
+                    }}
                   >
-                    <Motion.div
-                      className="h-full"
+                    <p style={{ color: colors.textMuted, fontSize: '0.86rem', margin: 0 }}>
+                      {loadingStatus}
+                    </p>
+                    <p
                       style={{
-                        width: `${progress}%`,
-                        background: `linear-gradient(90deg, ${colors.accentDeep}, ${colors.accent}, ${colors.accentBright})`,
+                        color: colors.textMuted,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: '0.7rem',
+                        margin: 0,
                       }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
-                  <p className="text-sm mt-2 font-mono" style={{ color: colors.textMuted }}>
-                    {progress}%
-                  </p>
-                </div>
-
-                {/* Waveform */}
-                {liteMotion ? (
-                  <div className="flex items-end gap-1 h-12 justify-center" aria-hidden>
-                    {visibleWaveBars.map((bar, i) => (
-                      <div
-                        key={i}
-                        className="w-2 rounded-full"
-                        style={{ height: bar.heights[0], backgroundColor: colors.accent }}
-                      />
-                    ))}
+                    >
+                      {progress}%
+                    </p>
                   </div>
                 ) : (
-                  <Motion.div
-                    className="flex items-end gap-1 h-12 justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    {visibleWaveBars.map((bar, i) => (
+                  <p className="text-lg mb-6" style={{ color: colors.textMuted }}>
+                    {loadingStatus}
+                  </p>
+                )}
+
+                {/* Progress Bar */}
+                {!isMobile && (
+                  <div className="mx-auto mb-8 sm:mb-12" style={{ width: 'min(100%, 24rem)' }}>
+                    <div
+                      className="h-3 rounded-full overflow-hidden border-2"
+                      style={{ backgroundColor: colors.surface2, borderColor: colors.border }}
+                    >
                       <Motion.div
-                        key={i}
-                        className="w-2 rounded-full"
-                        animate={{
-                          height: bar.heights,
+                        className="h-full"
+                        style={{
+                          width: `${progress}%`,
+                          background: `linear-gradient(90deg, ${colors.accentDeep}, ${colors.accent}, ${colors.accentBright})`,
                         }}
-                        style={{ backgroundColor: colors.accent }}
-                        transition={{
-                          duration: 0.5,
-                          repeat: Infinity,
-                          repeatType: 'reverse',
-                          delay: i * 0.1,
-                        }}
+                        transition={{ duration: 0.3 }}
                       />
-                    ))}
-                  </Motion.div>
+                    </div>
+                    <p className="text-sm mt-2 font-mono" style={{ color: colors.textMuted }}>
+                      {progress}%
+                    </p>
+                  </div>
+                )}
+
+                {/* Waveform */}
+                {!isMobile && (
+                  liteMotion ? (
+                    <div className="flex items-end gap-1 h-12 justify-center" aria-hidden>
+                      {visibleWaveBars.map((bar, i) => (
+                        <div
+                          key={i}
+                          className="w-2 rounded-full"
+                          style={{ height: bar.heights[0], backgroundColor: colors.accent }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <Motion.div
+                      className="flex items-end gap-1 h-12 justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      {visibleWaveBars.map((bar, i) => (
+                        <Motion.div
+                          key={i}
+                          className="w-2 rounded-full"
+                          animate={{
+                            height: bar.heights,
+                          }}
+                          style={{ backgroundColor: colors.accent }}
+                          transition={{
+                            duration: 0.5,
+                            repeat: Infinity,
+                            repeatType: 'reverse',
+                            delay: i * 0.1,
+                          }}
+                        />
+                      ))}
+                    </Motion.div>
+                  )
                 )}
               </Motion.div>
             </div>

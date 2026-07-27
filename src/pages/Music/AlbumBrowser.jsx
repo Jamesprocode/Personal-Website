@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
@@ -6,6 +6,13 @@ import useIsMobile from '../../hooks/useIsMobile';
 import SleeveBack from './SleeveBack';
 
 const DEFAULT_MOBILE_ALBUM_ID = 'special';
+const MOBILE_ALBUM_LABELS = {
+  special: 'Special',
+  'oxyjazz-a': 'Side A',
+  'oxyjazz-b': 'Side B',
+  electronics: 'Synth',
+  'berret-yuffee': 'EP',
+};
 
 function AlbumThumb({ album, size = 56 }) {
   return (
@@ -66,9 +73,9 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
+        gap: isMobile ? 12 : 10,
         width: '100%',
-        padding: '8px 12px',
+        padding: isMobile ? '11px 8px' : '8px 12px',
         background: isActive ? 'rgba(196,162,101,0.12)' : 'transparent',
         border: '1px solid',
         borderColor: isActive ? 'rgba(196,162,101,0.35)' : 'transparent',
@@ -165,8 +172,75 @@ const TrackRow = memo(function TrackRow({ track, isActive, isPlaying, isBufferin
   );
 });
 
-const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, activeTrackId, isPlaying, isBuffering, onToggle, onSelectTrack, onOpenSleeve, reduceMotion }) {
+const AlbumTracks = memo(function AlbumTracks({
+  album,
+  activeTrackId,
+  isPlaying,
+  isBuffering,
+  onSelectTrack,
+  onOpenSleeve,
+}) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile('(max-width: 880px)');
+
+  return (
+    <div
+      style={{
+        padding: isMobile ? '6px 0 20px' : '4px 12px 14px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: isMobile ? 4 : 2,
+      }}
+    >
+      {[...album.tracks]
+        .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
+        .map((track) => (
+          <TrackRow
+            key={track.id}
+            track={track}
+            isActive={activeTrackId === track.id}
+            isPlaying={isPlaying && activeTrackId === track.id}
+            isBuffering={isBuffering && activeTrackId === track.id}
+            onClick={() => onSelectTrack(album, track)}
+          />
+        ))}
+      {album.liner && (
+        <button
+          type="button"
+          onClick={() => onOpenSleeve(album)}
+          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
+          style={{
+            alignSelf: 'flex-start',
+            margin: isMobile ? '16px 8px 2px' : '12px 12px 2px 12px',
+            padding: '6px 12px',
+            background: 'transparent',
+            border: '1px solid rgba(196,162,101,0.35)',
+            borderRadius: 4,
+            cursor: 'pointer',
+            color: 'var(--accent-deep)',
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '0.65rem',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            transition: 'background 0.18s ease-out, border-color 0.18s ease-out',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(196,162,101,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(196,162,101,0.55)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(196,162,101,0.35)';
+          }}
+        >
+          {t('music.linerHeader')}
+        </button>
+      )}
+    </div>
+  );
+});
+
+const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, activeTrackId, isPlaying, isBuffering, onToggle, onSelectTrack, onOpenSleeve, reduceMotion }) {
   const isMobile = useIsMobile();
   return (
     <div
@@ -248,59 +322,14 @@ const AlbumRow = memo(function AlbumRow({ album, isExpanded, isActiveAlbum, acti
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div
-              style={{
-                padding: '4px 12px 14px 12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-              }}
-            >
-              {[...album.tracks]
-                .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
-                .map((track) => (
-                <TrackRow
-                  key={track.id}
-                  track={track}
-                  isActive={activeTrackId === track.id}
-                  isPlaying={isPlaying && activeTrackId === track.id}
-                  isBuffering={isBuffering && activeTrackId === track.id}
-                  onClick={() => onSelectTrack(album, track)}
-                />
-              ))}
-              {album.liner && (
-                <button
-                  type="button"
-                  onClick={() => onOpenSleeve(album)}
-                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1410]"
-                  style={{
-                    alignSelf: 'flex-start',
-                    margin: '12px 12px 2px 12px',
-                    padding: '6px 12px',
-                    background: 'transparent',
-                    border: '1px solid rgba(196,162,101,0.35)',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                    color: 'var(--accent-deep)',
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.2em',
-                    textTransform: 'uppercase',
-                    transition: 'background 0.18s ease-out, border-color 0.18s ease-out',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(196,162,101,0.08)';
-                    e.currentTarget.style.borderColor = 'rgba(196,162,101,0.55)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.borderColor = 'rgba(196,162,101,0.35)';
-                  }}
-                >
-                  {t('music.linerHeader')}
-                </button>
-              )}
-            </div>
+            <AlbumTracks
+              album={album}
+              activeTrackId={activeTrackId}
+              isPlaying={isPlaying}
+              isBuffering={isBuffering}
+              onSelectTrack={onSelectTrack}
+              onOpenSleeve={onOpenSleeve}
+            />
           </Motion.div>
         )}
       </AnimatePresence>
@@ -320,6 +349,8 @@ function AlbumBrowser({
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const { isDark } = useTheme();
+  const isMobile = useIsMobile('(max-width: 880px)');
+  const mobileTracksRef = useRef(null);
   // Start with every album collapsed by default. The one exception: if a
   // track is already playing when this view (re)mounts — e.g. the visitor
   // navigated away with the floating record still spinning and came back —
@@ -330,8 +361,9 @@ function AlbumBrowser({
     : albums[0]?.id;
   const expandedId = manualExpandedId !== undefined
     ? manualExpandedId
-    : (activeAlbumId || (defaultOpenFirstAlbum ? defaultAlbumId : null));
+    : (activeAlbumId || ((isMobile || defaultOpenFirstAlbum) ? defaultAlbumId : null));
   const [sleeveAlbum, setSleeveAlbum] = useState(null);
+  const mobileAlbum = albums.find((album) => album.id === expandedId) || albums[0];
 
   // Crate body matches the turntable deck: light cream-wood in light mode,
   // espresso in dark. They sit side by side, so they stay a matched pair.
@@ -345,26 +377,40 @@ function AlbumBrowser({
 
   // Stable handlers so memoized AlbumRow children don't re-render every tick.
   const handleToggleExpand = useCallback((id) => {
-    setManualExpandedId(expandedId === id ? null : id);
-  }, [expandedId]);
+    setManualExpandedId(isMobile ? id : (expandedId === id ? null : id));
+  }, [expandedId, isMobile]);
+  const handleMobileAlbumSelect = useCallback((id) => {
+    if (id === expandedId) return;
+    setManualExpandedId(id);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        mobileTracksRef.current?.scrollIntoView({
+          behavior: reduceMotion ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      });
+    });
+  }, [expandedId, reduceMotion]);
   const handleCloseSleeve = useCallback(() => setSleeveAlbum(null), []);
 
   return (
     <>
       <div
         style={{
-          background: crateBg,
+          background: isMobile ? 'transparent' : crateBg,
           borderRadius: 16,
-          border: `1px solid ${crateBorder}`,
-          boxShadow: crateShadow,
-          overflow: 'hidden',
+          border: isMobile ? 'none' : `1px solid ${crateBorder}`,
+          boxShadow: isMobile ? 'none' : crateShadow,
+          overflow: isMobile ? 'visible' : 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <div
           style={{
             padding: '14px 18px',
             borderBottom: '1px solid var(--border)',
-            display: 'flex',
+            display: isMobile ? 'none' : 'flex',
             alignItems: 'baseline',
             justifyContent: 'space-between',
           }}
@@ -393,24 +439,153 @@ function AlbumBrowser({
           </p>
         </div>
 
-        <div role="list" aria-label={t('music.albumsList')}>
-          {albums.map((album) => (
-            <div role="listitem" key={album.id}>
-            <AlbumRow
-              album={album}
-              isExpanded={expandedId === album.id}
-              isActiveAlbum={activeAlbumId === album.id}
-              activeTrackId={activeTrackId}
-              isPlaying={isPlaying}
-              isBuffering={isBuffering}
-              onToggle={handleToggleExpand}
-              onSelectTrack={onSelectTrack}
-              onOpenSleeve={setSleeveAlbum}
-              reduceMotion={reduceMotion}
-            />
+        {isMobile ? (
+          <>
+            <div
+              role="tablist"
+              aria-label={t('music.albumsList')}
+              style={{
+                position: 'sticky',
+                top: 'calc(5.25rem + env(safe-area-inset-top, 0px))',
+                zIndex: 12,
+                display: 'grid',
+                gridTemplateColumns: `repeat(${albums.length}, minmax(0, 1fr))`,
+                gap: 6,
+                padding: '10px 8px',
+                background: crateBg,
+                border: `1px solid ${crateBorder}`,
+                borderRadius: 14,
+                boxShadow: isDark
+                  ? '0 12px 28px -18px rgba(0,0,0,0.9)'
+                  : '0 12px 28px -18px rgba(80,55,15,0.5)',
+              }}
+            >
+              {albums.map((album) => {
+                const isSelected = album.id === mobileAlbum?.id;
+                return (
+                  <button
+                    key={album.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    aria-controls={`mobile-album-${album.id}`}
+                    aria-label={album.title}
+                    onClick={() => handleMobileAlbumSelect(album.id)}
+                    className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c4a265]/80"
+                    style={{
+                      minWidth: 0,
+                      minHeight: 68,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 7,
+                      padding: '7px 3px',
+                      borderRadius: 8,
+                      border: `1px solid ${isSelected ? 'rgba(196,162,101,0.55)' : 'transparent'}`,
+                      background: isSelected ? 'rgba(196,162,101,0.12)' : 'transparent',
+                      color: isSelected ? 'var(--text-strong)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <AlbumThumb album={album} size={27} />
+                    <span
+                      style={{
+                        width: '100%',
+                        minWidth: 0,
+                        fontFamily: 'Space Grotesk, system-ui, sans-serif',
+                        fontSize: '0.64rem',
+                        fontWeight: isSelected ? 600 : 500,
+                        lineHeight: 1.15,
+                        textAlign: 'center',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {MOBILE_ALBUM_LABELS[album.id] || album.title}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          ))}
-        </div>
+
+            {mobileAlbum && (
+              <div
+                ref={mobileTracksRef}
+                id={`mobile-album-${mobileAlbum.id}`}
+                role="tabpanel"
+                style={{
+                  scrollMarginTop: '10.75rem',
+                  paddingTop: 28,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    padding: '0 8px 16px',
+                  }}
+                >
+                  <p
+                    style={{
+                      minWidth: 0,
+                      color: 'var(--text-strong)',
+                      fontFamily: 'Space Grotesk, system-ui, sans-serif',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {mobileAlbum.title}
+                  </p>
+                  <p
+                    style={{
+                      flexShrink: 0,
+                      color: 'var(--text-muted)',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: '0.62rem',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {mobileAlbum.year} · {mobileAlbum.tracks.length}
+                  </p>
+                </div>
+                <AlbumTracks
+                  album={mobileAlbum}
+                  activeTrackId={activeTrackId}
+                  isPlaying={isPlaying}
+                  isBuffering={isBuffering}
+                  onSelectTrack={onSelectTrack}
+                  onOpenSleeve={setSleeveAlbum}
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <div role="list" aria-label={t('music.albumsList')}>
+            {albums.map((album) => (
+              <div role="listitem" key={album.id}>
+                <AlbumRow
+                  album={album}
+                  isExpanded={expandedId === album.id}
+                  isActiveAlbum={activeAlbumId === album.id}
+                  activeTrackId={activeTrackId}
+                  isPlaying={isPlaying}
+                  isBuffering={isBuffering}
+                  onToggle={handleToggleExpand}
+                  onSelectTrack={onSelectTrack}
+                  onOpenSleeve={setSleeveAlbum}
+                  reduceMotion={reduceMotion}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <SleeveBack album={sleeveAlbum} onClose={handleCloseSleeve} />

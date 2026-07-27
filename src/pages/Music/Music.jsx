@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useTranslation, Trans } from 'react-i18next';
 import PageTransition from '../../components/PageTransition';
@@ -15,6 +15,7 @@ function Music() {
   // cue ("on the right" vs "below") has to follow suit.
   const isStacked = useIsMobile('(max-width: 880px)');
   const turntableRef = useRef(null);
+  const [revealRequest, setRevealRequest] = useState(0);
   const {
     isPlaying,
     isBuffering,
@@ -35,12 +36,25 @@ function Music() {
 
   const handleSelectTrackAndRevealPlayer = useCallback((album, track) => {
     handleSelectTrack(album, track);
-    if (isStacked) {
-      window.requestAnimationFrame(() => {
-        turntableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    }
+    if (isStacked) setRevealRequest((request) => request + 1);
   }, [handleSelectTrack, isStacked]);
+
+  // Wait until the selected track has committed and the player has re-rendered
+  // before moving the viewport. This is more reliable than scrolling in the
+  // click handler on mobile Safari, where audio setup can delay layout.
+  useEffect(() => {
+    if (!revealRequest) return;
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        turntableRef.current?.scrollIntoView({
+          behavior: reduceMotion ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [revealRequest]);
 
   // Keyboard: Space toggles playback
   useEffect(() => {
@@ -58,9 +72,10 @@ function Music() {
   return (
     <PageTransition scene="music">
       <div
-        className="min-h-screen relative overflow-hidden"
+        className="music-page-shell min-h-screen relative"
         style={{
           width: '100%',
+          overflowX: 'clip',
           backgroundColor: 'var(--bg)',
           display: 'flex',
           justifyContent: 'center',
@@ -77,6 +92,7 @@ function Music() {
         <div className="relative z-10" style={{ width: '100%', maxWidth: 'min(82rem, 96vw)' }}>
           {/* Page header */}
           <Motion.div
+            className="music-page-header"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -86,7 +102,7 @@ function Music() {
             }}
           >
             <h1
-              className="font-bold tracking-tight"
+              className="music-page-title font-bold tracking-tight"
               style={{
                 fontSize: 'clamp(2rem, 4.5vw, 3.5rem)',
                 lineHeight: 1.05,
@@ -107,6 +123,7 @@ function Music() {
               }}
             />
             <p
+              className="music-page-intro"
               style={{
                 color: 'var(--text-muted)',
                 fontSize: 'clamp(0.95rem, 1.1vw, 1.1rem)',
@@ -141,6 +158,7 @@ function Music() {
                 flex: '1 1 480px',
                 maxWidth: 640,
                 minWidth: 0,
+                scrollMarginTop: '6rem',
               }}
             >
               <Turntable
@@ -190,8 +208,29 @@ function Music() {
 
           <style>{`
             @media (max-width: 880px) {
+              .music-page-shell {
+                padding-top: 7.25rem !important;
+                padding-bottom: 5rem !important;
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+              }
+              .music-page-header {
+                margin-bottom: 2.25rem !important;
+                padding-left: 0.35rem;
+                padding-right: 0.35rem;
+              }
+              .music-page-title {
+                font-size: clamp(1.55rem, 7.2vw, 1.8rem) !important;
+                line-height: 1.12 !important;
+                white-space: nowrap;
+              }
+              .music-page-intro {
+                max-width: 32ch !important;
+                font-size: 0.9rem !important;
+                line-height: 1.65 !important;
+              }
               .music-layout {
-                gap: 1.35rem !important;
+                gap: 2.25rem !important;
               }
               .music-crate-panel {
                 order: 1;

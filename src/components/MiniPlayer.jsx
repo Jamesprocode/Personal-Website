@@ -146,7 +146,7 @@ function MiniPlayer() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={isMobile || reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.92 }}
           transition={isMobile || reduceMotion ? { duration: 0.12 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          drag={!isMobile}
+          drag
           dragMomentum={false}
           dragElastic={0.15}
           dragConstraints={bounds}
@@ -157,7 +157,7 @@ function MiniPlayer() {
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           
-          aria-label={isMobile ? 'Floating music player.' : 'Floating music player. Drag to reposition.'}
+          aria-label="Floating music player. Drag to reposition."
           style={{
             position: 'fixed',
             bottom: 'clamp(1rem, 3vh, 2rem)',
@@ -168,7 +168,7 @@ function MiniPlayer() {
             flexDirection: 'column',
             alignItems: 'center',
             gap: 6,
-            cursor: isMobile ? 'pointer' : isDragging ? 'grabbing' : 'grab',
+            cursor: isDragging ? 'grabbing' : 'grab',
             zIndex: 60,
             borderRadius: 18,
             background: 'linear-gradient(155deg, rgba(42,31,21,0.95), rgba(20,15,12,0.95))',
@@ -176,7 +176,11 @@ function MiniPlayer() {
             boxShadow: '0 18px 40px -12px rgba(0,0,0,0.7), inset 0 1px 0 rgba(196,162,101,0.08)',
             backdropFilter: isMobile ? undefined : 'blur(6px)',
             WebkitBackdropFilter: isMobile ? undefined : 'blur(6px)',
-            touchAction: isMobile ? 'manipulation' : 'none',
+            // Prevent page panning only while a gesture starts on the player,
+            // allowing Framer Motion's pointer drag to work on touch screens.
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
           className="focus-visible:ring-2 focus-visible:ring-[#c4a265]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
         >
