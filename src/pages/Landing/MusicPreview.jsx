@@ -150,7 +150,7 @@ function MusicPreview() {
           paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
         }}
       >
-        <div className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(3rem,6vh,5rem)] items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(3rem,6vh,5rem)] items-center">
           {/* LEFT: framing copy + CTA cascade in */}
           <Motion.div
             initial={reduceMotion ? false : 'hidden'}
@@ -160,7 +160,7 @@ function MusicPreview() {
               hidden: {},
               show: { transition: { staggerChildren: 0.16, delayChildren: 0.05 } },
             }}
-            className="col-span-12 lg:col-span-6 order-2 lg:order-1"
+            className="col-span-1 lg:col-span-6 order-2 lg:order-1"
           >
             <Motion.h2
               className="font-bold tracking-tight"
@@ -282,7 +282,7 @@ function MusicPreview() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 1.1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="col-span-12 lg:col-span-6 order-1 lg:order-2 flex justify-center lg:justify-end"
+            className="col-span-1 lg:col-span-6 order-1 lg:order-2 flex justify-center lg:justify-end"
           >
             <Link
               to="/music"

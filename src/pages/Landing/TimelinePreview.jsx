@@ -99,10 +99,10 @@ function TimelinePreview() {
           paddingRight: 'clamp(1.5rem, 6vw, 5rem)',
         }}
       >
-        <div className="grid grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(2rem,4vh,3rem)] items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[clamp(2rem,5vw,5rem)] gap-y-[clamp(2rem,4vh,3rem)] items-center">
           {/* LEFT: framing copy + CTA cascade */}
           <Motion.div
-            className="col-span-12 lg:col-span-5"
+            className="col-span-1 lg:col-span-5"
             variants={{
               hidden: {},
               show: { transition: { staggerChildren: 0.16 } },
@@ -174,7 +174,7 @@ function TimelinePreview() {
               instead of three sequential ones. Each line's wipe duration
               varies by track depth (deeper brass = slower/heavier). */}
           <Motion.div
-            className="col-span-12 lg:col-span-7"
+            className="col-span-1 lg:col-span-7"
             aria-hidden
             variants={{
               hidden: {},
@@ -273,6 +273,7 @@ function TimelinePreview() {
               >
                 {Array.from({ length: YEAR_SPAN + 1 }).map((_, i) => {
                   const year = START_YEAR + i;
+                  if (isMobile && i % 2 !== 0) return null;
                   const xFrac = i / YEAR_SPAN;
                   // Anchor the first label to its left edge and the last to
                   // its right edge so they don't overflow the track horizontally.
@@ -288,6 +289,7 @@ function TimelinePreview() {
                         fontSize: 'clamp(0.7rem, 0.78vw, 0.85rem)',
                         letterSpacing: '0.05em',
                         color: 'var(--text-muted)',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {year}

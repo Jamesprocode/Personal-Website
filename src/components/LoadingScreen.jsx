@@ -434,20 +434,23 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                     </div>
                   </div>
 
-                  {/* Tape Window */}
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 h-1 rounded-full"
-                    style={{
-                      width: isMobile ? '4.75rem' : 'clamp(5.5rem, 30vw, 8rem)',
-                      bottom: isMobile ? '1rem' : 'clamp(1.5rem, 8vw, 2rem)',
-                      backgroundColor: colors.accentDeep,
-                    }}
-                  >
-                    <Motion.div
-                      className="h-full rounded-full"
-                      style={{ width: `${progress}%`, backgroundColor: colors.textStrong }}
-                    />
-                  </div>
+                  {/* Desktop tape window doubles as its progress indicator.
+                      Mobile uses the single, clearer bar below the status. */}
+                  {!isMobile && (
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 h-1 rounded-full"
+                      style={{
+                        width: 'clamp(5.5rem, 30vw, 8rem)',
+                        bottom: 'clamp(1.5rem, 8vw, 2rem)',
+                        backgroundColor: colors.accentDeep,
+                      }}
+                    >
+                      <Motion.div
+                        className="h-full rounded-full"
+                        style={{ width: `${progress}%`, backgroundColor: colors.textStrong }}
+                      />
+                    </div>
+                  )}
                 </div>
               </Motion.div>
 
@@ -499,7 +502,29 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                 )}
 
                 {/* Progress Bar */}
-                {!isMobile && (
+                {isMobile ? (
+                  <div
+                    aria-label={`${progress}%`}
+                    style={{
+                      width: 'min(68vw, 14.5rem)',
+                      height: 5,
+                      margin: '0 auto',
+                      overflow: 'hidden',
+                      borderRadius: 9999,
+                      backgroundColor: colors.surface2,
+                      boxShadow: `inset 0 0 0 1px ${colors.border}`,
+                    }}
+                  >
+                    <Motion.div
+                      style={{
+                        width: `${progress}%`,
+                        height: '100%',
+                        borderRadius: 9999,
+                        background: `linear-gradient(90deg, ${colors.accentDeep}, ${colors.accentBright})`,
+                      }}
+                    />
+                  </div>
+                ) : (
                   <div className="mx-auto mb-8 sm:mb-12" style={{ width: 'min(100%, 24rem)' }}>
                     <div
                       className="h-3 rounded-full overflow-hidden border-2"
