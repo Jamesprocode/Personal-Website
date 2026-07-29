@@ -21,6 +21,42 @@ work no longer competes with scrolling or first-content loading.
 
 ## Chosen approach
 
+Optimization happens in two layers, in this order:
+
+1. Locate and remove animation conflicts or unnecessary work in the default
+   experience. A capable desktop must not need a downgrade to scroll smoothly.
+2. Add adaptive motion as a safety layer for constrained environments.
+
+The first layer is evidence-led. The landing page is measured by section under
+three repeatable scenarios: idle, pointer movement, and scroll. Expensive effect
+groups are isolated one at a time so the change in missed-frame rate identifies
+the actual conflict before production behavior is changed.
+
+### Diagnostic controls
+
+A query-string-only diagnostic mode exposes frame timing and permits one effect
+group to be disabled at a time. It has no visible or runtime cost unless enabled.
+The supported effect groups are:
+
+- `cursor`: conductor cursor and spawned notes;
+- `ambient`: continuous painterly breathing and decorative infinite loops;
+- `scroll`: scroll-linked painterly transforms;
+- `carousel`: automatic portrait advance and cross-fade.
+
+Results are compared with the same viewport and interaction path. A group is
+treated as a confirmed bottleneck only when disabling it produces a repeatable
+reduction in frames over 20 ms.
+
+### Root-cause repair
+
+The first repair must target the confirmed group, not globally reduce motion.
+Likely techniques include lowering event frequency, moving transient particles
+out of React state, consolidating transforms on a parent layer, or stopping
+inactive loops. Only the smallest technique supported by the measurement is
+implemented.
+
+### Adaptive safety layer
+
 Create one shared adaptive-motion policy with three levels:
 
 1. `reduced`: the existing accessibility mode. No decorative continuous motion.
