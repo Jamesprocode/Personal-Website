@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import proPhoto from '../../assets/me.webp';
 import useIsMobile from '../../hooks/useIsMobile';
+import { isMotionEffectDisabled } from '../../performance/motionDebug';
 
 // All processed hero frames, ordered by their numeric filename prefix
 // (01-…, 02-…). Vite fingerprints each URL so they cache well behind
@@ -140,8 +141,9 @@ function HeroPortraitCarousel({ reduceMotion }) {
   // Computed once at mount (the connection's Save-Data flag doesn't change
   // mid-session in practice). State, not a ref, so it can be read in render.
   const [saveData] = useState(prefersSaveData);
+  const disableCarousel = isMotionEffectDisabled('carousel');
 
-  const autoOk = !reduceMotion && !saveData;
+  const autoOk = !reduceMotion && !saveData && !disableCarousel;
   const activeFrame = FRAMES[index];
   const activeMeta = META[activeFrame?.key] || {};
 

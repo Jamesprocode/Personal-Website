@@ -6,6 +6,7 @@ import albums from '../../data/albums';
 import MusicPainterlyBackground from './MusicPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
 import useIsMobile from '../../hooks/useIsMobile';
+import { isMotionEffectDisabled } from '../../performance/motionDebug';
 
 const tracks = albums.flatMap((a) => a.tracks);
 
@@ -108,6 +109,7 @@ function MusicPreview() {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
+  const disableScroll = isMotionEffectDisabled('scroll');
   const [hovered, setHovered] = useState(false);
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -138,7 +140,10 @@ function MusicPreview() {
       }}
     >
       {inView && (
-        <MusicPainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} />
+        <MusicPainterlyBackground
+          reduceMotion={simplifyMotion || disableScroll}
+          scrollYProgress={scrollYProgress}
+        />
       )}
 
       <div

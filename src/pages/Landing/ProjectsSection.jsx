@@ -5,11 +5,13 @@ import ProjectShelf from './ProjectShelf';
 import ProjectsPainterlyBackground from './ProjectsPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
 import useIsMobile from '../../hooks/useIsMobile';
+import { isMotionEffectDisabled } from '../../performance/motionDebug';
 
 function ProjectsSection() {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
+  const disableScroll = isMotionEffectDisabled('scroll');
   const { t } = useTranslation();
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -51,7 +53,10 @@ function ProjectsSection() {
       }}
     >
       {inView && (
-        <ProjectsPainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} />
+        <ProjectsPainterlyBackground
+          reduceMotion={simplifyMotion || disableScroll}
+          scrollYProgress={scrollYProgress}
+        />
       )}
       <div className="relative z-10"
         style={{

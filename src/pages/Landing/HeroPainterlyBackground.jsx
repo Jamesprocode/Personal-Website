@@ -15,7 +15,12 @@ import { motion as Motion, useTransform } from 'framer-motion';
 // off screen. Framer-motion drives those via JS rAF, which keeps firing
 // regardless of visibility — without this gate the cream/amber breaths
 // keep recomposing layers while the user is reading further down the page.
-function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true }) {
+function HeroPainterlyBackground({
+  reduceMotion,
+  disableAmbient = false,
+  scrollYProgress,
+  inView = true,
+}) {
   // Reduced-motion fallback: all scroll-driven transforms collapse to
   // identity so users who opt out get a static painterly.
   const useScrollRange = (range) =>
@@ -134,7 +139,7 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
           off screen — saves compositor work while reading Projects. */}
       <Motion.g
         animate={
-          reduceMotion || !inView
+          reduceMotion || disableAmbient || !inView
             ? undefined
             : {
                 scale: [1, 1.06, 1],
@@ -142,7 +147,7 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
               }
         }
         transition={
-          reduceMotion || !inView
+          reduceMotion || disableAmbient || !inView
             ? undefined
             : { duration: 9, repeat: Infinity, ease: 'easeInOut' }
         }
@@ -157,7 +162,7 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
           the streak two slightly out-of-phase pulses for life. */}
       <Motion.g
         animate={
-          reduceMotion || !inView
+          reduceMotion || disableAmbient || !inView
             ? undefined
             : {
                 scale: [1, 1.08, 1],
@@ -165,7 +170,7 @@ function HeroPainterlyBackground({ reduceMotion, scrollYProgress, inView = true 
               }
         }
         transition={
-          reduceMotion || !inView
+          reduceMotion || disableAmbient || !inView
             ? undefined
             : { duration: 7, repeat: Infinity, ease: 'easeInOut' }
         }

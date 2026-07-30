@@ -177,6 +177,10 @@ html[data-motion-debug-no-snap] {
   scroll-snap-type: none;
 }
 
+html[data-motion-debug-no-ambient] * {
+  animation-play-state: paused !important;
+}
+
 /* Only sections explicitly marked with data-snap-section get a snap
    target. The Landing hero and research projects become full-screen
    beats; unmarked sections continue scrolling freely. */

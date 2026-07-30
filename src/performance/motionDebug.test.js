@@ -14,6 +14,6 @@ test('only known effect groups can be disabled', () => {
 });
 
 test('an effect is disabled only in debug mode', () => {
-  assert.equal(isMotionEffectDisabled('snap', '?disable=snap'), false);
-  assert.equal(isMotionEffectDisabled('snap', '?motionDebug=1&disable=snap'), true);
+  assert.equal(isMotionEffectDisabled('cursor', '?disable=cursor'), false);
+  assert.equal(isMotionEffectDisabled('cursor', '?motionDebug=1&disable=cursor'), true);
 });

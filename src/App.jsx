@@ -8,6 +8,7 @@ import MiniPlayer from './components/MiniPlayer';
 import ScrollToTop from './components/ScrollToTop';
 import CursorMusicTrail from './components/CursorMusicTrail';
 import MotionDebugProbe from './performance/MotionDebugProbe';
+import { isMotionEffectDisabled } from './performance/motionDebug';
 import { AudioPlayerProvider } from './hooks/useAudioPlayer';
 import { ThemeProvider } from './hooks/useTheme';
 import './App.css';
@@ -141,7 +142,7 @@ function App() {
           </AudioPlayerProvider>
         )}
         {/* Cursor music trail follows the user across loading and every route */}
-        <CursorMusicTrail />
+        {!isMotionEffectDisabled('cursor') && <CursorMusicTrail />}
       </ThemeProvider>
     </Router>
   );

@@ -15,6 +15,7 @@ function MotionDebugProbe() {
     if (!config.enabled) return undefined;
 
     const disableSnap = config.disabled.has('snap');
+    const disableAmbient = config.disabled.has('ambient');
     let frameId = 0;
     let intervalId = 0;
     let lastFrameAt = performance.now();
@@ -44,12 +45,14 @@ function MotionDebugProbe() {
     intervalId = window.setInterval(publish, 500);
     window.addEventListener('motion-debug-reset', reset);
     document.documentElement.toggleAttribute('data-motion-debug-no-snap', disableSnap);
+    document.documentElement.toggleAttribute('data-motion-debug-no-ambient', disableAmbient);
 
     return () => {
       window.cancelAnimationFrame(frameId);
       window.clearInterval(intervalId);
       window.removeEventListener('motion-debug-reset', reset);
       document.documentElement.removeAttribute('data-motion-debug-no-snap');
+      document.documentElement.removeAttribute('data-motion-debug-no-ambient');
     };
   }, [config]);
 
