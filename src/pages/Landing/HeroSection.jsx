@@ -13,7 +13,8 @@ function HeroSection() {
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
   const disableAmbient = isMotionEffectDisabled('ambient');
-  const disableScroll = isMotionEffectDisabled('scroll');
+  const disableScroll =
+    isMotionEffectDisabled('scroll') || isMotionEffectDisabled('heroScroll');
   const { t } = useTranslation();
   const titleMiddle = t('hero.titleMiddle');
   const titleLast = t('hero.titleLast');

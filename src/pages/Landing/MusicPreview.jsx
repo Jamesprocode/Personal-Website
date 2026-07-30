@@ -110,7 +110,8 @@ function MusicPreview() {
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
   const disableAmbient = isMotionEffectDisabled('ambient');
-  const disableScroll = isMotionEffectDisabled('scroll');
+  const disableScroll =
+    isMotionEffectDisabled('scroll') || isMotionEffectDisabled('musicScroll');
   const [hovered, setHovered] = useState(false);
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({

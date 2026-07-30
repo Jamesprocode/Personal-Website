@@ -11,7 +11,8 @@ function ContactSection() {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
-  const disableScroll = isMotionEffectDisabled('scroll');
+  const disableScroll =
+    isMotionEffectDisabled('scroll') || isMotionEffectDisabled('contactScroll');
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,

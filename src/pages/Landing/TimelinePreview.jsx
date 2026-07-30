@@ -22,7 +22,8 @@ function TimelinePreview() {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
-  const disableScroll = isMotionEffectDisabled('scroll');
+  const disableScroll =
+    isMotionEffectDisabled('scroll') || isMotionEffectDisabled('timelineScroll');
   const { t } = useTranslation();
   const sectionRef = useRef(null);
   // Active range: from when the section first appears at the bottom of

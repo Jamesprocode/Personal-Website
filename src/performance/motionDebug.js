@@ -1,4 +1,15 @@
-const EFFECTS = new Set(['cursor', 'ambient', 'scroll', 'carousel', 'snap']);
+const EFFECTS = new Set([
+  'cursor',
+  'ambient',
+  'scroll',
+  'heroScroll',
+  'projectsScroll',
+  'musicScroll',
+  'timelineScroll',
+  'contactScroll',
+  'carousel',
+  'snap',
+]);
 
 export function readMotionDebug(search = '') {
   const params = new URLSearchParams(search);

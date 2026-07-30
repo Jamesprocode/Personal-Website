@@ -12,7 +12,8 @@ function ProjectsSection() {
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
   const disableAmbient = isMotionEffectDisabled('ambient');
-  const disableScroll = isMotionEffectDisabled('scroll');
+  const disableScroll =
+    isMotionEffectDisabled('scroll') || isMotionEffectDisabled('projectsScroll');
   const { t } = useTranslation();
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
