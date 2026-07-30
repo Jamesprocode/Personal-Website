@@ -11,6 +11,7 @@ function ProjectsSection() {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
+  const disableAmbient = isMotionEffectDisabled('ambient');
   const disableScroll = isMotionEffectDisabled('scroll');
   const { t } = useTranslation();
   const sectionRef = useRef(null);
@@ -54,7 +55,9 @@ function ProjectsSection() {
     >
       {inView && (
         <ProjectsPainterlyBackground
-          reduceMotion={simplifyMotion || disableScroll}
+          reduceMotion={simplifyMotion}
+          disableAmbient={disableAmbient}
+          disableScroll={disableScroll}
           scrollYProgress={scrollYProgress}
         />
       )}

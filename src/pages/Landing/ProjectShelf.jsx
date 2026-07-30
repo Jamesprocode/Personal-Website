@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import projects from '../../data/projects';
 import useIsMobile from '../../hooks/useIsMobile';
+import { isMotionEffectDisabled } from '../../performance/motionDebug';
 
 const CATEGORY_COLORS = {
   'Musical Interaction': '#f59e0b',          // amber — GEMS, Shimon × AMT
@@ -422,6 +423,7 @@ function ProjectShelf() {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
+  const reduceAmbientMotion = simplifyMotion || isMotionEffectDisabled('ambient');
   const [selectedId, setSelectedId] = useState(null);
   const selectedProject = projects.find((p) => p.id === selectedId) || null;
 
@@ -522,7 +524,7 @@ function ProjectShelf() {
               project={p}
               isSelected={selectedId === p.id}
               onClick={handleSelect}
-              reduceMotion={simplifyMotion}
+              reduceMotion={reduceAmbientMotion}
               isDirectLink={isMobile}
             />
           </Motion.div>
@@ -550,7 +552,7 @@ function ProjectShelf() {
               key={selectedProject.id}
               project={selectedProject}
               onClose={() => setSelectedId(null)}
-              reduceMotion={simplifyMotion}
+              reduceMotion={reduceAmbientMotion}
             />
           ) : (
             <Motion.div

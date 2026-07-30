@@ -84,7 +84,8 @@ function TimelinePreview() {
     >
       {inView && (
         <TimelinePainterlyBackground
-          reduceMotion={simplifyMotion || disableScroll}
+          reduceMotion={simplifyMotion}
+          disableScroll={disableScroll}
           scrollYProgress={scrollYProgress}
         />
       )}

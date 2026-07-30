@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next';
 import ContactPainterlyBackground from './ContactPainterlyBackground';
 import useOffscreenPause from '../../hooks/useOffscreenPause';
 import useIsMobile from '../../hooks/useIsMobile';
+import { isMotionEffectDisabled } from '../../performance/motionDebug';
 
 function ContactSection() {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
+  const disableScroll = isMotionEffectDisabled('scroll');
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -38,7 +40,11 @@ function ContactSection() {
       }}
     >
       {inView && (
-        <ContactPainterlyBackground reduceMotion={simplifyMotion} scrollYProgress={scrollYProgress} />
+        <ContactPainterlyBackground
+          reduceMotion={simplifyMotion}
+          disableScroll={disableScroll}
+          scrollYProgress={scrollYProgress}
+        />
       )}
       <Motion.div
         initial={reduceMotion ? false : 'hidden'}

@@ -5,19 +5,31 @@ import { summarizeFrameGaps } from './frameStats.js';
 test('summarizes missed and severe frames', () => {
   assert.deepEqual(summarizeFrameGaps([16, 17, 21, 34, 51]), {
     samples: 5,
-    averageMs: 27.8,
-    over20: 3,
-    over33: 2,
-    maxMs: 51,
+    durationMs: 139,
+    frameBudgetMs: 16.7,
+    missedFrames: 2,
+    severeFrames: 1,
+    missedTimeMs: 56.2,
+    missedRatio: 40.4,
   });
 });
 
 test('returns zeroed statistics without samples', () => {
   assert.deepEqual(summarizeFrameGaps([]), {
     samples: 0,
-    averageMs: 0,
-    over20: 0,
-    over33: 0,
-    maxMs: 0,
+    durationMs: 0,
+    frameBudgetMs: 16.7,
+    missedFrames: 0,
+    severeFrames: 0,
+    missedTimeMs: 0,
+    missedRatio: 0,
   });
+});
+
+test('adapts the frame budget to a 120Hz display', () => {
+  assert.equal(summarizeFrameGaps([8, 8, 9, 8, 9]).frameBudgetMs, 8.3);
+});
+
+test('uses a calibrated frame budget across comparison runs', () => {
+  assert.equal(summarizeFrameGaps([16, 17, 18], 8.3).frameBudgetMs, 8.3);
 });

@@ -58,41 +58,48 @@ function useScrollRange(scrollYProgress, reduceMotion, range) {
   return useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
 }
 
-function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
+function ProjectsPainterlyBackground({
+  reduceMotion,
+  disableAmbient = false,
+  disableScroll = false,
+  scrollYProgress,
+}) {
+  const reduceScrollMotion = reduceMotion || disableScroll;
+  const reduceAmbientMotion = reduceMotion || disableAmbient;
   // Bigger scale range so parallax actually reads as the field "breathing"
   // toward / away from the viewer as you scroll.
-  const fieldScale = useScrollRange(scrollYProgress, reduceMotion, [0.92, 1.12]);
-  const fieldRotate = useScrollRange(scrollYProgress, reduceMotion, [-1.5, 2.5]); // subtle clockwise turn
+  const fieldScale = useScrollRange(scrollYProgress, reduceScrollMotion, [0.92, 1.12]);
+  const fieldRotate = useScrollRange(scrollYProgress, reduceScrollMotion, [-1.5, 2.5]); // subtle clockwise turn
 
   // Focal glow drifts down + right (off-screen further) as you scroll
   // so the geometry visibly shifts.
-  const focalDX = useScrollRange(scrollYProgress, reduceMotion, [-40, 90]);
-  const focalDY = useScrollRange(scrollYProgress, reduceMotion, [-50, 120]);
-  const focalAlpha = useScrollRange(scrollYProgress, reduceMotion, [0.7, 1]);
+  const focalDX = useScrollRange(scrollYProgress, reduceScrollMotion, [-40, 90]);
+  const focalDY = useScrollRange(scrollYProgress, reduceScrollMotion, [-50, 120]);
+  const focalAlpha = useScrollRange(scrollYProgress, reduceScrollMotion, [0.7, 1]);
 
   // Secondary corner glow (upper-left, on the cassette side) — counter
   // drift to give the field a second axis of motion.
-  const cornerX = useScrollRange(scrollYProgress, reduceMotion, [60, -80]);
-  const cornerY = useScrollRange(scrollYProgress, reduceMotion, [-30, 60]);
+  const cornerX = useScrollRange(scrollYProgress, reduceScrollMotion, [60, -80]);
+  const cornerY = useScrollRange(scrollYProgress, reduceScrollMotion, [-30, 60]);
 
   // TRACKING ARC: walks from outermost groove to inner band over the
   // scroll range. Outer 1680 → Inner 460. Animated via `transform: scale`
   // on a wrapping group (compositor-only) instead of the SVG `r`
   // attribute (triggers SVG layout every frame).
   const TRACK_R = 1000;
-  const trackScale = useScrollRange(scrollYProgress, reduceMotion, [1680 / TRACK_R, 460 / TRACK_R]);
+  const trackScale = useScrollRange(scrollYProgress, reduceScrollMotion, [1680 / TRACK_R, 460 / TRACK_R]);
   const trackOpacity = useTransform(
     scrollYProgress,
     [0, 0.06, 0.94, 1],
-    reduceMotion ? [0, 0, 0, 0] : [0, 1, 1, 0]
+    reduceScrollMotion ? [0, 0, 0, 0] : [0, 1, 1, 0]
   );
   // The arc also rotates as it walks — feels like the cutting head is
   // tangent to the groove direction at each new radius.
-  const trackRotate = useScrollRange(scrollYProgress, reduceMotion, [-8, 22]);
+  const trackRotate = useScrollRange(scrollYProgress, reduceScrollMotion, [-8, 22]);
 
   // Dust drift
-  const dustY = useScrollRange(scrollYProgress, reduceMotion, [40, -90]);
-  const dustOpacity = useScrollRange(scrollYProgress, reduceMotion, [0.7, 0.4]);
+  const dustY = useScrollRange(scrollYProgress, reduceScrollMotion, [40, -90]);
+  const dustOpacity = useScrollRange(scrollYProgress, reduceScrollMotion, [0.7, 0.4]);
 
   return (
     <div
@@ -199,6 +206,7 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
         {/* CORNER ANSWER GLOW — cool brass on the upper-left side. */}
         <Motion.g style={{ x: cornerX, y: cornerY }}>
           <ellipse
+            data-ambient-animation
             cx={240}
             cy={180}
             rx={520}
@@ -206,7 +214,7 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
             fill="url(#pj-corner)"
             style={{
               transformOrigin: '240px 180px',
-              animation: reduceMotion ? undefined : 'pj-corner-breath 12s ease-in-out infinite',
+              animation: reduceAmbientMotion ? undefined : 'pj-corner-breath 12s ease-in-out infinite',
             }}
           />
         </Motion.g>
@@ -248,6 +256,7 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
           }}
         >
           <ellipse
+            data-ambient-animation
             cx={FX}
             cy={FY - 160}
             rx={620}
@@ -255,11 +264,12 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
             fill="url(#pj-halo)"
             style={{
               transformOrigin: `${FX}px ${FY - 160}px`,
-              animation: reduceMotion ? undefined : 'pj-halo-breath 9s ease-in-out infinite',
+              animation: reduceAmbientMotion ? undefined : 'pj-halo-breath 9s ease-in-out infinite',
             }}
           />
           {/* Hot spot — small bright nucleus inside the halo */}
           <ellipse
+            data-ambient-animation
             cx={FX - 40}
             cy={FY - 220}
             rx={220}
@@ -267,7 +277,7 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
             fill="url(#pj-hotspot)"
             style={{
               transformOrigin: `${FX - 40}px ${FY - 220}px`,
-              animation: reduceMotion ? undefined : 'pj-halo-breath 7s ease-in-out infinite',
+              animation: reduceAmbientMotion ? undefined : 'pj-halo-breath 7s ease-in-out infinite',
             }}
           />
         </Motion.g>
@@ -277,7 +287,7 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
             progresses, the radius shrinks (cutting head walks inward)
             and the arc rotates a bit so the head feels like it's
             following the groove tangent. */}
-        {!reduceMotion && (
+        {!reduceScrollMotion && (
           <Motion.g
             style={{
               opacity: trackOpacity,
@@ -350,7 +360,10 @@ function ProjectsPainterlyBackground({ reduceMotion, scrollYProgress }) {
                 — under 6× CPU throttle, this dropped Layerize cost ~25 ms
                 over a 4 s scroll burst (the three circles each compose
                 their own opacity channel even when synchronized). */}
-            <g style={{ animation: reduceMotion ? undefined : 'pj-track-pulse 1.6s ease-in-out infinite' }}>
+            <g
+              data-ambient-animation
+              style={{ animation: reduceAmbientMotion ? undefined : 'pj-track-pulse 1.6s ease-in-out infinite' }}
+            >
               <circle
                 cx={FX}
                 cy={FY}

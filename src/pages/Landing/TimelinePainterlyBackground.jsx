@@ -94,14 +94,15 @@ function CDDisc({ rotateMV }) {
   );
 }
 
-function TimelinePainterlyBackground({ reduceMotion, scrollYProgress }) {
+function TimelinePainterlyBackground({ reduceMotion, disableScroll = false, scrollYProgress }) {
+  const reduceScrollMotion = reduceMotion || disableScroll;
   // Timeline is the last scrollable section; the user can't reach
   // progress > ~0.6 before the page ends. Mapping rotation to
   // [0.25, 0.6] lets the user see the full 150° sweep within the
   // reachable scroll range. CD visibly completes its turn.
   const cdRotate = useTransform(
     scrollYProgress, [0.25, 0.6],
-    reduceMotion ? [0, 0] : [-40, 110]
+    reduceScrollMotion ? [0, 0] : [-40, 110]
   );
   return (
     <div

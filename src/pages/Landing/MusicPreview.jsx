@@ -109,6 +109,7 @@ function MusicPreview() {
   const reduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const simplifyMotion = reduceMotion || isMobile;
+  const disableAmbient = isMotionEffectDisabled('ambient');
   const disableScroll = isMotionEffectDisabled('scroll');
   const [hovered, setHovered] = useState(false);
   const sectionRef = useRef(null);
@@ -141,7 +142,8 @@ function MusicPreview() {
     >
       {inView && (
         <MusicPainterlyBackground
-          reduceMotion={simplifyMotion || disableScroll}
+          reduceMotion={simplifyMotion}
+          disableScroll={disableScroll}
           scrollYProgress={scrollYProgress}
         />
       )}
@@ -299,7 +301,7 @@ function MusicPreview() {
               }}
               aria-label={t('musicPreview.cta')}
             >
-              <VinylDisc hovered={hovered} reduceMotion={reduceMotion} />
+              <VinylDisc hovered={hovered} reduceMotion={reduceMotion || disableAmbient} />
             </Link>
           </Motion.div>
         </div>

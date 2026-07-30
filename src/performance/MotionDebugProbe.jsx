@@ -2,13 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { summarizeFrameGaps } from './frameStats';
 import { readMotionDebug } from './motionDebug';
 
-const SAMPLE_LIMIT = 240;
+const SAMPLE_LIMIT = 2000;
 
 function MotionDebugProbe() {
   const config = useMemo(
     () => readMotionDebug(window.location.search),
     [],
   );
+  const calibratedBudgetMs = useMemo(() => {
+    const value = Number(new URLSearchParams(window.location.search).get('budget'));
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  }, []);
   const [report, setReport] = useState(null);
 
   useEffect(() => {
@@ -24,6 +28,11 @@ function MotionDebugProbe() {
     const reset = () => {
       lastFrameAt = performance.now();
       gaps = [];
+      setReport({
+        disabled: [...config.disabled],
+        scrollY: Math.round(window.scrollY),
+        ...summarizeFrameGaps([], calibratedBudgetMs),
+      });
     };
 
     const frame = (now) => {
@@ -37,12 +46,12 @@ function MotionDebugProbe() {
       setReport({
         disabled: [...config.disabled],
         scrollY: Math.round(window.scrollY),
-        ...summarizeFrameGaps(gaps),
+        ...summarizeFrameGaps(gaps, calibratedBudgetMs),
       });
     };
 
     frameId = window.requestAnimationFrame(frame);
-    intervalId = window.setInterval(publish, 500);
+    intervalId = window.setInterval(publish, 1000);
     window.addEventListener('motion-debug-reset', reset);
     document.documentElement.toggleAttribute('data-motion-debug-no-snap', disableSnap);
     document.documentElement.toggleAttribute('data-motion-debug-no-ambient', disableAmbient);
@@ -54,38 +63,58 @@ function MotionDebugProbe() {
       document.documentElement.removeAttribute('data-motion-debug-no-snap');
       document.documentElement.removeAttribute('data-motion-debug-no-ambient');
     };
-  }, [config]);
+  }, [calibratedBudgetMs, config]);
 
   if (!config.enabled) return null;
 
   return (
-    <output
-      data-motion-debug-report
-      aria-live="off"
+    <div
       style={{
         position: 'fixed',
         left: 8,
         bottom: 8,
         zIndex: 200,
-        maxWidth: 'min(92vw, 34rem)',
-        padding: '6px 8px',
-        borderRadius: 6,
-        color: '#f4e8d1',
-        background: 'rgba(26, 20, 16, 0.88)',
-        font: '11px/1.35 JetBrains Mono, monospace',
-        pointerEvents: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
       }}
     >
-      {JSON.stringify(report ?? {
-        disabled: [...config.disabled],
-        scrollY: Math.round(window.scrollY),
-        samples: 0,
-        averageMs: 0,
-        over20: 0,
-        over33: 0,
-        maxMs: 0,
-      })}
-    </output>
+      <button
+        type="button"
+        data-motion-debug-reset
+        onClick={() => window.dispatchEvent(new Event('motion-debug-reset'))}
+        style={{
+          padding: '5px 7px',
+          border: 0,
+          borderRadius: 6,
+          color: '#1a1410',
+          background: '#c4a265',
+          font: '11px/1.35 JetBrains Mono, monospace',
+          cursor: 'pointer',
+        }}
+      >
+        Reset performance sample
+      </button>
+      <output
+        data-motion-debug-report
+        aria-live="off"
+        style={{
+          maxWidth: 'min(72vw, 42rem)',
+          padding: '6px 8px',
+          borderRadius: 6,
+          color: '#f4e8d1',
+          background: 'rgba(26, 20, 16, 0.88)',
+          font: '11px/1.35 JetBrains Mono, monospace',
+          pointerEvents: 'none',
+        }}
+      >
+        {JSON.stringify(report ?? {
+          disabled: [...config.disabled],
+          scrollY: Math.round(window.scrollY),
+          ...summarizeFrameGaps([], calibratedBudgetMs),
+        })}
+      </output>
+    </div>
   );
 }
 

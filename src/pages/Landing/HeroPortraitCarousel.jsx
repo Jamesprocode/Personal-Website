@@ -228,7 +228,7 @@ function HeroPortraitCarousel({ reduceMotion }) {
   // the portrait (LCP) has had the bandwidth to itself. Skipped on Save-Data /
   // 2G so constrained links pull frame 2 only on a deliberate interaction.
   useEffect(() => {
-    if (count < 2 || saveData) return undefined;
+    if (count < 2 || saveData || disableCarousel) return undefined;
     const schedule = window.requestIdleCallback || ((fn) => window.setTimeout(fn, 1500));
     const cancel = window.cancelIdleCallback || window.clearTimeout;
     const id = schedule(() =>
@@ -240,7 +240,7 @@ function HeroPortraitCarousel({ reduceMotion }) {
       }),
     );
     return () => cancel(id);
-  }, [count, saveData]);
+  }, [count, disableCarousel, saveData]);
 
   // Pause when the hero scrolls offscreen or the tab is hidden — no point
   // cross-fading (or fetching frames) the visitor cannot see.

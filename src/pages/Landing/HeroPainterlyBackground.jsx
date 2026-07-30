@@ -18,13 +18,18 @@ import { motion as Motion, useTransform } from 'framer-motion';
 function HeroPainterlyBackground({
   reduceMotion,
   disableAmbient = false,
+  disableScroll = false,
   scrollYProgress,
   inView = true,
 }) {
   // Reduced-motion fallback: all scroll-driven transforms collapse to
   // identity so users who opt out get a static painterly.
   const useScrollRange = (range) =>
-    useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
+    useTransform(
+      scrollYProgress,
+      [0, 1],
+      reduceMotion || disableScroll ? [range[0], range[0]] : range,
+    );
 
   // Scroll-driven motion — wider ranges than before so the flow is
   // visibly active during the hero's scroll window.

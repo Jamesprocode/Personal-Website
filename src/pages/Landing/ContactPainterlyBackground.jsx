@@ -4,9 +4,10 @@ import { motion as Motion, useTransform } from 'framer-motion';
 // a centered radial halo behind the email line, like a single overhead
 // spotlight at the end of the page. Pulses softly with scroll as you
 // reach the bottom of the page.
-function ContactPainterlyBackground({ reduceMotion, scrollYProgress }) {
+function ContactPainterlyBackground({ reduceMotion, disableScroll = false, scrollYProgress }) {
+  const reduceScrollMotion = reduceMotion || disableScroll;
   const useScrollRange = (range) =>
-    useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
+    useTransform(scrollYProgress, [0, 1], reduceScrollMotion ? [range[0], range[0]] : range);
 
   // Scroll-driven values are pushed wide so the halo visibly inflates
   // and the rings noticeably rotate as you arrive at the bottom of the

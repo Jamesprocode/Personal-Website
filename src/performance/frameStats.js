@@ -1,14 +1,38 @@
-export function summarizeFrameGaps(gaps) {
+const COMMON_FRAME_BUDGETS = [8.3, 11.1, 16.7, 33.3];
+
+function estimateFrameBudget(gaps) {
+  if (!gaps.length) return 16.7;
+  const sorted = [...gaps].sort((a, b) => a - b);
+  const fastestCount = Math.max(1, Math.ceil(sorted.length * 0.2));
+  const fastest = sorted.slice(0, fastestCount);
+  const typicalFastGap = fastest.reduce((sum, gap) => sum + gap, 0) / fastest.length;
+  return COMMON_FRAME_BUDGETS.reduce((closest, budget) =>
+    Math.abs(budget - typicalFastGap) < Math.abs(closest - typicalFastGap)
+      ? budget
+      : closest
+  );
+}
+
+export function summarizeFrameGaps(gaps, calibratedBudgetMs) {
   const samples = gaps.length;
-  const average = samples
-    ? gaps.reduce((sum, gap) => sum + gap, 0) / samples
-    : 0;
+  const durationMs = gaps.reduce((sum, gap) => sum + gap, 0);
+  const frameBudgetMs = Number.isFinite(calibratedBudgetMs) && calibratedBudgetMs > 0
+    ? calibratedBudgetMs
+    : estimateFrameBudget(gaps);
+  const missedTimeMs = gaps.reduce(
+    (sum, gap) => sum + Math.max(0, gap - frameBudgetMs),
+    0,
+  );
 
   return {
     samples,
-    averageMs: Math.round(average * 10) / 10,
-    over20: gaps.filter((gap) => gap > 20).length,
-    over33: gaps.filter((gap) => gap > 33).length,
-    maxMs: samples ? Math.max(...gaps) : 0,
+    durationMs: Math.round(durationMs * 10) / 10,
+    frameBudgetMs,
+    missedFrames: gaps.filter((gap) => gap > frameBudgetMs * 1.5).length,
+    severeFrames: gaps.filter((gap) => gap > frameBudgetMs * 2.5).length,
+    missedTimeMs: Math.round(missedTimeMs * 10) / 10,
+    missedRatio: durationMs
+      ? Math.round((missedTimeMs / durationMs) * 1000) / 10
+      : 0,
   };
 }

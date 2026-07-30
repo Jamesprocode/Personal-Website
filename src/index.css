@@ -177,7 +177,7 @@ html[data-motion-debug-no-snap] {
   scroll-snap-type: none;
 }
 
-html[data-motion-debug-no-ambient] * {
+html[data-motion-debug-no-ambient] [data-ambient-animation] {
   animation-play-state: paused !important;
 }
 

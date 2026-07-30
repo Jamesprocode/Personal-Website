@@ -72,8 +72,9 @@ function HeroSection() {
       }}
     >
       <HeroPainterlyBackground
-        reduceMotion={simplifyMotion || disableScroll}
+        reduceMotion={simplifyMotion}
         disableAmbient={disableAmbient}
+        disableScroll={disableScroll}
         scrollYProgress={scrollYProgress}
         inView={inView}
       />

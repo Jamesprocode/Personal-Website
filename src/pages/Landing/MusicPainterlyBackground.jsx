@@ -11,9 +11,10 @@ function useKeyframe(progress, inputs, outputs, reduceMotion) {
 // onto a record. A second cooler glow on the left answers it. Both pulse
 // gently with scroll, and a soft horizontal "needle of light" sweeps
 // across as you move past.
-function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
+function MusicPainterlyBackground({ reduceMotion, disableScroll = false, scrollYProgress }) {
+  const reduceScrollMotion = reduceMotion || disableScroll;
   const useScrollRange = (range) =>
-    useTransform(scrollYProgress, [0, 1], reduceMotion ? [range[0], range[0]] : range);
+    useTransform(scrollYProgress, [0, 1], reduceScrollMotion ? [range[0], range[0]] : range);
 
   // Scroll-driven motion is stronger now: the stage glow swings wider,
   // the moon answers with its own drift, and the dust motes drift the
@@ -28,7 +29,7 @@ function MusicPainterlyBackground({ reduceMotion, scrollYProgress }) {
   const moonScale = useScrollRange([0.85, 1.12]);
   const moonOpacity = useScrollRange([0.25, 0.95]);
   const needleX = useScrollRange([-80, 1560]);
-  const needleOpacity = useKeyframe(scrollYProgress, [0, 0.5, 1], [0, 0.95, 0], reduceMotion);
+  const needleOpacity = useKeyframe(scrollYProgress, [0, 0.5, 1], [0, 0.95, 0], reduceScrollMotion);
   const dustY = useScrollRange([40, -120]);
   const dustOpacity = useScrollRange([0.6, 0.15]);
 
