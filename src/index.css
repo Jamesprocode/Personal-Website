@@ -171,6 +171,12 @@ html {
   scroll-padding-bottom: 4.5rem;
 }
 
+/* Query-only performance isolation. MotionDebugProbe applies this attribute
+   only for `?motionDebug=1&disable=snap`. */
+html[data-motion-debug-no-snap] {
+  scroll-snap-type: none;
+}
+
 /* Only sections explicitly marked with data-snap-section get a snap
    target. The Landing hero and research projects become full-screen
    beats; unmarked sections continue scrolling freely. */

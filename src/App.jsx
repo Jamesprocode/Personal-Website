@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import MiniPlayer from './components/MiniPlayer';
 import ScrollToTop from './components/ScrollToTop';
 import CursorMusicTrail from './components/CursorMusicTrail';
+import MotionDebugProbe from './performance/MotionDebugProbe';
 import { AudioPlayerProvider } from './hooks/useAudioPlayer';
 import { ThemeProvider } from './hooks/useTheme';
 import './App.css';
@@ -126,6 +127,7 @@ function App() {
     <Router>
       <ScrollToTop />
       <ThemeProvider>
+        <MotionDebugProbe />
         {isLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
 
         {showContent && (
