@@ -8,10 +8,10 @@ test('debug mode is inert without motionDebug', () => {
 
 test('only known effect groups can be disabled', () => {
   assert.deepEqual(
-    readMotionDebug('?motionDebug=1&disable=cursor,ambient,heroScroll,projectsScroll,unknown'),
+    readMotionDebug('?motionDebug=1&disable=cursor,ambient,projectsField,projectsTrack,unknown'),
     {
       enabled: true,
-      disabled: new Set(['cursor', 'ambient', 'heroScroll', 'projectsScroll']),
+      disabled: new Set(['cursor', 'ambient', 'projectsField', 'projectsTrack']),
     },
   );
 });

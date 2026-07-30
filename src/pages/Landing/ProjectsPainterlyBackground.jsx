@@ -62,44 +62,48 @@ function ProjectsPainterlyBackground({
   reduceMotion,
   disableAmbient = false,
   disableScroll = false,
+  disableField = false,
+  disableGlow = false,
+  disableTrack = false,
+  disableDust = false,
   scrollYProgress,
 }) {
   const reduceScrollMotion = reduceMotion || disableScroll;
   const reduceAmbientMotion = reduceMotion || disableAmbient;
   // Bigger scale range so parallax actually reads as the field "breathing"
   // toward / away from the viewer as you scroll.
-  const fieldScale = useScrollRange(scrollYProgress, reduceScrollMotion, [0.92, 1.12]);
-  const fieldRotate = useScrollRange(scrollYProgress, reduceScrollMotion, [-1.5, 2.5]); // subtle clockwise turn
+  const fieldScale = useScrollRange(scrollYProgress, reduceScrollMotion || disableField, [0.92, 1.12]);
+  const fieldRotate = useScrollRange(scrollYProgress, reduceScrollMotion || disableField, [-1.5, 2.5]); // subtle clockwise turn
 
   // Focal glow drifts down + right (off-screen further) as you scroll
   // so the geometry visibly shifts.
-  const focalDX = useScrollRange(scrollYProgress, reduceScrollMotion, [-40, 90]);
-  const focalDY = useScrollRange(scrollYProgress, reduceScrollMotion, [-50, 120]);
-  const focalAlpha = useScrollRange(scrollYProgress, reduceScrollMotion, [0.7, 1]);
+  const focalDX = useScrollRange(scrollYProgress, reduceScrollMotion || disableGlow, [-40, 90]);
+  const focalDY = useScrollRange(scrollYProgress, reduceScrollMotion || disableGlow, [-50, 120]);
+  const focalAlpha = useScrollRange(scrollYProgress, reduceScrollMotion || disableGlow, [0.7, 1]);
 
   // Secondary corner glow (upper-left, on the cassette side) — counter
   // drift to give the field a second axis of motion.
-  const cornerX = useScrollRange(scrollYProgress, reduceScrollMotion, [60, -80]);
-  const cornerY = useScrollRange(scrollYProgress, reduceScrollMotion, [-30, 60]);
+  const cornerX = useScrollRange(scrollYProgress, reduceScrollMotion || disableGlow, [60, -80]);
+  const cornerY = useScrollRange(scrollYProgress, reduceScrollMotion || disableGlow, [-30, 60]);
 
   // TRACKING ARC: walks from outermost groove to inner band over the
   // scroll range. Outer 1680 → Inner 460. Animated via `transform: scale`
   // on a wrapping group (compositor-only) instead of the SVG `r`
   // attribute (triggers SVG layout every frame).
   const TRACK_R = 1000;
-  const trackScale = useScrollRange(scrollYProgress, reduceScrollMotion, [1680 / TRACK_R, 460 / TRACK_R]);
+  const trackScale = useScrollRange(scrollYProgress, reduceScrollMotion || disableTrack, [1680 / TRACK_R, 460 / TRACK_R]);
   const trackOpacity = useTransform(
     scrollYProgress,
     [0, 0.06, 0.94, 1],
-    reduceScrollMotion ? [0, 0, 0, 0] : [0, 1, 1, 0]
+    reduceScrollMotion || disableTrack ? [0, 0, 0, 0] : [0, 1, 1, 0]
   );
   // The arc also rotates as it walks — feels like the cutting head is
   // tangent to the groove direction at each new radius.
-  const trackRotate = useScrollRange(scrollYProgress, reduceScrollMotion, [-8, 22]);
+  const trackRotate = useScrollRange(scrollYProgress, reduceScrollMotion || disableTrack, [-8, 22]);
 
   // Dust drift
-  const dustY = useScrollRange(scrollYProgress, reduceScrollMotion, [40, -90]);
-  const dustOpacity = useScrollRange(scrollYProgress, reduceScrollMotion, [0.7, 0.4]);
+  const dustY = useScrollRange(scrollYProgress, reduceScrollMotion || disableDust, [40, -90]);
+  const dustOpacity = useScrollRange(scrollYProgress, reduceScrollMotion || disableDust, [0.7, 0.4]);
 
   return (
     <div
@@ -287,7 +291,7 @@ function ProjectsPainterlyBackground({
             progresses, the radius shrinks (cutting head walks inward)
             and the arc rotates a bit so the head feels like it's
             following the groove tangent. */}
-        {!reduceScrollMotion && (
+        {!reduceScrollMotion && !disableTrack && (
           <Motion.g
             style={{
               opacity: trackOpacity,

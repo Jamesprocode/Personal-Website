@@ -59,6 +59,10 @@ function ProjectsSection() {
           reduceMotion={simplifyMotion}
           disableAmbient={disableAmbient}
           disableScroll={disableScroll}
+          disableField={isMotionEffectDisabled('projectsField')}
+          disableGlow={isMotionEffectDisabled('projectsGlow')}
+          disableTrack={isMotionEffectDisabled('projectsTrack')}
+          disableDust={isMotionEffectDisabled('projectsDust')}
           scrollYProgress={scrollYProgress}
         />
       )}
