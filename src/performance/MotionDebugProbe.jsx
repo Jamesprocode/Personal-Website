@@ -53,6 +53,7 @@ function MotionDebugProbe() {
     frameId = window.requestAnimationFrame(frame);
     intervalId = window.setInterval(publish, 1000);
     window.addEventListener('motion-debug-reset', reset);
+    window.addEventListener('motion-debug-capture', publish);
     document.documentElement.toggleAttribute('data-motion-debug-no-snap', disableSnap);
     document.documentElement.toggleAttribute('data-motion-debug-no-ambient', disableAmbient);
 
@@ -60,6 +61,7 @@ function MotionDebugProbe() {
       window.cancelAnimationFrame(frameId);
       window.clearInterval(intervalId);
       window.removeEventListener('motion-debug-reset', reset);
+      window.removeEventListener('motion-debug-capture', publish);
       document.documentElement.removeAttribute('data-motion-debug-no-snap');
       document.documentElement.removeAttribute('data-motion-debug-no-ambient');
     };
@@ -94,6 +96,22 @@ function MotionDebugProbe() {
         }}
       >
         Reset performance sample
+      </button>
+      <button
+        type="button"
+        data-motion-debug-capture
+        onClick={() => window.dispatchEvent(new Event('motion-debug-capture'))}
+        style={{
+          padding: '5px 7px',
+          border: 0,
+          borderRadius: 6,
+          color: '#f4e8d1',
+          background: '#4a3f35',
+          font: '11px/1.35 JetBrains Mono, monospace',
+          cursor: 'pointer',
+        }}
+      >
+        Capture performance sample
       </button>
       <output
         data-motion-debug-report
