@@ -196,12 +196,6 @@ function ProjectsPainterlyBackground({
             <stop offset="100%" stopColor="#a06f1d" stopOpacity="0" />
           </radialGradient>
 
-          <filter id="pj-soft-bloom" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3.5" />
-          </filter>
-          <filter id="pj-track-soften" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="1.35" />
-          </filter>
         </defs>
 
         {/* PAPER WASH — first, behind everything else. */}
@@ -315,7 +309,6 @@ function ProjectsPainterlyBackground({
               pathLength={1}
               strokeDasharray="0.20 1"
               strokeDashoffset="0.38"
-              filter="url(#pj-soft-bloom)"
             />
             {/* Mid halo */}
             <circle
@@ -329,7 +322,6 @@ function ProjectsPainterlyBackground({
               pathLength={1}
               strokeDasharray="0.16 1"
               strokeDashoffset="0.40"
-              filter="url(#pj-track-soften)"
             />
             {/* Saturated brass core */}
             <circle
@@ -379,7 +371,6 @@ function ProjectsPainterlyBackground({
                 pathLength={1}
                 strokeDasharray="0.012 1"
                 strokeDashoffset="0.378"
-                filter="url(#pj-soft-bloom)"
               />
               <circle
                 cx={FX}
@@ -392,7 +383,6 @@ function ProjectsPainterlyBackground({
                 pathLength={1}
                 strokeDasharray="0.008 1"
                 strokeDashoffset="0.379"
-                filter="url(#pj-track-soften)"
               />
               {/* Leading dot — pure white core */}
               <circle
