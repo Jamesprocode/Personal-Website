@@ -1,4 +1,4 @@
-const COMMON_FRAME_BUDGETS = [8.3, 11.1, 16.7, 33.3];
+const COMMON_FRAME_BUDGETS = [8.3, 10, 11.1, 16.7, 33.3];
 
 function estimateFrameBudget(gaps) {
   if (!gaps.length) return 16.7;

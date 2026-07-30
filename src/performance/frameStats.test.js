@@ -30,6 +30,10 @@ test('adapts the frame budget to a 120Hz display', () => {
   assert.equal(summarizeFrameGaps([8, 8, 9, 8, 9]).frameBudgetMs, 8.3);
 });
 
+test('adapts the frame budget to a 100Hz display', () => {
+  assert.equal(summarizeFrameGaps([10, 10, 10, 10, 10]).frameBudgetMs, 10);
+});
+
 test('uses a calibrated frame budget across comparison runs', () => {
   assert.equal(summarizeFrameGaps([16, 17, 18], 8.3).frameBudgetMs, 8.3);
 });
