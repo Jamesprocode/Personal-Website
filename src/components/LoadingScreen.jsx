@@ -20,7 +20,145 @@ const WAVEFORM_BARS = Array.from({ length: 20 }, (_, i) => ({
   ],
 }));
 
-const reelSize = 'clamp(2.35rem, 12vw, 4rem)';
+const REEL_HOLES = Array.from({ length: 6 }, (_, i) => {
+  const angle = (i * Math.PI) / 3 - Math.PI / 2;
+  return {
+    left: `${50 + Math.cos(angle) * 28}%`,
+    top: `${50 + Math.sin(angle) * 28}%`,
+    angle: `${i * 60}deg`,
+  };
+});
+
+function CassetteReel({ colors, isMobile, animate }) {
+  const size = isMobile ? '2.3rem' : 'clamp(3rem, 14vw, 4.2rem)';
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        width: size,
+        height: size,
+        flexShrink: 0,
+        position: 'relative',
+        borderRadius: '50%',
+        border: `${isMobile ? 2 : 3}px solid ${colors.accentDeep}`,
+        backgroundColor: colors.reel,
+        boxShadow: `inset 0 0 0 ${isMobile ? 3 : 4}px ${colors.border}`,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: '23%',
+          borderRadius: '50%',
+          backgroundColor: colors.accent,
+          border: `1px solid ${colors.accentDeep}`,
+          animation: animate ? 'loading-reel-spin 3.2s linear infinite' : 'none',
+        }}
+      >
+        {REEL_HOLES.map((hole, index) => (
+          <span
+            key={index}
+            style={{
+              position: 'absolute',
+              left: hole.left,
+              top: hole.top,
+              width: isMobile ? 3 : 4,
+              height: isMobile ? 6 : 8,
+              borderRadius: 999,
+              backgroundColor: colors.reel,
+              transform: `translate(-50%, -50%) rotate(${hole.angle})`,
+            }}
+          />
+        ))}
+        <span
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: isMobile ? '0.5rem' : '0.7rem',
+            height: isMobile ? '0.5rem' : '0.7rem',
+            borderRadius: '50%',
+            border: `2px solid ${colors.surface2}`,
+            backgroundColor: colors.reelCenter,
+            transform: 'translate(-50%, -50%)',
+            boxShadow: `0 0 0 1px ${colors.accentDeep}`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function CassetteTapeWindow({ colors, isMobile }) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        minWidth: 0,
+        height: isMobile ? '1.55rem' : '2.2rem',
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: isMobile ? '0.22rem' : '0.3rem',
+        border: `2px solid ${colors.accentDeep}`,
+        backgroundColor: colors.reelCenter,
+        boxShadow: `inset 0 0 0 2px ${colors.border}`,
+      }}
+    >
+      <span
+        style={{
+          position: 'absolute',
+          left: '10%',
+          right: '10%',
+          top: '50%',
+          height: isMobile ? 2 : 3,
+          borderRadius: 999,
+          backgroundColor: colors.accent,
+          transform: 'translateY(-50%)',
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          left: '-54%',
+          top: '50%',
+          width: '86%',
+          height: '240%',
+          borderRadius: '50%',
+          border: `${isMobile ? 4 : 6}px solid ${colors.accentDeep}`,
+          transform: 'translateY(-50%)',
+          boxShadow: `inset 0 0 0 2px ${colors.reel}`,
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          right: '-54%',
+          top: '50%',
+          width: '86%',
+          height: '240%',
+          borderRadius: '50%',
+          border: `${isMobile ? 4 : 6}px solid ${colors.accentDeep}`,
+          transform: 'translateY(-50%)',
+          boxShadow: `inset 0 0 0 2px ${colors.reel}`,
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          width: isMobile ? '0.42rem' : '0.58rem',
+          height: isMobile ? '0.82rem' : '1.1rem',
+          borderRadius: 999,
+          backgroundColor: colors.surface2,
+          border: `1px solid ${colors.border}`,
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+    </div>
+  );
+}
 
 const LIGHT_LOADER_COLORS = {
   bg: '#f4e8d1',
@@ -161,53 +299,32 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
               }}
             >
               <div
+                aria-hidden
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '0.9rem',
+                  height: 'clamp(2.7rem, 15vw, 3.7rem)',
+                  padding: '0.35rem 0.65rem',
+                  border: `2px solid ${colors.accentDeep}`,
+                  borderRadius: '0.55rem',
+                  backgroundColor: colors.surface2,
                 }}
               >
                 {[0, 1].map((side) => (
                   <div
                     key={side}
-                    aria-hidden
                     style={{
-                      width: 'clamp(2.15rem, 11vw, 3rem)',
-                      height: 'clamp(2.15rem, 11vw, 3rem)',
-                      borderRadius: '50%',
-                      border: `3px solid ${colors.accentDeep}`,
-                      backgroundColor: colors.reel,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      flexShrink: 0,
+                      width: 'clamp(2rem, 10vw, 2.8rem)',
+                      height: 'clamp(1rem, 5vw, 1.4rem)',
+                      border: `2px solid ${colors.accentDeep}`,
+                      borderBottom: 0,
+                      borderRadius: '999px 999px 0 0',
+                      background: `conic-gradient(from 0deg, ${colors.accent} 0deg 22deg, ${colors.reel} 22deg 90deg, ${colors.accent} 90deg 112deg, ${colors.reel} 112deg 180deg, ${colors.accent} 180deg 202deg, ${colors.reel} 202deg 270deg, ${colors.accent} 270deg 292deg, ${colors.reel} 292deg 360deg)`,
                       animation: animateLoader ? 'loading-reel-spin 1.35s linear infinite' : 'none',
                     }}
-                  >
-                    {[...Array(6)].map((_, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          position: 'absolute',
-                          width: 2,
-                          height: '100%',
-                          left: '50%',
-                          top: 0,
-                          backgroundColor: colors.accent,
-                          transform: `rotate(${i * 60}deg)`,
-                          transformOrigin: 'center',
-                        }}
-                      />
-                    ))}
-                    <span
-                      style={{
-                        position: 'absolute',
-                        inset: '33%',
-                        borderRadius: '50%',
-                        backgroundColor: colors.reelCenter,
-                      }}
-                    />
-                  </div>
+                  />
                 ))}
               </div>
 
@@ -366,91 +483,30 @@ function LoadingScreen({ onLoadingComplete = () => {}, holdUntilUnmount = false,
                     </div>
                   </div>
 
-                  {/* Tape Reels - fixed size, just spinning */}
+                  {/* The fixed apertures and clear tape window form one cassette mechanism.
+                      Only the inner hubs rotate, so the shell stays mechanically believable. */}
                   <div
-                    className="absolute flex justify-between items-center"
+                    className="absolute"
                     style={{
-                      left: isMobile ? '1.6rem' : 'clamp(2rem, 11vw, 3rem)',
-                      right: isMobile ? '1.6rem' : 'clamp(2rem, 11vw, 3rem)',
-                      bottom: isMobile ? '1rem' : 'clamp(1.5rem, 8vw, 2rem)',
+                      left: isMobile ? '0.95rem' : 'clamp(1.3rem, 6vw, 1.8rem)',
+                      right: isMobile ? '0.95rem' : 'clamp(1.3rem, 6vw, 1.8rem)',
+                      bottom: isMobile ? '0.72rem' : 'clamp(0.9rem, 5vw, 1.3rem)',
+                      height: isMobile ? '3.05rem' : 'clamp(4rem, 20vw, 5rem)',
+                      display: 'grid',
+                      gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+                      alignItems: 'center',
+                      gap: isMobile ? '0.38rem' : 'clamp(0.5rem, 3vw, 0.75rem)',
+                      padding: isMobile ? '0.3rem 0.4rem' : '0.4rem 0.55rem',
+                      borderRadius: isMobile ? '0.48rem' : '0.65rem',
+                      border: `1px solid ${colors.border}`,
+                      backgroundColor: colors.labelBg,
                     }}
                   >
-                    {/* Left Reel */}
-                    <div
-                      className="w-16 h-16 rounded-full border-4 relative overflow-hidden"
-                      style={{
-                        width: isMobile ? '2.1rem' : reelSize,
-                        height: isMobile ? '2.1rem' : reelSize,
-                        borderWidth: isMobile ? 3 : undefined,
-                        animation: animateLoader ? 'loading-reel-spin 2.4s linear infinite' : 'none',
-                        backgroundColor: colors.reel,
-                        borderColor: colors.accentDeep,
-                      }}
-                    >
-                      {[...Array(8)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute w-1 h-full left-1/2 top-0"
-                          style={{
-                            backgroundColor: colors.accent,
-                            transform: `rotate(${i * 45}deg)`,
-                            transformOrigin: 'center',
-                          }}
-                        />
-                      ))}
-                      <div
-                        className="absolute inset-3 rounded-full"
-                        style={{ backgroundColor: colors.reelCenter }}
-                      />
-                    </div>
-
-                    {/* Right Reel */}
-                    <div
-                      className="w-16 h-16 rounded-full border-4 relative overflow-hidden"
-                      style={{
-                        width: isMobile ? '2.1rem' : reelSize,
-                        height: isMobile ? '2.1rem' : reelSize,
-                        borderWidth: isMobile ? 3 : undefined,
-                        animation: animateLoader ? 'loading-reel-spin 2.4s linear infinite' : 'none',
-                        backgroundColor: colors.reel,
-                        borderColor: colors.accentDeep,
-                      }}
-                    >
-                      {[...Array(8)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute w-1 h-full left-1/2 top-0"
-                          style={{
-                            backgroundColor: colors.accent,
-                            transform: `rotate(${i * 45}deg)`,
-                            transformOrigin: 'center',
-                          }}
-                        />
-                      ))}
-                      <div
-                        className="absolute inset-3 rounded-full"
-                        style={{ backgroundColor: colors.reelCenter }}
-                      />
-                    </div>
+                    <CassetteReel colors={colors} isMobile={isMobile} animate={animateLoader} />
+                    <CassetteTapeWindow colors={colors} isMobile={isMobile} />
+                    <CassetteReel colors={colors} isMobile={isMobile} animate={animateLoader} />
                   </div>
 
-                  {/* Desktop tape window doubles as its progress indicator.
-                      Mobile uses the single, clearer bar below the status. */}
-                  {!isMobile && (
-                    <div
-                      className="absolute left-1/2 -translate-x-1/2 h-1 rounded-full"
-                      style={{
-                        width: 'clamp(5.5rem, 30vw, 8rem)',
-                        bottom: 'clamp(1.5rem, 8vw, 2rem)',
-                        backgroundColor: colors.accentDeep,
-                      }}
-                    >
-                      <Motion.div
-                        className="h-full rounded-full"
-                        style={{ width: `${progress}%`, backgroundColor: colors.textStrong }}
-                      />
-                    </div>
-                  )}
                 </div>
               </Motion.div>
 
