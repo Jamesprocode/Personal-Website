@@ -15,20 +15,23 @@ import './App.css';
 
 const routeImports = {
   landing: () => import('./pages/Landing/Landing'),
+  projects: () => import('./pages/Projects/Projects'),
   music: () => import('./pages/Music/Music'),
   timeline: () => import('./pages/Timeline/Timeline'),
-  project: () => import('./pages/Project/ProjectDetail'),
+  projectDetail: () => import('./pages/Project/ProjectDetail'),
 };
 
 const Landing = lazy(routeImports.landing);
+const Projects = lazy(routeImports.projects);
 const Music = lazy(routeImports.music);
 const Timeline = lazy(routeImports.timeline);
-const ProjectDetail = lazy(routeImports.project);
+const ProjectDetail = lazy(routeImports.projectDetail);
 
 function preloadRoute(pathname) {
   if (pathname.startsWith('/music')) return routeImports.music();
   if (pathname.startsWith('/timeline')) return routeImports.timeline();
-  if (pathname.startsWith('/projects/')) return routeImports.project();
+  if (pathname === '/projects') return routeImports.projects();
+  if (pathname.startsWith('/projects/')) return routeImports.projectDetail();
   return routeImports.landing();
 }
 
@@ -60,6 +63,14 @@ function AppRoutes({ showRouteFallback = true }) {
           element={
             <LazyRoute showRouteFallback={showRouteFallback}>
               <Landing />
+            </LazyRoute>
+          }
+        />
+        <Route
+          path="/projects"
+          element={
+            <LazyRoute showRouteFallback={showRouteFallback}>
+              <Projects />
             </LazyRoute>
           }
         />

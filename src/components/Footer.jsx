@@ -1,7 +1,13 @@
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+import useHomeContentVisible from '../hooks/useHomeContentVisible';
 
 function Footer() {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const homeContentVisible = useHomeContentVisible();
+  const isHome = pathname === '/';
+  const visible = isHome || homeContentVisible;
 
   // Colors come from theme tokens so the footer flips with the global
   // light/dark toggle on every route.
@@ -11,13 +17,19 @@ function Footer() {
 
   return (
     <footer
-      className="site-footer fixed bottom-0 left-0 right-0 z-50"
+      className={`site-footer ${isHome ? 'site-footer--home relative z-10' : 'fixed bottom-0 left-0 right-0 z-50'}`}
       style={{
         backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
         borderTop: '1px solid var(--border)',
+        opacity: visible ? 1 : 0,
+        visibility: visible ? 'visible' : 'hidden',
+        pointerEvents: visible ? 'auto' : 'none',
+        transform: visible ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'opacity 260ms ease, transform 340ms cubic-bezier(0.16,1,0.3,1), visibility 260ms ease',
       }}
+      aria-hidden={!visible}
     >
       <div
         data-footer-inner

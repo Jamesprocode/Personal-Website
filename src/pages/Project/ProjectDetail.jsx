@@ -1117,7 +1117,7 @@ function NotFound() {
             {t('project.404.body')}
           </p>
           <Link
-            to="/"
+            to="/projects"
             className="inline-block rounded-full transition-colors duration-200"
             style={{
               backgroundColor: '#92400e',
@@ -1323,7 +1323,7 @@ function ProjectDetail() {
             }}
           >
             <TransportButton
-              to="/#research-projects-top"
+              to="/projects"
               variant="rew"
               size={isMobileChrome ? 44 : 52}
               label={t('project.rewind')}

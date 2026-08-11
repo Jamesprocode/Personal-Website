@@ -29,7 +29,7 @@ function Navbar() {
   useEffect(() => {
     const id = window.setTimeout(() => setMobileOpen(false), 0);
     return () => window.clearTimeout(id);
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   useEffect(() => {
     if (!mobileOpen) return undefined;
@@ -47,13 +47,23 @@ function Navbar() {
     };
   }, [mobileOpen]);
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === '/#intro') return location.pathname === '/';
+    if (path === '/projects') return location.pathname.startsWith('/projects');
+    return location.pathname === path;
+  };
 
   const navLinks = [
-    { path: '/', label: t('nav.home') },
+    { path: '/#intro', label: t('nav.home') },
+    { path: '/projects', label: t('nav.projects') },
     { path: '/music', label: t('nav.music') },
     { path: '/timeline', label: t('nav.timeline') },
   ];
+
+  const requestHomeCurtain = (destination) => {
+    if (location.pathname !== '/') return;
+    window.dispatchEvent(new CustomEvent('home-curtain-request', { detail: { destination } }));
+  };
 
   // Colors now come from theme tokens so the navbar flips with the global
   // light/dark toggle instead of being keyed to the route.
@@ -71,13 +81,15 @@ function Navbar() {
   return (
     <>
       <nav
-        className={`${playEntrance ? 'navbar-enter ' : ''}fixed top-0 left-0 right-0 z-50 shadow-md`}
+        className={`${playEntrance ? 'navbar-enter ' : ''}fixed top-0 left-0 right-0 z-50`}
         onAnimationEnd={() => setPlayEntrance(false)}
         style={{
           backgroundColor: surfaceBg,
           // Single brass hairline along the bottom — the cross-room thread
           // running through the navbar. The only chrome the header carries.
           borderBottom: `1px solid ${brass}40`,
+          boxShadow: '0 8px 24px rgba(26, 19, 12, 0.1)',
+          transition: 'background-color 320ms ease, border-color 320ms ease, box-shadow 320ms ease',
         }}
       >
         <div
@@ -92,6 +104,13 @@ function Navbar() {
         >
           <Link
             to="/"
+            onClick={() => {
+              setMobileOpen(false);
+              if (location.pathname === '/') {
+                window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+                requestHomeCurtain('cover');
+              }
+            }}
             className="text-lg font-bold tracking-tight transition-colors duration-300"
             style={{
               color: brandColor,
@@ -116,6 +135,9 @@ function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
+                  onClick={() => {
+                    if (link.path === '/#intro') requestHomeCurtain('intro');
+                  }}
                   className="relative inline-flex items-center justify-center gap-2 text-sm font-medium transition-colors duration-200"
                   style={{
                     color: active ? activeColor : restColor,
@@ -255,6 +277,10 @@ function Navbar() {
                 >
                   <Link
                     to={link.path}
+                    onClick={() => {
+                      setMobileOpen(false);
+                      if (link.path === '/#intro') requestHomeCurtain('intro');
+                    }}
                     className="block text-2xl font-medium rounded-xl transition-colors"
                     style={{
                       color: isActive(link.path) ? 'var(--text-strong)' : 'var(--text-muted)',

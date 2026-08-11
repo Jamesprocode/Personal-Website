@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import PageTransition from '../../components/PageTransition';
-import HeroSection from './HeroSection';
-import ProjectsSection from './ProjectsSection';
-import MusicPreview from './MusicPreview';
-import TimelinePreview from './TimelinePreview';
-import ContactSection from './ContactSection';
+import HomeExperience from './HomeExperience';
 
 function Landing() {
   const { hash } = useLocation();
@@ -18,7 +14,12 @@ function Landing() {
       if (cancelled) return;
       const el = document.getElementById(id);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (id === 'intro') {
+          window.scrollTo({ top: el.offsetTop, left: 0, behavior: 'instant' });
+          window.dispatchEvent(new CustomEvent('home-curtain-request', { detail: { destination: 'intro' } }));
+        } else {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
     };
     const t = window.setTimeout(scroll, 60);
@@ -30,12 +31,8 @@ function Landing() {
 
   return (
     <PageTransition scene="landing">
-      <main className="landing-snap" style={{ width: '100%', backgroundColor: 'var(--bg)' }}>
-        <HeroSection />
-        <ProjectsSection />
-        <MusicPreview />
-        <TimelinePreview />
-        <ContactSection />
+      <main style={{ width: '100%', backgroundColor: 'var(--bg)' }}>
+        <HomeExperience />
       </main>
     </PageTransition>
   );
