@@ -145,6 +145,63 @@
   --cursor-shadow-active: rgba(196, 162, 101, 0.34);
 }
 
+/* Theme reveal: the newly selected room opens from the physical sun/moon
+   control, like a circular exposure spreading across the page. The old
+   theme stays underneath, so there is no muddy crossfade between palettes. */
+html.theme-transitioning::view-transition-old(root) {
+  z-index: 1;
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.theme-transitioning::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-circle-reveal 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  mix-blend-mode: normal;
+}
+
+@keyframes theme-circle-reveal {
+  from {
+    clip-path: circle(
+      var(--theme-transition-start-radius, 18px)
+      at var(--theme-transition-x, 50vw) var(--theme-transition-y, 2rem)
+    );
+  }
+  to {
+    clip-path: circle(
+      var(--theme-transition-radius, 150vmax)
+      at var(--theme-transition-x, 50vw) var(--theme-transition-y, 2rem)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning::view-transition-old(root),
+  html.theme-transitioning::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+.theme-reveal-fallback {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  pointer-events: none;
+  will-change: clip-path, opacity;
+}
+
+.theme-reveal-fallback--light {
+  background:
+    radial-gradient(circle at 70% 12%, rgba(255, 247, 222, 0.42), transparent 28rem),
+    rgba(244, 232, 209, 0.96);
+}
+
+.theme-reveal-fallback--dark {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(196, 162, 101, 0.18), transparent 30rem),
+    rgba(17, 13, 9, 0.97);
+}
+
 * {
   margin: 0;
   padding: 0;
