@@ -35,6 +35,9 @@ Project papers/
 GEMS/
 mto.25.31.4.hudson_wang.pdf
 
+# Large local evaluation output
+per_track.jsonl
+
 # Never commit raw / lossless audio source files — only the mastered MP3s
 # under public/audio/ are meant to ship.
 *.wav

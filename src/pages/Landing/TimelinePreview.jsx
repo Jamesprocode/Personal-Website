@@ -16,7 +16,7 @@ const TRACKS = [
 
 const START_YEAR = 2020;
 const END_YEAR = 2026;
-const YEAR_SPAN = END_YEAR - START_YEAR;
+const YEAR_COUNT = END_YEAR - START_YEAR + 1;
 
 function TimelinePreview() {
   const reduceMotion = useReducedMotion();
@@ -54,7 +54,7 @@ function TimelinePreview() {
           const offsetWithinYear = group.length === 1 ? 0.5 : (idx + 0.5) / group.length;
           const cellSpan = 0.7;
           const cellStart = (1 - cellSpan) / 2;
-          const xFrac = (yearNum - START_YEAR + cellStart + offsetWithinYear * cellSpan) / YEAR_SPAN;
+          const xFrac = (yearNum - START_YEAR + cellStart + offsetWithinYear * cellSpan) / YEAR_COUNT;
           dots.push({ id: entry.id, xFrac });
         });
       });
@@ -278,13 +278,10 @@ function TimelinePreview() {
                   },
                 }}
               >
-                {Array.from({ length: YEAR_SPAN + 1 }).map((_, i) => {
+                {Array.from({ length: YEAR_COUNT }).map((_, i) => {
                   const year = START_YEAR + i;
                   if (isMobile && i % 2 !== 0) return null;
-                  const xFrac = i / YEAR_SPAN;
-                  // Anchor the first label to its left edge and the last to
-                  // its right edge so they don't overflow the track horizontally.
-                  const tx = i === 0 ? '0%' : i === YEAR_SPAN ? '-100%' : '-50%';
+                  const xFrac = (i + 0.5) / YEAR_COUNT;
                   return (
                     <span
                       key={year}
@@ -292,7 +289,7 @@ function TimelinePreview() {
                       data-prototype-year
                       style={{
                         left: `${xFrac * 100}%`,
-                        transform: `translateX(${tx})`,
+                        transform: 'translateX(-50%)',
                         fontSize: 'clamp(0.7rem, 0.78vw, 0.85rem)',
                         letterSpacing: '0.05em',
                         color: 'var(--text-muted)',

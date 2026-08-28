@@ -33,7 +33,7 @@ const TRACKS = [
 
 const START_YEAR = 2020;
 const END_YEAR = 2026;
-const YEAR_SPAN = END_YEAR - START_YEAR;
+const YEAR_COUNT = END_YEAR - START_YEAR + 1;
 
 const BAND_HEIGHT = 260;
 const SPINE_Y = BAND_HEIGHT / 2;
@@ -90,7 +90,11 @@ function ParallelTracks() {
         const yearNum = Number(y);
         group.forEach((entry, idx) => {
           const within = group.length === 1 ? 0.5 : (idx + 0.5) / group.length;
-          const xFrac = (yearNum - START_YEAR + within) / YEAR_SPAN;
+          // Treat each displayed year as a real cell rather than using the
+          // final year as an exclusive boundary. This keeps 2026 entries
+          // inside the chart while preserving room for multiple credits in
+          // the same year.
+          const xFrac = (yearNum - START_YEAR + within) / YEAR_COUNT;
           const above = idx % 2 === 0;
           placed.push({ ...entry, xFrac, above });
         });
@@ -307,9 +311,9 @@ function ParallelTracks() {
           >
             <div />
             <div className="relative" style={{ height: '1.5em' }}>
-              {Array.from({ length: YEAR_SPAN + 1 }).map((_, i) => {
+              {Array.from({ length: YEAR_COUNT }).map((_, i) => {
                 const year = START_YEAR + i;
-                const xFrac = i / YEAR_SPAN;
+                const xFrac = (i + 0.5) / YEAR_COUNT;
                 return (
                   <span
                     key={year}
@@ -477,15 +481,34 @@ function VerticalStack({ items, t, reduceMotion }) {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
                     transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ overflow: 'hidden', marginLeft: SPINE_X + CD_REST / 2 - 4 }}
+                    style={{
+                      overflow: 'hidden',
+                      marginLeft: SPINE_X + CD_REST / 2 - 4,
+                      position: 'relative',
+                    }}
                   >
+                    {item.logo && (
+                      <img
+                        src={item.logo}
+                        alt=""
+                        aria-hidden
+                        style={{
+                          position: 'absolute',
+                          top: 10,
+                          right: 8,
+                          width: 36,
+                          height: 36,
+                          objectFit: 'contain',
+                        }}
+                      />
+                    )}
                     <p
                       style={{
                         color: 'var(--text)',
                         fontSize: '0.85rem',
                         lineHeight: 1.55,
                         paddingTop: 8,
-                        paddingRight: 8,
+                        paddingRight: item.logo ? 54 : 8,
                       }}
                     >
                       {titleTr !== displayTitleTr && (

@@ -85,6 +85,18 @@ const timeline = [
 
   // ---------- Internships (gray) ----------
   {
+    id: 22,
+    year: 2026,
+    category: 'Internships',
+    title: 'Intern, Tencent Music Entertainment (Kugou Music)',
+    displayTitle: 'TME · Kugou',
+    iconKey: 'tech',
+    logo: '/logos/kugou.png',
+    details:
+      'Intern at Tencent Music Entertainment’s Kugou Music in summer 2026. Worked on a guitar accompaniment and tablature generation system, including score processing, MusicXML and MuseScore output, batch validation, and an internal review portal.',
+    color: 'gray',
+  },
+  {
     id: 7,
     year: 2024,
     category: 'Internships',
