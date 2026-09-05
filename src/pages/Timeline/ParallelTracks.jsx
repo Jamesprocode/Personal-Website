@@ -35,15 +35,15 @@ const START_YEAR = 2020;
 const END_YEAR = 2026;
 const YEAR_COUNT = END_YEAR - START_YEAR + 1;
 
-// Two-line captions need room beyond the far stems on both sides.
-const BAND_HEIGHT = 324;
-const SPINE_Y = BAND_HEIGHT / 2;
+// Start with the existing spacing; expand only when wrapped names need it.
+const MIN_BAND_HEIGHT = 324;
 const STEM_NEAR = 66;
-const STEM_FAR = 114;
-const LABEL_HEIGHT = 22;
+const MIN_STEM_FAR = 114;
+const LABEL_LINE_HEIGHT = 18;
 const YEAR_LABEL_HEIGHT = 16;
 const CAPTION_GAP = 2;
-const CAPTION_HEIGHT = LABEL_HEIGHT + YEAR_LABEL_HEIGHT + CAPTION_GAP;
+const MIN_CAPTION_HEIGHT = LABEL_LINE_HEIGHT + YEAR_LABEL_HEIGHT + CAPTION_GAP;
+const CAPTION_ROW_GAP = 8;
 const CD_REST = 44;
 const CD_LIT = 60;
 const YEAR_SLOT_INSET = 0.15;
@@ -64,23 +64,42 @@ function ParallelTracks() {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const plotRef = useRef(null);
-  const [plotMetrics, setPlotMetrics] = useState({ width: 0, labelWidth: 104 });
+  const tracksRef = useRef(null);
+  const [plotMetrics, setPlotMetrics] = useState({
+    width: 0,
+    labelWidth: 104,
+    captionHeight: MIN_CAPTION_HEIGHT,
+  });
 
   useEffect(() => {
     const plot = plotRef.current;
     if (!plot || isMobile) return undefined;
+    const captions = [...tracksRef.current.querySelectorAll('.timeline-entry-caption')];
     const observer = new ResizeObserver(() => {
       const width = plot.getBoundingClientRect().width;
-      const labelWidth = plot.querySelector('.timeline-entry-caption')?.getBoundingClientRect().width || 104;
+      const labelWidth = captions[0]?.getBoundingClientRect().width || 104;
+      const captionHeight = Math.max(
+        MIN_CAPTION_HEIGHT,
+        ...captions.map((caption) => caption.getBoundingClientRect().height)
+      );
       setPlotMetrics((previous) =>
-        previous.width === width && previous.labelWidth === labelWidth
+        previous.width === width
+          && previous.labelWidth === labelWidth
+          && previous.captionHeight === captionHeight
           ? previous
-          : { width, labelWidth }
+          : { width, labelWidth, captionHeight }
       );
     });
     observer.observe(plot);
+    captions.forEach((caption) => observer.observe(caption));
     return () => observer.disconnect();
   }, [isMobile]);
+  const farStem = Math.max(MIN_STEM_FAR, STEM_NEAR + plotMetrics.captionHeight + CAPTION_ROW_GAP);
+  const bandHeight = Math.max(
+    MIN_BAND_HEIGHT,
+    2 * (farStem + plotMetrics.captionHeight + CAPTION_ROW_GAP)
+  );
+  const spineY = bandHeight / 2;
   // `pinned` is the entry whose tooltip is sticky after a click. Hover-only
   // tooltips disappear on mouseleave, but a click pins the card so the user
   // can take their cursor away to read.
@@ -247,7 +266,7 @@ function ParallelTracks() {
         {isMobile ? (
           <VerticalStack items={stackItems} t={t} reduceMotion={reduceMotion} />
         ) : (
-        <div className="relative">
+        <div ref={tracksRef} className="relative">
           {trackData.map((track, trackIdx) => (
             <Motion.div
               key={track.key}
@@ -277,12 +296,12 @@ function ParallelTracks() {
                 {t(track.labelKey)}
               </p>
 
-              <div ref={trackIdx === 0 ? plotRef : undefined} className="relative" style={{ height: BAND_HEIGHT }}>
+              <div ref={trackIdx === 0 ? plotRef : undefined} className="relative" style={{ height: bandHeight }}>
                 {/* Spine */}
                 <div
                   className="absolute left-0 right-0"
                   style={{
-                    top: SPINE_Y,
+                    top: spineY,
                     height: 1,
                     background: `linear-gradient(90deg, transparent 0%, ${track.color}55 6%, ${track.color}55 94%, transparent 100%)`,
                   }}
@@ -298,6 +317,8 @@ function ParallelTracks() {
                       key={item.id}
                       item={item}
                       hitSize={discHitSize}
+                      spineY={spineY}
+                      farStem={farStem}
                       color={track.color}
                       isPinned={isPinned}
                       isHovered={isHovered}
@@ -323,6 +344,7 @@ function ParallelTracks() {
                     <EntryTooltip
                       item={active}
                       hitSize={discHitSize}
+                      spineY={spineY}
                       color={track.color}
                       isPinned={!!pinned && pinned.id === active.id}
                       t={t}
@@ -577,6 +599,8 @@ function VerticalStack({ items, t, reduceMotion }) {
 function Entry({
   item,
   hitSize,
+  spineY,
+  farStem,
   color,
   isPinned,
   isHovered,
@@ -588,7 +612,7 @@ function Entry({
 }) {
   const row = item.row || (item.above ? 'above-near' : 'below-near');
   const above = row.startsWith('above');
-  const stem = row.endsWith('-far') ? STEM_FAR : STEM_NEAR;
+  const stem = row.endsWith('-far') ? farStem : STEM_NEAR;
   const lit = isPinned || isHovered;
   const spinning = lit && !reduceMotion;
   const cdSize = lit ? hitSize : Math.min(CD_REST, hitSize - 4);
@@ -609,7 +633,7 @@ function Entry({
         left: `${item.xFrac * 100}%`,
         top: 0,
         height: '100%',
-        width: 'clamp(82px, 7vw, 104px)',
+        width: 'clamp(100px, 9vw, 128px)',
         transform: 'translateX(-50%)',
         opacity: dimOthers ? 0.4 : 1,
         transition: reduceMotion ? 'none' : 'opacity 180ms ease',
@@ -641,7 +665,7 @@ function Entry({
         className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] rounded-sm"
         style={{
           position: 'absolute',
-          top: SPINE_Y - hitSize / 2,
+          top: spineY - hitSize / 2,
           left: '50%',
           width: hitSize,
           height: hitSize,
@@ -662,18 +686,19 @@ function Entry({
           position: 'absolute',
           left: '50%',
           transform: 'translateX(-50%)',
-          top: above ? SPINE_Y - stem - CAPTION_HEIGHT : SPINE_Y + stem + 4,
+          top: above ? undefined : spineY + stem + 4,
+          bottom: above ? spineY + stem : undefined,
           width: '100%',
-          height: CAPTION_HEIGHT,
           display: 'flex',
           flexDirection: above ? 'column' : 'column-reverse',
           gap: CAPTION_GAP,
           color: lit ? 'var(--text-strong)' : 'var(--text)',
           fontSize: 'clamp(0.7rem, 0.8vw, 0.78rem)',
-          lineHeight: `${LABEL_HEIGHT}px`,
-          fontWeight: lit ? 600 : 500,
+          lineHeight: `${LABEL_LINE_HEIGHT}px`,
+          // Stable weight prevents hover from changing line breaks and layout.
+          fontWeight: 500,
           textAlign: 'center',
-          whiteSpace: 'nowrap',
+          whiteSpace: 'normal',
           padding: '0 2px',
           pointerEvents: 'none',
           transition: reduceMotion ? 'none' : 'color 150ms ease',
@@ -689,6 +714,7 @@ function Entry({
             lineHeight: `${YEAR_LABEL_HEIGHT}px`,
             fontWeight: 400,
             letterSpacing: '0.04em',
+            whiteSpace: 'nowrap',
             color: lit ? 'var(--text-strong)' : 'var(--text-muted)',
           }}
         >
@@ -697,10 +723,9 @@ function Entry({
         <span
           className="timeline-entry-title"
           style={{
-            height: LABEL_HEIGHT,
             flexShrink: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            minWidth: 0,
+            overflowWrap: 'anywhere',
           }}
         >
           {displayTitleTr}
@@ -713,7 +738,7 @@ function Entry({
         style={{
           position: 'absolute',
           left: '50%',
-          top: above ? SPINE_Y - stem : SPINE_Y,
+          top: above ? spineY - stem : spineY,
           width: 1,
           height: stem,
           transform: 'translateX(-50%)',
@@ -739,7 +764,7 @@ function Entry({
 // band, anchored to the active entry's xFrac. Default placement keeps the
 // card inside the chart: left-half entries open right, right-half entries
 // open left. Per-entry `tooltipSide` overrides the default where needed.
-function EntryTooltip({ item, hitSize, color, isPinned, t }) {
+function EntryTooltip({ item, hitSize, spineY, color, isPinned, t }) {
   const placeOnLeft = item.tooltipSide
     ? item.tooltipSide === 'left'
     : item.xFrac > 0.5;
@@ -757,7 +782,7 @@ function EntryTooltip({ item, hitSize, color, isPinned, t }) {
       aria-label={`${titleTr} details`}
       style={{
         position: 'absolute',
-        top: SPINE_Y,
+        top: spineY,
         ...sideStyle,
         transform: 'translateY(-50%)',
         width: 'min(clamp(240px, 22vw, 300px), calc(100vw - 2rem))',
