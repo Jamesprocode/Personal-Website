@@ -581,6 +581,8 @@ function HomeExperience() {
           <div className="home-intro-copy">
             <Motion.h2
               id="home-intro-title"
+              className={english ? undefined : 'home-intro-title--zh'}
+              lang={english ? 'en' : 'zh-CN'}
               variants={{
                 hidden: { opacity: 0, y: 18 },
                 show: { opacity: 1, y: 0, transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] } },

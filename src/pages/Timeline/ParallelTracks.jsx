@@ -1,5 +1,5 @@
 import { motion as Motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import timeline from '../../data/timeline';
 import CompanyIcon from '../../components/CompanyIcon';
@@ -35,18 +35,23 @@ const START_YEAR = 2020;
 const END_YEAR = 2026;
 const YEAR_COUNT = END_YEAR - START_YEAR + 1;
 
-const BAND_HEIGHT = 260;
+// Two-line captions need room beyond the far stems on both sides.
+const BAND_HEIGHT = 324;
 const SPINE_Y = BAND_HEIGHT / 2;
-const STEM_NEAR = 58;
-const STEM_FAR = 98;
+const STEM_NEAR = 66;
+const STEM_FAR = 114;
 const LABEL_HEIGHT = 22;
+const YEAR_LABEL_HEIGHT = 16;
+const CAPTION_GAP = 2;
+const CAPTION_HEIGHT = LABEL_HEIGHT + YEAR_LABEL_HEIGHT + CAPTION_GAP;
 const CD_REST = 44;
 const CD_LIT = 60;
-// Minimum horizontal spacing (as a fraction of chart width) between two
-// label centers on the same row before we escalate to the other row or the
-// far tier. 0.135 ≈ 140 px center-to-center on a 1050 px chart, leaving
-// ~40 px breathing room around a clamp(82, 100, 104) label.
-const MIN_LABEL_FRAC = 0.135;
+const YEAR_SLOT_INSET = 0.15;
+const LABEL_GUTTER = 12;
+
+// A year tick marks the start of its interval. Every entry from that year
+// belongs after this tick and before the next, not on either side of it.
+const yearStartPosition = (year) => (year - START_YEAR) / YEAR_COUNT;
 
 // Track key → color lookup, shared by the desktop bands and the mobile stack.
 const TRACK_COLOR = TRACKS.reduce((acc, tr) => {
@@ -58,6 +63,24 @@ function ParallelTracks() {
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const plotRef = useRef(null);
+  const [plotMetrics, setPlotMetrics] = useState({ width: 0, labelWidth: 104 });
+
+  useEffect(() => {
+    const plot = plotRef.current;
+    if (!plot || isMobile) return undefined;
+    const observer = new ResizeObserver(() => {
+      const width = plot.getBoundingClientRect().width;
+      const labelWidth = plot.querySelector('.timeline-entry-caption')?.getBoundingClientRect().width || 104;
+      setPlotMetrics((previous) =>
+        previous.width === width && previous.labelWidth === labelWidth
+          ? previous
+          : { width, labelWidth }
+      );
+    });
+    observer.observe(plot);
+    return () => observer.disconnect();
+  }, [isMobile]);
   // `pinned` is the entry whose tooltip is sticky after a click. Hover-only
   // tooltips disappear on mouseleave, but a click pins the card so the user
   // can take their cursor away to read.
@@ -72,8 +95,12 @@ function ParallelTracks() {
     else setHoveredId((curr) => (curr === id ? null : curr));
   };
 
-  const trackData = useMemo(() => {
-    return TRACKS.map((track) => {
+  const { tracks: trackData, discHitSize } = useMemo(() => {
+    const minLabelSpacing = plotMetrics.width
+      ? (plotMetrics.labelWidth + LABEL_GUTTER) / plotMetrics.width
+      : 0.23;
+    let minDiscSpacing = Infinity;
+    const tracks = TRACKS.map((track) => {
       const entries = timeline
         .filter((e) => e.category === track.key)
         .sort((a, b) => a.year - b.year);
@@ -87,58 +114,62 @@ function ParallelTracks() {
       const placed = [];
       Object.keys(byYear).forEach((y) => {
         const group = byYear[y];
-        const yearNum = Number(y);
         group.forEach((entry, idx) => {
-          const within = group.length === 1 ? 0.5 : (idx + 0.5) / group.length;
-          // Treat each displayed year as a real cell rather than using the
-          // final year as an exclusive boundary. This keeps 2026 entries
-          // inside the chart while preserving room for multiple credits in
-          // the same year.
-          const xFrac = (yearNum - START_YEAR + within) / YEAR_COUNT;
+          // Same-year entries read left-to-right in their source order.
+          // This expresses sequence within the year, not an invented month.
+          const within = group.length === 1
+            ? 0.5
+            : YEAR_SLOT_INSET + (idx / (group.length - 1)) * (1 - 2 * YEAR_SLOT_INSET);
+          const xFrac = yearStartPosition(Number(y)) + within / YEAR_COUNT;
           const above = idx % 2 === 0;
           placed.push({ ...entry, xFrac, above });
         });
       });
 
-      // Assign a vertical row to each item so labels never crowd each other.
-      // Four rows total: { above-near, below-near, above-far, below-far }.
-      // Walk items left-to-right; for each, prefer its original above/below
-      // at the near tier; if that row's last label is too close, try the
-      // opposite side at near tier; finally escalate to the far tier on the
-      // preferred side.
+      // Resolve collisions using the rendered caption width, not a fixed
+      // fraction. Alternate crowded captions above/below before using the
+      // outer tiers, without changing their horizontal sequence.
       const sorted = placed.slice().sort((a, b) => a.xFrac - b.xFrac);
-      const lastByRow = {
-        'above-near': -Infinity,
-        'below-near': -Infinity,
-        'above-far': -Infinity,
-        'below-far': -Infinity,
-      };
-      sorted.forEach((item) => {
-        // Per-entry override: if the data file specifies `forceRow`, honour
-        // it verbatim — designer override beats spacing math. Still update
-        // lastByRow so later entries see this slot as occupied.
-        if (item.forceRow) {
-          item.row = item.forceRow;
-          lastByRow[item.forceRow] = item.xFrac;
-          return;
+      sorted.forEach((item, idx) => {
+        if (idx > 0) {
+          minDiscSpacing = Math.min(minDiscSpacing, item.xFrac - sorted[idx - 1].xFrac);
         }
-        const preferredNear = item.above ? 'above-near' : 'below-near';
-        const otherNear = item.above ? 'below-near' : 'above-near';
-        // When both near rows are full, escalate to BELOW-FAR first —
-        // labels sink toward the year axis rather than fly above the spine.
-        // above-far is the last resort.
-        let chosen;
-        if (item.xFrac - lastByRow[preferredNear] >= MIN_LABEL_FRAC) chosen = preferredNear;
-        else if (item.xFrac - lastByRow[otherNear] >= MIN_LABEL_FRAC) chosen = otherNear;
-        else if (item.xFrac - lastByRow['below-far'] >= MIN_LABEL_FRAC) chosen = 'below-far';
-        else chosen = 'above-far';
+      });
+      const positionsByRow = {
+        'above-near': [],
+        'below-near': [],
+        'above-far': [],
+        'below-far': [],
+      };
+      // Reserve authored row preferences before fitting automatic captions,
+      // so a later fixed-side entry isn't crowded out by earlier labels.
+      const rowOrder = [
+        ...sorted.filter((item) => item.forceRow),
+        ...sorted.filter((item) => !item.forceRow),
+      ];
+      rowOrder.forEach((item) => {
+        const side = item.forceRow?.split('-')[0] || (item.above ? 'above' : 'below');
+        const otherSide = side === 'above' ? 'below' : 'above';
+        const candidates = item.forceRow
+          ? [item.forceRow, `${side}-${item.forceRow.endsWith('far') ? 'near' : 'far'}`]
+          : [`${side}-near`, `${otherSide}-near`, `${side}-far`, `${otherSide}-far`];
+        const chosen = candidates.find((row) => positionsByRow[row].every(
+          (xFrac) => Math.abs(item.xFrac - xFrac) >= minLabelSpacing
+        ))
+          || candidates[candidates.length - 1];
         item.row = chosen;
-        lastByRow[chosen] = item.xFrac;
+        positionsByRow[chosen].push(item.xFrac);
       });
 
       return { ...track, items: placed };
     });
-  }, []);
+    // Keep all desktop discs the same size, with distinct hit areas even
+    // just above the mobile breakpoint. Mobile retains its full-size discs.
+    const discHitSize = plotMetrics.width
+      ? Math.min(CD_LIT, minDiscSpacing * plotMetrics.width - 4)
+      : CD_LIT;
+    return { tracks, discHitSize };
+  }, [plotMetrics]);
 
   // Mobile layout data: the parallel tracks rotate 90° into one vertical
   // spine. All entries merged, sorted by year, each carrying its track color.
@@ -246,7 +277,7 @@ function ParallelTracks() {
                 {t(track.labelKey)}
               </p>
 
-              <div className="relative" style={{ height: BAND_HEIGHT }}>
+              <div ref={trackIdx === 0 ? plotRef : undefined} className="relative" style={{ height: BAND_HEIGHT }}>
                 {/* Spine */}
                 <div
                   className="absolute left-0 right-0"
@@ -266,6 +297,7 @@ function ParallelTracks() {
                     <Entry
                       key={item.id}
                       item={item}
+                      hitSize={discHitSize}
                       color={track.color}
                       isPinned={isPinned}
                       isHovered={isHovered}
@@ -290,6 +322,7 @@ function ParallelTracks() {
                   return (
                     <EntryTooltip
                       item={active}
+                      hitSize={discHitSize}
                       color={track.color}
                       isPinned={!!pinned && pinned.id === active.id}
                       t={t}
@@ -300,32 +333,44 @@ function ParallelTracks() {
             </Motion.div>
           ))}
 
-          {/* Year axis */}
+          {/* Shared year axis stays below the complete set of tracks. */}
           <div
-            className="grid mt-[clamp(0.75rem,1.5vh,1.25rem)]"
+            className="timeline-year-axis grid mt-[clamp(0.75rem,1.5vh,1.25rem)]"
             style={{
               gridTemplateColumns: 'minmax(110px, 14ch) 1fr',
-              gap: 'clamp(0.75rem, 2vw, 2rem)',
+              gap: 'clamp(1rem, 2.5vw, 2.5rem)',
             }}
             aria-hidden
           >
             <div />
-            <div className="relative" style={{ height: '1.5em' }}>
+            <div className="relative" style={{ height: '2em' }}>
               {Array.from({ length: YEAR_COUNT }).map((_, i) => {
                 const year = START_YEAR + i;
-                const xFrac = (i + 0.5) / YEAR_COUNT;
+                const xFrac = yearStartPosition(year);
                 return (
                   <span
                     key={year}
-                    className="absolute top-0 font-mono"
+                    className="timeline-year-axis__label absolute top-0 font-mono"
                     style={{
                       left: `${xFrac * 100}%`,
                       transform: 'translateX(-50%)',
+                      paddingTop: 10,
                       fontSize: 'clamp(0.7rem, 0.85vw, 0.8rem)',
+                      lineHeight: 1.2,
                       letterSpacing: '0.05em',
                       color: 'var(--text-muted)',
                     }}
                   >
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: '50%',
+                        width: 1,
+                        height: 6,
+                        background: 'var(--border-strong)',
+                      }}
+                    />
                     {year}
                   </span>
                 );
@@ -531,6 +576,7 @@ function VerticalStack({ items, t, reduceMotion }) {
 
 function Entry({
   item,
+  hitSize,
   color,
   isPinned,
   isHovered,
@@ -545,7 +591,7 @@ function Entry({
   const stem = row.endsWith('-far') ? STEM_FAR : STEM_NEAR;
   const lit = isPinned || isHovered;
   const spinning = lit && !reduceMotion;
-  const cdSize = lit ? CD_LIT : CD_REST;
+  const cdSize = lit ? hitSize : Math.min(CD_REST, hitSize - 4);
   // Entry strings are translated against `timeline.entry.<id>.<field>` keys
   // in zh.json. English mode has no entry keys — `defaultValue` falls back
   // to the raw data string from `src/data/timeline.js`, which stays the
@@ -595,10 +641,10 @@ function Entry({
         className="focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] rounded-sm"
         style={{
           position: 'absolute',
-          top: SPINE_Y - CD_LIT / 2,
+          top: SPINE_Y - hitSize / 2,
           left: '50%',
-          width: CD_LIT,
-          height: CD_LIT,
+          width: hitSize,
+          height: hitSize,
           transform: 'translateX(-50%)',
           cursor: 'pointer',
           background: 'transparent',
@@ -608,29 +654,57 @@ function Entry({
         }}
       />
 
-      {/* Title — single line */}
+      {/* Year follows the title's side, including forced and far-tier rows.
+          Keep the title next to its stem and the year on the outer edge. */}
       <span
+        className="timeline-entry-caption"
         style={{
           position: 'absolute',
           left: '50%',
           transform: 'translateX(-50%)',
-          top: above ? SPINE_Y - stem - LABEL_HEIGHT : SPINE_Y + stem + 4,
+          top: above ? SPINE_Y - stem - CAPTION_HEIGHT : SPINE_Y + stem + 4,
           width: '100%',
-          height: LABEL_HEIGHT,
+          height: CAPTION_HEIGHT,
+          display: 'flex',
+          flexDirection: above ? 'column' : 'column-reverse',
+          gap: CAPTION_GAP,
           color: lit ? 'var(--text-strong)' : 'var(--text)',
           fontSize: 'clamp(0.7rem, 0.8vw, 0.78rem)',
           lineHeight: `${LABEL_HEIGHT}px`,
           fontWeight: lit ? 600 : 500,
           textAlign: 'center',
           whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
           padding: '0 2px',
           pointerEvents: 'none',
           transition: reduceMotion ? 'none' : 'color 150ms ease',
         }}
       >
-        {displayTitleTr}
+        <time
+          className="timeline-entry-year font-mono"
+          dateTime={String(item.year)}
+          style={{
+            height: YEAR_LABEL_HEIGHT,
+            flexShrink: 0,
+            fontSize: '0.72rem',
+            lineHeight: `${YEAR_LABEL_HEIGHT}px`,
+            fontWeight: 400,
+            letterSpacing: '0.04em',
+            color: lit ? 'var(--text-strong)' : 'var(--text-muted)',
+          }}
+        >
+          {item.year}
+        </time>
+        <span
+          className="timeline-entry-title"
+          style={{
+            height: LABEL_HEIGHT,
+            flexShrink: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {displayTitleTr}
+        </span>
       </span>
 
       {/* Stem */}
@@ -649,7 +723,7 @@ function Entry({
         }}
       />
 
-      {/* CD disc on the spine */}
+      {/* Every disc sits on the spine, in chronological reading order. */}
       <CdDisc
         size={cdSize}
         color={color}
@@ -665,13 +739,13 @@ function Entry({
 // band, anchored to the active entry's xFrac. Default placement keeps the
 // card inside the chart: left-half entries open right, right-half entries
 // open left. Per-entry `tooltipSide` overrides the default where needed.
-function EntryTooltip({ item, color, isPinned, t }) {
+function EntryTooltip({ item, hitSize, color, isPinned, t }) {
   const placeOnLeft = item.tooltipSide
     ? item.tooltipSide === 'left'
     : item.xFrac > 0.5;
   const sideStyle = placeOnLeft
-    ? { right: `calc(${(1 - item.xFrac) * 100}% + 30px)` }
-    : { left: `calc(${item.xFrac * 100}% + 30px)` };
+    ? { right: `calc(${(1 - item.xFrac) * 100}% + ${hitSize / 2}px)` }
+    : { left: `calc(${item.xFrac * 100}% + ${hitSize / 2}px)` };
   const titleTr = t(`timeline.entry.${item.id}.title`, { defaultValue: item.title });
   const detailsTr = t(`timeline.entry.${item.id}.details`, {
     defaultValue: item.details || item.description,
