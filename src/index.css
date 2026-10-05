@@ -421,6 +421,16 @@ body,
   html.conductor-cursor-active body [contenteditable='true'] {
     cursor: text !important;
   }
+
+  /* Native video fullscreen occupies the browser top layer, above any
+     page z-index. Keep its system cursor visible for the media controls. */
+  html.conductor-cursor-active body video:fullscreen {
+    cursor: auto !important;
+  }
+
+  html.conductor-cursor-active body video:-webkit-full-screen {
+    cursor: auto !important;
+  }
 }
 
 ::-webkit-scrollbar {

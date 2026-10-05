@@ -396,6 +396,7 @@ function AlbumBrowser({
   return (
     <>
       <div
+        className="music-crate"
         style={{
           background: isMobile ? 'transparent' : crateBg,
           borderRadius: 16,
@@ -404,11 +405,13 @@ function AlbumBrowser({
           overflow: isMobile ? 'visible' : 'hidden',
           display: 'flex',
           flexDirection: 'column',
+          maxHeight: isMobile ? 'none' : 'calc(100vh - 12rem)',
         }}
       >
         <div
           style={{
             padding: '14px 18px',
+            flexShrink: 0,
             borderBottom: '1px solid var(--border)',
             display: isMobile ? 'none' : 'flex',
             alignItems: 'baseline',
@@ -567,7 +570,13 @@ function AlbumBrowser({
             )}
           </>
         ) : (
-          <div role="list" aria-label={t('music.albumsList')}>
+          <div
+            role="list"
+            aria-label={t('music.albumsList')}
+            tabIndex={0}
+            className="music-crate-list focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#c4a265]/80"
+            style={{ minHeight: 0, overflowY: 'auto', scrollbarWidth: 'none' }}
+          >
             {albums.map((album) => (
               <div role="listitem" key={album.id}>
                 <AlbumRow

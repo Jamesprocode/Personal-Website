@@ -47,7 +47,7 @@ export function AudioPlayerProvider({ children }) {
   // several seconds, which is exactly when the user thinks "I clicked but
   // nothing happened."
   const [isBuffering, setIsBuffering] = useState(false);
-  const [volume, setVolume] = useState(70);
+  const [volume, setVolume] = useState(100);
   const [duration, setDuration] = useState(0);
   // Playback position is a MotionValue, not React state, on purpose. The
   // <audio> element fires 'timeupdate' ~4x/sec; pushing that through useState

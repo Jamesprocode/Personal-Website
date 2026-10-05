@@ -60,6 +60,8 @@ function Music() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      // Leave a focused crate's keys to native scrolling, not playback.
+      if (e.target.classList.contains('music-crate-list')) return;
       if (e.code === 'Space') {
         e.preventDefault();
         handlePlayPause();
@@ -191,8 +193,6 @@ function Music() {
                 maxWidth: 400,
                 position: 'sticky',
                 top: 'clamp(6rem, 10vh, 9rem)',
-                maxHeight: 'calc(100vh - 12rem)',
-                overflowY: 'auto',
               }}
             >
               <AlbumBrowser
@@ -207,6 +207,13 @@ function Music() {
           </div>
 
           <style>{`
+            /* Scroll inside the crate without a gutter changing its silhouette. */
+            .music-crate-list::-webkit-scrollbar {
+              display: none;
+              width: 0;
+              height: 0;
+            }
+
             @media (max-width: 880px) {
               .music-page-shell {
                 padding-top: 7.25rem !important;

@@ -7,7 +7,7 @@ import { useTheme } from '../../hooks/useTheme';
  * wheel and arrow keys both work. Accumulates by total drag distance from
  * the press point so the value never jumps from delta-based math.
  */
-function Knob({ value = 70, onChange, min = 0, max = 100, size = 64 }) {
+function Knob({ value = 100, onChange, min = 0, max = 100, size = 64 }) {
   const { t } = useTranslation();
   const { isDark } = useTheme();
   const dragStartRef = useRef(null); // { y, startValue }
@@ -81,8 +81,8 @@ function Knob({ value = 70, onChange, min = 0, max = 100, size = 64 }) {
   );
 
   const onDoubleClick = useCallback(() => {
-    onChange(70); // reset to default
-  }, [onChange]);
+    onChange(max); // reset to the full-volume default
+  }, [onChange, max]);
 
   // Map value to rotation: -135° at min, +135° at max
   const ratio = (value - min) / (max - min);

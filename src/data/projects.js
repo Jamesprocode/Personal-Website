@@ -3,7 +3,7 @@ const projects = [
     id: 1,
     slug: 'omr',
     title: 'Full-Page Optical Music Recognition of Jazz Lead Sheets',
-    venue: 'Music Informatics seminar project · Ongoing research',
+    venue: 'In submission to ICASSP',
     shortTitle: 'OMR for Jazz',
     description:
       'Imagine walking into a jam session with your own handwritten lead sheet — and needing to hand a transposed copy to the sax and trumpet players on the spot. A chart in your notebook should be editable and transposable in any key, on the fly. We present the first end-to-end OMR system for handwritten jazz lead sheets at the full-page level — adapting the Sheet Music Transformer with curriculum learning, and proposing chord-specific metrics that isolate harmonic from melodic transcription performance.',

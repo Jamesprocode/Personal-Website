@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import {
   motion as Motion,
@@ -251,14 +252,16 @@ function CursorMusicTrail() {
 
   if (!canUseCursor && notes.length === 0) return null;
 
-  return (
+  return createPortal(
     <div
       aria-hidden
+      data-conductor-cursor-layer
       style={{
         position: 'fixed',
         inset: 0,
         pointerEvents: 'none',
-        zIndex: 60,
+        // Escape page stacking contexts and stay above enlarged media.
+        zIndex: 2147483647,
         overflow: 'hidden',
       }}
     >
@@ -400,7 +403,8 @@ function CursorMusicTrail() {
           </g>
         </Motion.svg>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
 

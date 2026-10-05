@@ -187,16 +187,23 @@ function CrossfadeCarousel({ images, label, variant, interval = 6400, inactive =
       role="region"
       aria-roledescription="carousel"
       aria-label={label}
-      onMouseEnter={() => {
-        if (variant !== 'cover') setPaused(true);
-      }}
       onMouseLeave={(event) => {
-        setPaused(false);
+        if (variant === 'cover') setPaused(false);
         resetCamera(event.currentTarget);
       }}
       onPointerMove={moveCamera}
       onPointerLeave={(event) => resetCamera(event.currentTarget)}
-      onFocusCapture={() => setPaused(true)}
+      onPointerDownCapture={() => {
+        if (variant === 'portrait') setPaused(false);
+      }}
+      onKeyDownCapture={() => {
+        if (variant === 'portrait') setPaused(true);
+      }}
+      onFocusCapture={(event) => {
+        // Portraits keep rotating during mouse browsing and arrow clicks;
+        // keyboard focus still pauses them for deliberate navigation.
+        setPaused(variant === 'cover' || event.target.matches(':focus-visible'));
+      }}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
       }}
